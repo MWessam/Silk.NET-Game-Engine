@@ -22,11 +22,11 @@ public class AssetManager
     {
         _shaderLibrary = ShaderLibrary
             .CreateLibraryBuilder<ShaderLibrary>()
-            .WithAsset("Basic", TestShaders.BasicShader(_gl))
+            .WithAsset("default", TestShaders.BasicShader(_gl))
             .Build(_gl);
         _textureLibrary = TextureLibrary
             .CreateLibraryBuilder<TextureLibrary>()
-            .WithAsset("Birb", TestTextures.BirbTexture(_gl))
+            .WithAsset("birb", TestTextures.BirbTexture(_gl))
             .Build(_gl);
     }
 

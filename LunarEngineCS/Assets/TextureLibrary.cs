@@ -34,7 +34,7 @@ public static class TestTextures
 {
     public static TextureAsset BirbTexture(GL gl) =>
         new(
-            new TextureHandle(gl, @"D:\_Keep\Active Projects\LunarEngineCS\LunarEngineCS\Resources\birb.jpg"),
+            new TextureHandle(gl, @"..\..\..\Resources\birb.jpg"),
             "birb"
             );
 }

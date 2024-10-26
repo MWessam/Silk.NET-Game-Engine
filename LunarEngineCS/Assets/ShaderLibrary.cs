@@ -35,6 +35,6 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
 public static class TestShaders
 {
     public static ShaderAsset BasicShader(GL gl) => new(
-        new ShaderHandle(gl, @"D:\_Keep\Active Projects\LunarEngineCS\LunarEngineCS\Resources\shader.vert", @"D:\_Keep\Active Projects\LunarEngineCS\LunarEngineCS\Resources\shader.frag"),
+        new ShaderHandle(gl, @"..\..\..\Resources\shader.vert", @"..\..\..\Resources\shader.frag"),
         "default");
 }
