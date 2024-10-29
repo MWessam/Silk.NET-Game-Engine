@@ -55,18 +55,11 @@ public class Sprite : IDisposable
     }
     public class Builder
     {
-        private GL _gl;
         private ShaderHandle _shader;
         private TextureHandle _texture;
         internal Builder()
         {
         }
-        public Builder WithApi(GL gl)
-        {
-            _gl = gl;
-            return this;
-        }
-
         public Builder WithShader(ShaderHandle shaderHandle)
         {
             _shader = shaderHandle;
@@ -79,11 +72,12 @@ public class Sprite : IDisposable
         }
         public Sprite Build()
         {
-            ArgumentNullException.ThrowIfNull(_gl, nameof(_gl));
+            var gl = GraphicsEngine.Api;
+            ArgumentNullException.ThrowIfNull(gl, nameof(gl));
             ArgumentNullException.ThrowIfNull(_shader, nameof(_shader));
             ArgumentNullException.ThrowIfNull(_texture, nameof(_texture));
-            var spriteIndices = Quad.CreateQuad(_gl);
-            var sprite = new Sprite(spriteIndices, _texture, _shader, _gl);
+            var spriteIndices = Quad.CreateQuad(gl);
+            var sprite = new Sprite(spriteIndices, _texture, _shader, gl);
             sprite.Initialize();
             return sprite;
         }

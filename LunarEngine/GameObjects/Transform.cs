@@ -4,7 +4,7 @@ using LunarEngine.Utilities;
 
 namespace LunarEngine.GameObjects;
 
-public class Transform : Component, IEnumerable<Transform>
+public class Transform : IEnumerable<Transform>
 {
     #region Statics
     public static Vector3 DefaultZero => Vector3.Zero;

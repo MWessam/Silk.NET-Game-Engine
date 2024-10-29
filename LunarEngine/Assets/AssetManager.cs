@@ -4,50 +4,19 @@ using LunarEngine.Graphics;
 using Silk.NET.OpenGL;
 
 namespace LunarEngine.Assets;
-public class AssetManager
+public static class AssetManager
 {
-    private ShaderLibrary _shaderLibrary;
-    private TextureLibrary _textureLibrary;
-    private GL _gl;
-
-    public void LoadGLApi(GL gl)
+    public static ShaderLibrary ShaderLibrary;
+    public static TextureLibrary TextureLibrary;
+    public static void InitializeAssetManager()
     {
-        _gl = gl;
-    }
-    public void InitializeAssetManager()
-    {
-        _shaderLibrary = ShaderLibrary
+        ShaderLibrary = ShaderLibrary
             .CreateLibraryBuilder<ShaderLibrary>()
-            .WithAsset("default", TestShaders.BasicShader(_gl))
-            .Build(_gl);
-        _textureLibrary = TextureLibrary
+            .WithAsset("default", TestShaders.BasicShader())
+            .Build();
+        TextureLibrary = TextureLibrary
             .CreateLibraryBuilder<TextureLibrary>()
-            .WithAsset("birb", TestTextures.BirbTexture(_gl))
-            .Build(_gl);
-    }
-
-    public SpriteRenderer CreateSpriteRenderer(string shaderName, string textureName, string spriteName)
-    {
-        var shader = _shaderLibrary.GetAsset(shaderName).Shader;
-        var texture = _textureLibrary.GetAsset(textureName).Texture;
-        var sprite = Sprite
-            .GetSpriteBuilder()
-            .WithApi(_gl)
-            .WithShader(shader)
-            .WithTexture(texture)
+            .WithAsset("birb", TestTextures.BirbTexture())
             .Build();
-        return new SpriteRenderer(sprite, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-    }
-    public SpriteRenderer CreateSpriteRenderer()
-    {
-        var shader = _shaderLibrary.DefaultAsset.Shader;
-        var texture = _textureLibrary.DefaultAsset.Texture;
-        var sprite = Sprite
-            .GetSpriteBuilder()
-            .WithApi(_gl)
-            .WithShader(shader)
-            .WithTexture(texture)
-            .Build();
-        return new SpriteRenderer(sprite, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
     }
 }

@@ -31,4 +31,13 @@ public class Camera : Component
         }
     }
     public Matrix4x4 ViewProjection => View * Projection;
+
+    public Camera(GameObject gameObject) : base(gameObject)
+    {
+        Transform.LocalPosition = new Vector3(0.0f, 0.0f, -1.0f);
+        Width = 5;
+        Height = 5;
+        Near = 0.1f;
+        Far = 1000.0f;
+    }
 }

@@ -1,3 +1,4 @@
+using LunarEngine.Graphics;
 using LunarEngine.OpenGLAPI;
 using Silk.NET.OpenGL;
 
@@ -24,16 +25,16 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
                 AddAsset("birb", asset);
                 return asset;
             }
-            return TestTextures.BirbTexture(Gl);
+            return TestTextures.BirbTexture();
         }
     }
 }
 
 public static class TestTextures
 {
-    public static TextureAsset BirbTexture(GL gl) =>
+    public static TextureAsset BirbTexture() =>
         new(
-            new TextureHandle(gl, @"..\..\..\Resources\birb.jpg"),
+            new TextureHandle(GraphicsEngine.Api, @"..\..\..\Resources\birb.jpg"),
             "birb"
             );
 }

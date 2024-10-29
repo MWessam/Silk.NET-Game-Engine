@@ -1,3 +1,4 @@
+using LunarEngine.Graphics;
 using LunarEngine.OpenGLAPI;
 using Silk.NET.OpenGL;
 
@@ -23,7 +24,7 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
             {
                 return asset;
             }
-            asset = TestShaders.BasicShader(Gl);
+            asset = TestShaders.BasicShader();
             AddAsset("default", asset);
             return asset;
         }
@@ -32,7 +33,7 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
 
 public static class TestShaders
 {
-    public static ShaderAsset BasicShader(GL gl) => new(
-        new ShaderHandle(gl, @"..\..\..\Resources\shader.vert", @"..\..\..\Resources\shader.frag"),
+    public static ShaderAsset BasicShader() => new(
+        new ShaderHandle(GraphicsEngine.Api, @"..\..\..\Resources\shader.vert", @"..\..\..\Resources\shader.frag"),
         "default");
 }
