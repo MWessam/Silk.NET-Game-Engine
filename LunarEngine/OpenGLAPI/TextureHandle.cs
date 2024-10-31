@@ -7,6 +7,9 @@ public class TextureHandle : IDisposable
     {
         private uint _handle;
         private GL _gl;
+        
+        public uint Handle => _handle;
+
 
         public unsafe TextureHandle(GL gl, string path)
         {
@@ -44,6 +47,7 @@ public class TextureHandle : IDisposable
                 SetParameters();
             }
         }
+
 
         private void SetParameters()
         {

@@ -1,21 +1,50 @@
 using System.Collections;
 using System.Numerics;
 using LunarEngine.Assets;
+using LunarEngine.Scenes;
 using Serilog;
 
 namespace LunarEngine.GameObjects;
 
-public class GameObject : IRenderer, IEnumerable<IComponent>
+public class GameObject : IEnumerable<IComponent>
 {
     public readonly Transform Transform = new();
+    public Scene ParentScene { get; private set; }
     public string Name;
+    public bool Enabled
+    {
+        get
+        {
+            return _enabled;
+        }
+        set
+        {
+            if (_enabled && value == false)
+            {
+                _enabled = value;
+                OnDisable();
+                return;
+            }
+
+            if (!_enabled && value == true)
+            {
+                _enabled = value;
+                OnEnable();
+                return;
+            }
+        }
+    }
     private Dictionary<Type, IComponent> _cachedComponents = new(4);
     private Guid _guid;
+    private bool _enabled;
+    private bool _initialized;
     private GameObject() {}
-    public static GameObject CreateGameObject(string name, params Type[] types)
+    public static GameObject CreateGameObject(string name, Scene scene, params Type[] types)
     {
         var gameObject = new GameObject();
         gameObject.Name = name;
+        gameObject.ParentScene = scene;
+        gameObject.Transform.LocalScale = new Vector3(1.0f, 1.0f, 1.0f);
         foreach (var type in types)
         {
             if (gameObject._cachedComponents.ContainsKey(type))
@@ -44,6 +73,8 @@ public class GameObject : IRenderer, IEnumerable<IComponent>
                           $"and is not an interface/abstract class.");
             }
         }
+        gameObject.Enabled = true;
+        scene.AddObject(gameObject);
         return gameObject;
     }
     public T AddComponent<T>() where T : IComponent
@@ -51,21 +82,27 @@ public class GameObject : IRenderer, IEnumerable<IComponent>
         if (!_cachedComponents.ContainsKey(typeof(T)))
         {
             var createdComponent = CreateComponent<T>();
-            _cachedComponents.Add(typeof(T), createdComponent);
-            return createdComponent;
+            return AddComponent(createdComponent);
         }
         var component = (T)_cachedComponents[typeof(T)];
         return component;
     }
-    public void AddComponent<T>(T component) where T : IComponent
+    public T AddComponent<T>(T component) where T : IComponent
     {
         if (_cachedComponents.TryAdd(typeof(T), component))
         {
             component.AssignGameObject(this);
-            return;
+            if (_initialized)
+            {
+                component.Awake();
+                component.OnEnable();
+                component.Start();
+            }
+            return component;
         }
         _cachedComponents[typeof(T)] = component;
         component.AssignGameObject(this);
+        return component;
     }
     public T? GetComponent<T>() where T : IComponent
     {
@@ -101,18 +138,33 @@ public class GameObject : IRenderer, IEnumerable<IComponent>
             component.Value.Awake();
         }
     }
+    public void OnEnable()
+    {
+        foreach (var component in _cachedComponents)
+        {
+            component.Value.OnEnable();
+        }
+    }
     public void Start()
     {
         foreach (var component in _cachedComponents)
         {
             component.Value.Start();
         }
+        _initialized = true;
     }
     public void Update(double delta)
     {
         foreach (var component in _cachedComponents)
         {
             component.Value.Update(delta);
+        }
+    }
+    public void OnDisable()
+    {
+        foreach (var component in _cachedComponents)
+        {
+            component.Value.OnDisable();
         }
     }
     private T CreateComponent<T>() where T : IComponent
@@ -136,5 +188,21 @@ public class GameObject : IRenderer, IEnumerable<IComponent>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+
+    public GameObject Instantiate(GameObject gameObject)
+    {
+        List<Type> components = new();
+        foreach (var component in gameObject._cachedComponents)
+        {
+            components.Add(component.Key);
+        }
+        GameObject obj = CreateGameObject(gameObject.Name, ParentScene, components.ToArray());
+        foreach (var componentType in components)
+        {
+            var component = obj._cachedComponents[componentType];
+            component.Clone(gameObject._cachedComponents[componentType]);
+        }
+        return obj;
     }
 }

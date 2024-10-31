@@ -9,6 +9,8 @@ public class ShaderHandle : IDisposable, IBindable
     private GL _gl;
     private ShaderUniformLibrary _uniforms;
     private Queue<Action> _dirtyUniformQueue = new();
+
+    public uint Handle => _handle;
     public ShaderHandle(GL gl, string vertexPath, string fragmentPath)
     {
         _gl = gl;

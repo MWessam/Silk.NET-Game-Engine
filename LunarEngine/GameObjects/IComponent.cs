@@ -11,6 +11,7 @@ public interface IComponent
     void OnEnable();
     void OnDisable();
     void Update(double delta);
-    void FixedUpdate(double fixedDelta);
+    void FixedUpdate(float fixedDelta);
     void OnDestroy();
+    void Clone(IComponent component);
 }

@@ -79,7 +79,12 @@ public class Transform : IEnumerable<Transform>
             }
             return LocalPosition;
         }
+        set
+        {
+            LocalPosition = value;
+        }
     }
+
     public Vector3 Scale
     {
         get

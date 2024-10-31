@@ -28,6 +28,12 @@ public class SpriteRenderer : Component, IRenderer
     }
 
 
+    public override void Clone(IComponent component)
+    {
+        var spriteRenderer = (SpriteRenderer)component;
+        Sprite = spriteRenderer.Sprite;
+        Color = spriteRenderer.Color;
+    }
 }
 
 

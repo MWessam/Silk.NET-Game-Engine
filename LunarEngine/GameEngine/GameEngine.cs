@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using LunarEngine.Assets;
@@ -9,14 +10,19 @@ using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
+using Silk.NET.OpenGL.Extensions.ImGui;
+using ImGuiNET;
+using LunarEngine.Physics;
 
 namespace LunarEngine.GameEngine;
 
 public class GameEngine
 {
-    private InputEngine.InputEngine _inputEngine;
+    private InputEngine.Input _input;
     private SceneManager _sceneManager;
-
+    private bool _isRunning;
+    private object _physicsLock = 0;
+    private Thread _physicsLoop;
     public static GameEngine CreateGameEngine()
     {
         GameEngine engine = new GameEngine();
@@ -29,7 +35,7 @@ public class GameEngine
     }
     private void Initialize()
     {
-        _inputEngine = InputEngine.InputEngine.Create();
+        _input = InputEngine.Input.Create();
         _sceneManager = new SceneManager();
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
@@ -43,10 +49,18 @@ public class GameEngine
         GraphicsEngine.Initialize();
         GraphicsEngine.OnUpdateLoopTick += GameLoop;
         GraphicsEngine.OnApiInitialized += OnApiInitialized;
-        GraphicsEngine.OnWindowInitialized += OnWindowStart;
+        GraphicsEngine.OnWindowInitialized += OnEngineStart;
         GraphicsEngine.OnGraphicsRender += OnRenderReady;
         GraphicsEngine.OnViewportResized += OnViewportResized;
+        GraphicsEngine.OnWindowClosed += OnClose;
     }
+
+    private void OnClose()
+    {
+        _isRunning = false;
+        _physicsLoop.Join();
+    }
+
     private void OnViewportResized(Vector2D<int> obj)
     {
         _sceneManager.OnViewportResized();
@@ -55,16 +69,29 @@ public class GameEngine
     {
         _sceneManager.RenderScenes();
     }
-    private void OnWindowStart(IWindow window)
+    private void OnEngineStart(IWindow window)
     {
+        _isRunning = true;
+        _physicsLoop = new(PhysicsLoop);
+        
         IInputContext context = window.CreateInput();
         foreach (var keyboard in context.Keyboards)
         {
-            keyboard.KeyDown += _inputEngine.OnKeyDown;
-            keyboard.KeyUp += _inputEngine.OnKeyUp;
+            keyboard.KeyDown += _input.OnKeyDown;
+            keyboard.KeyUp += _input.OnKeyUp;
+        }
+
+        foreach (var mouse in context.Mice)
+        {
+            mouse.MouseDown += _input.OnMouseDown;
+            mouse.MouseUp += _input.OnMouseUp;
+            mouse.MouseMove += _input.OnMouseMove;
+            mouse.Scroll += _input.OnMouseScroll;
         }
         _sceneManager.AwakeScenes();
         _sceneManager.StartScenes();
+        _physicsLoop.Start();
+
     }
 
     private void OnApiInitialized(GL gl)
@@ -74,29 +101,46 @@ public class GameEngine
     }
     private void LoadScene()
     {
-        var object1 = GameObject.CreateGameObject("obj1", 
-            typeof(SpriteRenderer), 
-            typeof(CustomBehaviour));
-        var object2 = GameObject.CreateGameObject("obj2",
-            typeof(SpriteRenderer));
-        object1.Transform.LocalPosition = new Vector3(0.5f, 0.5f, 0.0f);
-        object2.Transform.LocalPosition = new Vector3(-0.5f, -0.5f, 0.0f);
-        var scene = Scene.CreateScene();
-        scene.AddObject(object1);
-        scene.AddObject(object2);
-        scene.IsActive = true;
+        var scene = new TestScene();
         _sceneManager.AddScene(scene);
         
     }
     private void GameLoop(double dt)
     {
         Time.DeltaTime = (float)dt;
-        _inputEngine.Update(dt);
+        _input.Update(dt);
+        // Synchronize physics state with the latest available state
+        lock (_physicsLock)
+        {
+            PhysicsEngine.Interpolate((float)(dt / PhysicsEngine.FIXED_TIMESTAMP));
+        }
+
         _sceneManager.UpdateScenes(dt);
+    }
+
+    private void PhysicsLoop()
+    {
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+        var currentTime = stopwatch.Elapsed.TotalSeconds;
+        var lastTime = currentTime;
+        double deltaTime = 0;
+        while (_isRunning)
+        {
+            currentTime = stopwatch.Elapsed.TotalSeconds;
+            deltaTime += currentTime - lastTime;
+            while (deltaTime >= PhysicsEngine.FIXED_TIMESTAMP)
+            {
+                PhysicsEngine.TickPhysics();
+                deltaTime -= PhysicsEngine.FIXED_TIMESTAMP;
+                deltaTime = 0;
+            }
+            lastTime = currentTime;
+        }
     }
 }
 
 public static class Time
 {
-    public static float DeltaTime { get; internal set; } 
+    public static float DeltaTime { get; internal set; }
 }

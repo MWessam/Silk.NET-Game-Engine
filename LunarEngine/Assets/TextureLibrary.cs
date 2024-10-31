@@ -22,10 +22,11 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
         {
             if (TryGetAsset("birb", out var asset))
             {
-                AddAsset("birb", asset);
                 return asset;
             }
-            return TestTextures.BirbTexture();
+            asset = TestTextures.BirbTexture(); 
+            AddAsset("birb", asset);
+            return asset;
         }
     }
 }

@@ -13,7 +13,8 @@ public static class GraphicsEngine
     public static event Action<GL>? OnApiInitialized;
     public static event Action<double>? OnGraphicsRender;
     public static event Action<double>? OnUpdateLoopTick;
-    public static event Action<Vector2D<int>>? OnViewportResized; 
+    public static event Action<Vector2D<int>>? OnViewportResized;
+    public static event Action OnWindowClosed;
     private static IWindow _windowContext;
     public static GL Api { get; private set; }
 
@@ -47,7 +48,14 @@ public static class GraphicsEngine
         _windowContext.Load += OnWindowLoad;
         _windowContext.Render += OnRender;
         _windowContext.Update += OnUpdate;
+        _windowContext.Closing += OnClose;
     }
+
+    private static void OnClose()
+    {
+        OnWindowClosed?.Invoke();
+    }
+
     private static void OnWindowLoad()
     {
         try
@@ -71,6 +79,7 @@ public static class GraphicsEngine
     private static void OnRender(double deltaTime = 0)
     {
         Api.Clear(ClearBufferMask.ColorBufferBit);
+        _windowContext.Title = $"Lunar Engine FPS: {(int)(1 / deltaTime)}";
         OnGraphicsRender?.Invoke(deltaTime);
     }
     private static void OnViewportResize(Vector2D<int> viewport)

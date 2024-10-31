@@ -38,12 +38,21 @@ public abstract class Component : IComponent
     {
         
     }
-    public virtual void FixedUpdate(double fixedDelta)
+    public virtual void FixedUpdate(float delta)
     {
         
     }
     public virtual void OnDestroy()
     {
         
+    }
+
+    public T AddComponent<T>() where T : IComponent => GameObject.AddComponent<T>();
+    public T AddComponent<T>(T component) where T : IComponent => GameObject.AddComponent<T>(component);
+    public T GetComponent<T>() where T : IComponent => GameObject.AddComponent<T>();
+    public GameObject Instantiate(GameObject gameObject) => GameObject.Instantiate(gameObject);
+
+    public virtual void Clone(IComponent component)
+    {
     }
 }
