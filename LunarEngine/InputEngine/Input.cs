@@ -16,7 +16,8 @@ public class Input
     private static Input? s_instance;
     private HashSet<Key> _heldKeys = new();
     private HashSet<MouseButton> _heldMouseButtons = new();
-    public event Action<Vector2> OnMouseMoved; 
+    public event Action<Vector2> OnMouseMoved;
+    public Vector2 KeyboardAxis;
     public static Input Instance
     {
         get
@@ -31,6 +32,14 @@ public class Input
     }
     private Input()
     {
+        AddKeyHeldListener(Key.W, OnWPressed); 
+        AddKeyHeldListener(Key.A, OnAPressed); 
+        AddKeyHeldListener(Key.S, OnSPressed); 
+        AddKeyHeldListener(Key.D, OnDPressed); 
+        AddKeyUpListener(Key.W, OnWReleased); 
+        AddKeyUpListener(Key.A, OnAReleased);
+        AddKeyUpListener(Key.S, OnSReleased); 
+        AddKeyUpListener(Key.D, OnDReleased); 
     }
     public static Input Create()
     {
@@ -41,6 +50,9 @@ public class Input
         }
         return s_instance;
     }
+
+    #region LISTENERS
+
     public void AddKeyDownListener(Key key, Action<Key> action)
     {
         AddKeyListener(key, action, _onKeyPressedMap);
@@ -202,4 +214,43 @@ public class Input
         }
         actionMap.Add(key, action);
     }
+
+    #endregion
+
+    #region Calculations
+
+    private void OnDReleased(Key obj)
+    {
+        KeyboardAxis.X = 0;
+    }
+    private void OnSReleased(Key obj)
+    {
+        KeyboardAxis.Y = 0;
+    }
+    private void OnAReleased(Key obj)
+    {
+        KeyboardAxis.X = 0;
+    }
+    private void OnWReleased(Key obj)
+    {
+        KeyboardAxis.Y = 0;
+    }
+    private void OnWPressed(Key obj)
+    {
+        KeyboardAxis.Y = 1.0f;
+    }
+    private void OnAPressed(Key obj)
+    {
+        KeyboardAxis.X = 1.0f;
+    }
+    private void OnSPressed(Key obj)
+    {
+        KeyboardAxis.Y = -1.0f;
+    }
+    private void OnDPressed(Key obj)
+    {
+        KeyboardAxis.X = -1.0f;
+    }
+
+    #endregion
 }

@@ -1,28 +1,25 @@
 using System.Diagnostics;
-using System.Numerics;
-using System.Runtime.InteropServices;
 using LunarEngine.Assets;
-using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
+using LunarEngine.InputEngine;
 using LunarEngine.Scenes;
+using LunarEngine.Physics;
 using Serilog;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
-using Silk.NET.OpenGL.Extensions.ImGui;
-using ImGuiNET;
-using LunarEngine.Physics;
 
 namespace LunarEngine.GameEngine;
 
 public class GameEngine
 {
-    private InputEngine.Input _input;
+    private Input _input;
     private SceneManager _sceneManager;
     private bool _isRunning;
     private object _physicsLock = 0;
     private Thread _physicsLoop;
+    private double _accumulatedTime;
     public static GameEngine CreateGameEngine()
     {
         GameEngine engine = new GameEngine();
@@ -58,7 +55,6 @@ public class GameEngine
     private void OnClose()
     {
         _isRunning = false;
-        _physicsLoop.Join();
     }
 
     private void OnViewportResized(Vector2D<int> obj)
@@ -72,8 +68,6 @@ public class GameEngine
     private void OnEngineStart(IWindow window)
     {
         _isRunning = true;
-        _physicsLoop = new(PhysicsLoop);
-        
         IInputContext context = window.CreateInput();
         foreach (var keyboard in context.Keyboards)
         {
@@ -90,8 +84,6 @@ public class GameEngine
         }
         _sceneManager.AwakeScenes();
         _sceneManager.StartScenes();
-        _physicsLoop.Start();
-
     }
 
     private void OnApiInitialized(GL gl)
@@ -108,36 +100,38 @@ public class GameEngine
     private void GameLoop(double dt)
     {
         Time.DeltaTime = (float)dt;
+        _accumulatedTime += dt;
         _input.Update(dt);
-        // Synchronize physics state with the latest available state
-        lock (_physicsLock)
-        {
-            PhysicsEngine.Interpolate((float)(dt / PhysicsEngine.FIXED_TIMESTAMP));
-        }
-
         _sceneManager.UpdateScenes(dt);
+        while (_accumulatedTime >= PhysicsEngine.FIXED_TIMESTAMP)
+        {
+            PhysicsEngine.TickPhysics();
+            _sceneManager.TickScenes(PhysicsEngine.FIXED_TIMESTAMP);
+            _accumulatedTime -= PhysicsEngine.FIXED_TIMESTAMP;
+        }
+        PhysicsEngine.Interpolate((float)(_accumulatedTime / PhysicsEngine.FIXED_TIMESTAMP));
+        PhysicsEngine.UpdateBufferedObjects();
     }
 
-    private void PhysicsLoop()
-    {
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
-        var currentTime = stopwatch.Elapsed.TotalSeconds;
-        var lastTime = currentTime;
-        double deltaTime = 0;
-        while (_isRunning)
-        {
-            currentTime = stopwatch.Elapsed.TotalSeconds;
-            deltaTime += currentTime - lastTime;
-            while (deltaTime >= PhysicsEngine.FIXED_TIMESTAMP)
-            {
-                PhysicsEngine.TickPhysics();
-                deltaTime -= PhysicsEngine.FIXED_TIMESTAMP;
-                deltaTime = 0;
-            }
-            lastTime = currentTime;
-        }
-    }
+    // private void PhysicsLoop()
+    // {
+    //     var stopwatch = new Stopwatch();
+    //     stopwatch.Start();
+    //     var currentTime = stopwatch.Elapsed.TotalSeconds;
+    //     var lastTime = currentTime;
+    //     double deltaTime = 0;
+    //     while (_isRunning)
+    //     {
+    //         currentTime = stopwatch.Elapsed.TotalSeconds;
+    //         deltaTime += currentTime - lastTime;
+    //         lastTime = currentTime;
+    //         lock (_physicsLock)
+    //         {
+    //             
+    //
+    //         }
+    //     }
+    // }
 }
 
 public static class Time

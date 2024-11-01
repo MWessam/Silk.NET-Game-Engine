@@ -160,6 +160,14 @@ public class GameObject : IEnumerable<IComponent>
             component.Value.Update(delta);
         }
     }
+
+    public void Tick(float fixedDt)
+    {
+        foreach (var component in _cachedComponents)
+        {
+            component.Value.Tick(fixedDt);
+        }
+    }
     public void OnDisable()
     {
         foreach (var component in _cachedComponents)

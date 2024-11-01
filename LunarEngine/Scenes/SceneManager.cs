@@ -43,7 +43,7 @@ public class SceneManager
         {
             Scene scene = _scenes[i]!;
             if (!scene.IsActive) return;
-            scene.ResetShadersVP();
+            scene.UpdateViewProjectionUniforms();
         }
     }
 
@@ -84,6 +84,17 @@ public class SceneManager
             if (!scene.IsActive) return;
 
             scene.UpdateScene(dt);
+        }
+    }
+
+    public void TickScenes(float fixedTimestamp)
+    {
+        for (var i = 0; i <= _lastSceneIndex; i++)
+        {
+            Scene scene = _scenes[i]!;
+            if (!scene.IsActive) return;
+
+            scene.Tick(fixedTimestamp);
         }
     }
 }

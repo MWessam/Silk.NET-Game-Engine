@@ -29,6 +29,14 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
             return asset;
         }
     }
+    public ShaderAsset CreateShader(string name, string vertexPath, string fragPath)
+    {
+        var texture = new ShaderAsset(
+            new ShaderHandle(GraphicsEngine.Api, vertexPath, fragPath),
+            name
+        );
+        return texture;
+    }
 }
 
 public static class TestShaders

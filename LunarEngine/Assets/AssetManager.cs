@@ -18,5 +18,6 @@ public static class AssetManager
             .CreateLibraryBuilder<TextureLibrary>()
             .WithAsset("birb", TestTextures.BirbTexture())
             .Build();
+        
     }
 }

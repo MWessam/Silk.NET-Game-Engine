@@ -29,6 +29,15 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
             return asset;
         }
     }
+
+    public TextureAsset CreateTexture(string name, string path)
+    {
+        var texture = new TextureAsset(
+            new TextureHandle(GraphicsEngine.Api, path),
+            name
+        );
+        return texture;
+    }
 }
 
 public static class TestTextures

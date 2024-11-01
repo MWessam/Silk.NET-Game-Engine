@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using LunarEngine.Scenes;
+using Serilog;
 
 namespace LunarEngine.Physics;
 
@@ -8,23 +10,23 @@ public static class PhysicsEngine
 {
     public const float FIXED_TIMESTAMP = 0.01666667f;
     public static readonly Vector3 GRAVITY = new Vector3(0.0f, -9.89665f, 0.0f);
-    private static List<Rigidbody2D> _rigidBodies = new(1024);
-    private static ConcurrentQueue<Rigidbody2D> _rigidBodiesToAdd = new();
     public static float InterpolatedStep;
+    private static List<Rigidbody2D> _rigidBodies = new(1024);
+    private static LinkedList<Rigidbody2D> _rigidBodiesToAdd = new();
     private static bool _isInPhysicsLoop;
 
     public static void AddPhysicsObjects(IEnumerable<Rigidbody2D> rigidBodies)
     {
         foreach (var rb in rigidBodies)
         {
-            _rigidBodies.Add(rb);
+            _rigidBodiesToAdd.AddLast(rb);
         }
     }
     public static void AddPhysicsObjects(params Rigidbody2D[] rigidBodies)
     {
         foreach (var rb in rigidBodies)
         {
-            _rigidBodies.Add(rb);
+            _rigidBodiesToAdd.AddLast(rb);
         }
     }
 
@@ -36,34 +38,32 @@ public static class PhysicsEngine
         {
             var rb = physicsSpan[i];
             SolveVerlet(rb);
-            rb.FixedUpdate(FIXED_TIMESTAMP);
         }
         _isInPhysicsLoop = false;
-        CheckForModifiedItems();
     }
 
     private static void SolveVerlet(Rigidbody2D rb)
     {
-        rb.Acceleration = GRAVITY * rb.GravityScale;
-        rb.NewPosition = rb.CurrentPosition * 2.0f - rb.PreviousPosition +
-                         rb.Acceleration * FIXED_TIMESTAMP * FIXED_TIMESTAMP;
+        if (rb.Mass == 0.0f) return;
         rb.PreviousPosition = rb.CurrentPosition;
-        rb.CurrentPosition = rb.NewPosition;
+        rb.NetForce += GRAVITY * rb.Mass * rb.GravityScale;
+        rb.Acceleration = rb.NetForce / rb.Mass;
+        rb.Velocity += rb.Acceleration * (FIXED_TIMESTAMP / 2);
+        rb.CurrentPosition += rb.Velocity * FIXED_TIMESTAMP;
+        rb.Velocity += rb.Acceleration * (FIXED_TIMESTAMP / 2);
+        rb.NetForce = Vector3.Zero; 
+        // rb.NewPosition = rb.CurrentPosition * 2.0f - rb.PreviousPosition +
+                         // rb.Acceleration * FIXED_TIMESTAMP * FIXED_TIMESTAMP;
     }
-
-    private static void CheckForModifiedItems()
-    {
-        // if (_rigidBodiesToAdd.Any())
-        // {
-        //     foreach (var rb in _rigidBodiesToAdd)
-        //     {
-        //         _rigidBodies.Add(rb);
-        //     }
-        // }
-    }
-
     public static void Interpolate(float interpolation)
     {
         InterpolatedStep = interpolation > 1 ? 1 : interpolation;
+    }
+
+    public static void UpdateBufferedObjects()
+    {
+        if (_rigidBodiesToAdd.Count == 0) return;
+        _rigidBodies.AddRange(_rigidBodiesToAdd);
+        _rigidBodiesToAdd.Clear();
     }
 }

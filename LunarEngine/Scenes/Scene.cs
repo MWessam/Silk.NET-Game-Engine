@@ -61,7 +61,7 @@ public class Scene
         }
         _textures.Add(textureHandle);
     }
-    public void ResetShadersVP()
+    public void UpdateViewProjectionUniforms()
     {
         foreach (var shader in _shaders)
         {
@@ -110,8 +110,29 @@ public class Scene
 
     public void Render()
     {
+        UpdateViewProjectionUniforms();
         UpdateDirtyShaderUniforms();
         var objectSpan = CollectionsMarshal.AsSpan(GameObjects);
         GraphicsEngine.Render(objectSpan);
+    }
+
+    public T? FindObjectOfType<T>() where T : IComponent
+    {
+        foreach (var obj in GameObjects)
+        {
+            if (obj.TryGetComponent(out T component))
+            {
+                return component;
+            }
+        }
+        return default;
+    }
+
+    public void Tick(float fixedTimestamp)
+    {
+        foreach (var gameObject in GameObjects)
+        {
+            gameObject.Tick(fixedTimestamp);
+        }
     }
 }

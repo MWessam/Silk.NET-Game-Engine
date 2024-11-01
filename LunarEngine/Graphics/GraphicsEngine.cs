@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Numerics;
 using LunarEngine.GameObjects;
 using Serilog;
 using Silk.NET.Maths;
@@ -15,6 +16,7 @@ public static class GraphicsEngine
     public static event Action<double>? OnUpdateLoopTick;
     public static event Action<Vector2D<int>>? OnViewportResized;
     public static event Action OnWindowClosed;
+    public static Vector2 WindowResolution => new Vector2(_windowContext.Size.X, _windowContext.Size.Y);
     private static IWindow _windowContext;
     public static GL Api { get; private set; }
 
