@@ -1,22 +1,37 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Arch.Core;
+using Arch.System;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
 using LunarEngine.OpenGLAPI;
 
 namespace LunarEngine.Scenes;
 
+public class ECSScene
+{
+    internal World _world;
+    
+    
+}
 public class Scene
 {
     internal int SceneId;
     public Camera Camera { get; private set; }
     public bool IsActive { get; set; }
+    public readonly World World;
 
     public List<GameObject> GameObjects = new();
     private List<ShaderHandle> _shaders = new();
     private List<TextureHandle> _textures = new();
     private LinkedList<GameObject> _addObjectBuffer = new();
     private bool _isInitialized;
+    public Scene()
+    {
+        World = World.Create();
+        var cameraObject = GameObject.CreateGameObject("Camera", this, typeof(Camera));
+        Camera = cameraObject.GetComponent<Camera>()!;
+    }
 
     public void AddObject(GameObject gameObject)
     {
@@ -102,11 +117,7 @@ public class Scene
         _addObjectBuffer.Clear();
     }
 
-    public Scene()
-    {
-        var cameraObject = GameObject.CreateGameObject("Camera", this, typeof(Camera));
-        Camera = cameraObject.GetComponent<Camera>()!;
-    }
+
 
     public void Render()
     {
@@ -125,6 +136,7 @@ public class Scene
                 return component;
             }
         }
+        
         return default;
     }
 
@@ -136,3 +148,4 @@ public class Scene
         }
     }
 }
+

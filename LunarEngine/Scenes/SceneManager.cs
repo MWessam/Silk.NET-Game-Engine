@@ -1,3 +1,4 @@
+using System.Collections;
 using Serilog;
 
 namespace LunarEngine.Scenes;
@@ -8,7 +9,8 @@ public class SceneManager
     private const int MAX_SCENE_COUNT = 16;
     private Scene?[] _scenes = new Scene[MAX_SCENE_COUNT];
     private int _lastSceneIndex = -1;
-    
+    public Span<Scene> ActiveScenes => _scenes.AsSpan().Slice(0, _lastSceneIndex + 1);
+
     public void AddScene(Scene scene)
     {
         if (_lastSceneIndex >= 15)

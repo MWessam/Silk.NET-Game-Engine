@@ -3,7 +3,22 @@ using LunarEngine.GameObjects;
 using Serilog;
 
 namespace LunarEngine.Physics;
+public struct RigidBody2DComponent
+{
+    public float Mass;
+    public float GravityScale;
+    public bool IsInterpolating;
+    public Vector3 PreviousPosition;
+    public Vector3 CurrentPosition;
+    public Vector3 Velocity;
+    public Vector3 Acceleration;
+    public Vector3 NetForce;
+}
 
+public struct InterpolatingComponent
+{
+    
+}
 public sealed class Rigidbody2D : Component
 {
     private Transform _cachedTransform;
@@ -15,11 +30,9 @@ public sealed class Rigidbody2D : Component
     internal Vector3 PreviousPosition;
     internal Vector3 CurrentPosition;
     internal Vector3 NetForce;
-    
     public Rigidbody2D(GameObject gameObject) : base(gameObject)
     {
     }
-
     public override void Awake()
     {
         _cachedTransform = Transform;
@@ -27,7 +40,6 @@ public sealed class Rigidbody2D : Component
         CurrentPosition = _cachedTransform.Position;
         PhysicsEngine.AddPhysicsObjects(this);
     }
-
     public override void Tick(float fixedDelta)
     {
         if (!IsInterpolating)

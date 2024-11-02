@@ -20,6 +20,7 @@ public class GameEngine
     private object _physicsLock = 0;
     private Thread _physicsLoop;
     private double _accumulatedTime;
+    private PhysicsEngine _physicsEngine = new();
     public static GameEngine CreateGameEngine()
     {
         GameEngine engine = new GameEngine();
@@ -105,33 +106,15 @@ public class GameEngine
         _sceneManager.UpdateScenes(dt);
         while (_accumulatedTime >= PhysicsEngine.FIXED_TIMESTAMP)
         {
-            PhysicsEngine.TickPhysics();
+            foreach (var scene in _sceneManager.ActiveScenes)
+            {
+                _physicsEngine.TickPhysics(PhysicsEngine.FIXED_TIMESTAMP);
+            }
             _sceneManager.TickScenes(PhysicsEngine.FIXED_TIMESTAMP);
             _accumulatedTime -= PhysicsEngine.FIXED_TIMESTAMP;
         }
-        PhysicsEngine.Interpolate((float)(_accumulatedTime / PhysicsEngine.FIXED_TIMESTAMP));
-        PhysicsEngine.UpdateBufferedObjects();
+        _physicsEngine.InterpolatePhysics((float)(_accumulatedTime / PhysicsEngine.FIXED_TIMESTAMP));
     }
-
-    // private void PhysicsLoop()
-    // {
-    //     var stopwatch = new Stopwatch();
-    //     stopwatch.Start();
-    //     var currentTime = stopwatch.Elapsed.TotalSeconds;
-    //     var lastTime = currentTime;
-    //     double deltaTime = 0;
-    //     while (_isRunning)
-    //     {
-    //         currentTime = stopwatch.Elapsed.TotalSeconds;
-    //         deltaTime += currentTime - lastTime;
-    //         lastTime = currentTime;
-    //         lock (_physicsLock)
-    //         {
-    //             
-    //
-    //         }
-    //     }
-    // }
 }
 
 public static class Time

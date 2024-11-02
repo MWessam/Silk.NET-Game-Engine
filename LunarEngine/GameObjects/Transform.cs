@@ -1,8 +1,39 @@
 using System.Collections;
 using System.Numerics;
 using LunarEngine.Utilities;
+using Arch.Core;
 
-namespace LunarEngine.GameObjects;
+namespace LunarEngine.Components
+{
+    public struct Position
+    {
+        public Vector3 Value;
+    }
+
+    public struct Rotation
+    {
+        public Quaternion Value;
+    }
+
+    public struct Scale
+    {
+        public Vector3 Value;
+    }
+
+    public struct ModelMatrix
+    {
+        public Matrix4x4 Model;
+    }
+    public struct Parent
+    {
+        public Entity ParentEntity;  // Parent entity reference
+    }
+    public struct DirtyFlag
+    {
+        public bool IsDirty;  // Tracks if the entity’s transform needs updating
+    }
+    
+}
 
 public class Transform : IEnumerable<Transform>
 {

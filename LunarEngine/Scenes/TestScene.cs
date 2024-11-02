@@ -1,6 +1,6 @@
+using Arch.Core;
 using LunarEngine.Assets;
 using LunarEngine.GameObjects;
-using LunarEngine.Physics;
 
 namespace LunarEngine.Scenes;
 
@@ -8,14 +8,15 @@ public class TestScene : Scene
 {
     public TestScene()
     {
+        using var world = World.Create();
         var cameraController = GameObject.CreateGameObject($"Camera Controller",
         this
         );
         var birb = GameObject.CreateGameObject($"birb",
             this,
-            typeof(SpriteRenderer),
-            typeof(CustomBehaviour),
-            typeof(Rigidbody2D)
+            typeof(SpriteRenderer)
+            // typeof(CustomBehaviour),
+            // typeof(Rigidbody2D)
         );
         var spawnerObject = GameObject.CreateGameObject("spawner",
         this,
@@ -27,5 +28,10 @@ public class TestScene : Scene
         spriteRenderer.Sprite.ChangeShader(waterShader.Shader);
         spawnerObject.GetComponent<ObjectSpawner>().InjectObjectToSpawn(birb);
         IsActive = true;
+    }
+
+    private void ForEach(Entity entity, ref Position pos, ref Velocity velocity)
+    {
+        pos.x += velocity.dx;
     }
 }
