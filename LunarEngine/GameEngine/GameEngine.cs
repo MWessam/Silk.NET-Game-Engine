@@ -144,9 +144,8 @@ public partial class TransformSystem : ScriptableSystem
         transform.Value = Matrix4x4.CreateScale(Vector3.One) *
                           Matrix4x4.CreateFromQuaternion(Quaternion.Identity) *
                           Matrix4x4.CreateTranslation(Vector3.Zero);
-        entity.Remove<NeedsInitialization>();
     }
-[Query]
+    [Query]
     [All<Position, Transform, DirtyTransform>, None<Rotation, Scale>]
     public void UpdateTransformMatrixNoRotNoScale(Entity entity, ref Position position, ref Transform transform)
     {
@@ -215,24 +214,29 @@ public partial class SpriteRendererSystem : ScriptableSystem
         _gl = gl;
         _quad = Quad.CreateQuad(_gl);
     }
-    // public override void Awake()
-    // {
-    //     InitSpirtesQuery(World);
-    // }
+    public override void Awake()
+    {
+        InitSpirtesQuery(World);
+    }
     [Query]
     [All<SpriteRendererComponent, NeedsInitialization>]
-    public void InitSpirtes(Entity entity, ref SpriteRendererComponent spriteRendererComponent,
-        ref NeedsInitialization _)
+    public void InitSpirtes(Entity entity, ref SpriteRendererComponent spriteRendererComponent)
     {
         var sprite = Sprite.GetSpriteBuilder()
-            .WithShader(AssetManager.ShaderLibrary.DefaultAsset.Shader)
             .WithTexture(AssetManager.TextureLibrary.DefaultAsset.Texture)
             .Build();
         sprite.Initialize(_quad);
         spriteRendererComponent.Sprite = sprite;
+        var queryDescription = new QueryDescription().WithAll<ShaderComponent>();
+        object shaderHandle = null;
+        World.Query(in queryDescription, (ref ShaderComponent shaderComponent) =>
+        {
+            shaderHandle = shaderComponent.Value;
+        });
+        sprite.ChangeShader((ShaderHandle)shaderHandle);
     }
     [Query]
-    [All<SpriteRendererComponent, Transform>, None<NeedsInitialization>]
+    [All<SpriteRendererComponent, Transform>]
     public void Render([Data] in float dt, ref SpriteRendererComponent spriteRenderer, ref Transform transform)
     {
         spriteRenderer.Sprite.Render(new ()
@@ -274,15 +278,57 @@ public partial class CameraSystem : ScriptableSystem
         camera.Projection = Matrix4x4.CreateOrthographic(camera.Width, camera.Height, camera.Near, camera.Far);
     }
     [Query]
-    [All<Camera, ShaderComponent>]
-    public void UpdateShaderUniform(ref Camera camera, ref ShaderComponent shaderComponent)
+    [All<Camera>]
+    public void UpdateShaderUniform(ref Camera camera)
     {
         var viewProjection = camera.View * camera.Projection;
-        shaderComponent.ShaderHandle.SetUniform("vp", viewProjection);
-        shaderComponent.ShaderHandle.UpdateDirtyUniforms();
+        var shaderQueryDescription = new QueryDescription().WithAll<ShaderComponent>();
+        World.Query(shaderQueryDescription, (ref ShaderComponent shaderComponent) =>
+        {
+            shaderComponent.Value.SetUniform("vp", viewProjection);
+        });
     }
 }
 
+public partial class ShaderSystem : ScriptableSystem
+{
+    public ShaderSystem(World world) : base(world)
+    {
+    }
+
+    public override void Awake()
+    {
+        InitShaderQuery(World);
+    }
+
+    [Query]
+    [All<ShaderComponent, NeedsInitialization>]
+    public void InitShader(ref ShaderComponent shaderComponent)
+    {
+        shaderComponent.Value = AssetManager.ShaderLibrary.DefaultAsset.Shader;
+    }
+
+    [Query]
+    [All<ShaderComponent>]
+    public void UpdateDirtyUniforms(ref ShaderComponent shaderComponent)
+    {
+        shaderComponent.Value.UpdateDirtyUniforms();
+    }
+}
+
+public partial class InitializationSystem : ScriptableSystem
+{
+    public InitializationSystem(World world) : base(world)
+    {
+    }
+
+    [Query]
+    [All<NeedsInitialization>]
+    public void ConfirmInitializedState(Entity entity)
+    {
+        World.Remove<NeedsInitialization>(entity);
+    }
+}
 public static class Time
 {
     public static float DeltaTime { get; internal set; }

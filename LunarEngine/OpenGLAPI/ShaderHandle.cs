@@ -3,10 +3,6 @@ using Silk.NET.OpenGL;
 
 namespace LunarEngine.OpenGLAPI;
 
-public struct ShaderComponent
-{
-    public ShaderHandle ShaderHandle;
-}
 public struct ShaderHandle : IDisposable, IBindable
 {
     private uint _handle;
