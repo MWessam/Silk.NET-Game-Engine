@@ -9,13 +9,11 @@ public class Sprite : IDisposable
 {
     public TextureHandle Texture { get; private set; }
     public ShaderHandle Shader { get; private set; }
-    private Quad _quad;
     private BufferObject<float> _instanceBuffer;
     private VertexArrayObject<float, uint> _vao;
     private GL _gl;
-    public Sprite(Quad quad, TextureHandle texture, ShaderHandle shader, GL gl)
+    public Sprite(TextureHandle texture, ShaderHandle shader, GL gl)
     {
-        _quad = quad;
         Texture = texture;
         Shader = shader;
         _gl = gl;
@@ -37,11 +35,10 @@ public class Sprite : IDisposable
         _gl.DrawElements(GLEnum.Triangles, 6, GLEnum.UnsignedInt, (void*) 0);
     }
     
-    private void Initialize()
+    public void Initialize(Quad quad)
     {
         _vao = new VertexArrayObject<float, uint>(_gl);
-        
-        _quad.BindToVAO(_vao);
+        quad.BindToVAO(_vao);
         _vao.Bind();
         _instanceBuffer = new BufferObject<float>(_gl, BufferTargetARB.ArrayBuffer);
         _instanceBuffer.Bind();
@@ -76,9 +73,7 @@ public class Sprite : IDisposable
             ArgumentNullException.ThrowIfNull(gl, nameof(gl));
             ArgumentNullException.ThrowIfNull(_shader, nameof(_shader));
             ArgumentNullException.ThrowIfNull(_texture, nameof(_texture));
-            var spriteIndices = Quad.CreateQuad(gl);
-            var sprite = new Sprite(spriteIndices, _texture, _shader, gl);
-            sprite.Initialize();
+            var sprite = new Sprite(_texture, _shader, gl);
             return sprite;
         }
     }

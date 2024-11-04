@@ -3,7 +3,11 @@ using Silk.NET.OpenGL;
 
 namespace LunarEngine.OpenGLAPI;
 
-public class ShaderHandle : IDisposable, IBindable
+public struct ShaderComponent
+{
+    public ShaderHandle ShaderHandle;
+}
+public struct ShaderHandle : IDisposable, IBindable
 {
     private uint _handle;
     private GL _gl;
@@ -43,30 +47,38 @@ public class ShaderHandle : IDisposable, IBindable
     public void SetUniform(string name, int value)
     {
         //Setting a uniform on a shader using a name.
-        _dirtyUniformQueue.Enqueue(() => {_gl.Uniform1(_uniforms.GetUniform(name), value);});
+        GL? gl = _gl;
+        ShaderUniformLibrary? library = _uniforms;
+        _dirtyUniformQueue.Enqueue(() => {gl.Uniform1(library.GetUniform(name), value);});
     }
     public void SetUniform(string name, float value)
     {
-        _dirtyUniformQueue.Enqueue(() => {_gl.Uniform1(_uniforms.GetUniform(name), value);});
-
+        GL? gl = _gl;
+        ShaderUniformLibrary? library = _uniforms;
+        _dirtyUniformQueue.Enqueue(() => {gl.Uniform1(library.GetUniform(name), value);});
     }
     public void SetUniform(string name, Vector2 vec2)
     {
-        _dirtyUniformQueue.Enqueue(() => {_gl.Uniform2(_uniforms.GetUniform(name), vec2);});
+        GL? gl = _gl;
+        ShaderUniformLibrary? library = _uniforms;
+        _dirtyUniformQueue.Enqueue(() => {gl.Uniform2(library.GetUniform(name), vec2);});
     }
     public void SetUniform(string name, Vector3 vec3)
     {
-        _dirtyUniformQueue.Enqueue(() => {_gl.Uniform3(_uniforms.GetUniform(name), vec3);});
-
+        GL? gl = _gl;
+        ShaderUniformLibrary? library = _uniforms;
+        _dirtyUniformQueue.Enqueue(() => {gl.Uniform3(library.GetUniform(name), vec3);});
     }
     public void SetUniform(string name, Vector4 vec4)
     {
-        _dirtyUniformQueue.Enqueue(() => {_gl.Uniform4(_uniforms.GetUniform(name), vec4);});
-
+        GL? gl = _gl;
+        ShaderUniformLibrary? library = _uniforms;
+        _dirtyUniformQueue.Enqueue(() => {gl.Uniform4(library.GetUniform(name), vec4);});
     }
     public unsafe void SetUniform(string name, Matrix4x4 mat4)
     {
-        _dirtyUniformQueue.Enqueue(() => { _SetUniform(name, mat4); });
+        ShaderHandle handle = this;
+        _dirtyUniformQueue.Enqueue(() => { handle._SetUniform(name, mat4); });
     }
 
     private unsafe void _SetUniform(string name, Matrix4x4 mat4)

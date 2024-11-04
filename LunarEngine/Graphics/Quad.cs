@@ -3,11 +3,10 @@ using Silk.NET.OpenGL;
 
 namespace LunarEngine.Graphics;
 
-public class Quad
+public struct Quad
 {
     public BufferObject<float> QuadVbo;
     public BufferObject<uint> QuadEbo;
-    public VertexArrayObject<float, uint> Vao;
     private uint[] _indices;
     private float[] _vertices;
     private Quad(GL _gl)
@@ -35,7 +34,6 @@ public class Quad
         QuadVbo.Bind();
         QuadEbo.Bind();
         vao.AddVertexBuffer(QuadVbo);
-        vao.Unbind();
     }
     public static Quad CreateQuad(GL gl)
     {

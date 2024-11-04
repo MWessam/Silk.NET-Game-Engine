@@ -7,11 +7,11 @@ public class SceneManager
 {
     // Max scene count 16.
     private const int MAX_SCENE_COUNT = 16;
-    private Scene?[] _scenes = new Scene[MAX_SCENE_COUNT];
+    private ECSScene?[] _scenes = new ECSScene[MAX_SCENE_COUNT];
     private int _lastSceneIndex = -1;
-    public Span<Scene> ActiveScenes => _scenes.AsSpan().Slice(0, _lastSceneIndex + 1);
-
-    public void AddScene(Scene scene)
+    private int _activeSceneIndex = -1;
+    public ECSScene ActiveScenes => _scenes[_activeSceneIndex];
+    public void AddScene(ECSScene scene)
     {
         if (_lastSceneIndex >= 15)
         {
@@ -20,9 +20,9 @@ public class SceneManager
         }
         _scenes[++_lastSceneIndex] = scene;
         scene.SceneId = _lastSceneIndex;
+        _activeSceneIndex = _lastSceneIndex;
     }
-
-    public Scene? RemoveScene(int sceneId)
+    public ECSScene? RemoveScene(int sceneId)
     {
         if (sceneId < 0 || sceneId > _lastSceneIndex)
         {
@@ -34,66 +34,45 @@ public class SceneManager
         // TODO: Shift array to remove scenes and update their ids.
         return null;
     }
-    public void RemoveScene(Scene scene)
+    public void RemoveScene(ECSScene scene)
     {
         
-    }
-
-    public void OnViewportResized()
-    {
-        for (var i = 0; i <= _lastSceneIndex; i++)
-        {
-            Scene scene = _scenes[i]!;
-            if (!scene.IsActive) return;
-            scene.UpdateViewProjectionUniforms();
-        }
-    }
-
-    public void RenderScenes()
-    {
-        for (var i = 0; i <= _lastSceneIndex; i++)
-        {
-            Scene scene = _scenes[i]!;
-            if (!scene.IsActive) return;
-            scene.Render();
-        }
     }
     public void AwakeScenes()
     {
         for (var i = 0; i <= _lastSceneIndex; i++)
         {
-            Scene scene = _scenes[i]!;
+            var scene = _scenes[i]!;
             if (!scene.IsActive) return;
             
-            scene.AwakeScene();
+            scene.Awake();
         }
     }
     public void StartScenes()
     {
         for (var i = 0; i <= _lastSceneIndex; i++)
         {
-            Scene scene = _scenes[i]!;
+            var scene = _scenes[i]!;
             if (!scene.IsActive) return;
 
-            scene.StartScene();
+            scene.Start();
         }
     }
     public void UpdateScenes(double dt)
     {
         for (var i = 0; i <= _lastSceneIndex; i++)
         {
-            Scene scene = _scenes[i]!;
+            var scene = _scenes[i]!;
             if (!scene.IsActive) return;
 
-            scene.UpdateScene(dt);
+            scene.Update((float)dt);
         }
     }
-
     public void TickScenes(float fixedTimestamp)
     {
         for (var i = 0; i <= _lastSceneIndex; i++)
         {
-            Scene scene = _scenes[i]!;
+            var scene = _scenes[i]!;
             if (!scene.IsActive) return;
 
             scene.Tick(fixedTimestamp);

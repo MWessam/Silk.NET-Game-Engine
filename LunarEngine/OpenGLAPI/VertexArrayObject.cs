@@ -2,7 +2,7 @@ using Silk.NET.OpenGL;
 
 namespace LunarEngine.OpenGLAPI;
 
-public class VertexArrayObject<TVertexType, TIndexType> : IDisposable, IBindable
+public struct VertexArrayObject<TVertexType, TIndexType> : IDisposable, IBindable
     where TVertexType : unmanaged
     where TIndexType : unmanaged
 {

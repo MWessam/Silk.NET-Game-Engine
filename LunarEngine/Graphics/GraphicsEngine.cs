@@ -1,6 +1,14 @@
 using System.Drawing;
 using System.Numerics;
+using Arch.Core;
+using Arch.Core.Extensions;
+using Arch.System;
+using Arch.System.SourceGenerator;
+using LunarEngine.Assets;
+using LunarEngine.Components;
+using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
+using LunarEngine.OpenGLAPI;
 using Serilog;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -8,43 +16,40 @@ using Silk.NET.Windowing;
 
 namespace LunarEngine.Graphics;
 
-public static class GraphicsEngine
+public class GraphicsEngine
 {
-    public static event Action<IWindow>? OnWindowInitialized;
-    public static event Action<GL>? OnApiInitialized;
-    public static event Action<double>? OnGraphicsRender;
-    public static event Action<double>? OnUpdateLoopTick;
-    public static event Action<Vector2D<int>>? OnViewportResized;
-    public static event Action OnWindowClosed;
-    public static Vector2 WindowResolution => new Vector2(_windowContext.Size.X, _windowContext.Size.Y);
-    private static IWindow _windowContext;
+    public event Action<IWindow>? OnWindowInitialized;
+    public event Action<GL>? OnApiInitialized;
+    public event Action<double>? OnUpdateLoopTick;
+    public event Action<Vector2D<int>>? OnViewportResized;
+    public event Action OnWindowClosed;
+    public Vector2 WindowResolution => new Vector2(_windowContext.Size.X, _windowContext.Size.Y);
+    private IWindow _windowContext;
+    private SpriteRendererSystem _spriteRendererSystem;
     public static GL Api { get; private set; }
-
-    public static void Initialize()
+    public void Initialize()
     {
         InitializeWindow();
         InitializeEngineEvents();
     }
-    public static void Start()
+
+    public void InjectSpriteRendererSystem(SpriteRendererSystem spriteRendererSystem)
+    {
+        _spriteRendererSystem = spriteRendererSystem;
+    }
+    public void Start()
     {
         _windowContext.Run();
         _windowContext.Dispose();
     }
-    public static void Render(Span<GameObject> renderers)
-    {
-        for (int i = 0; i < renderers.Length; ++i)
-        {
-            renderers[i].Render();
-        }
-    }
-    private static void InitializeWindow()
+    private  void InitializeWindow()
     {
         WindowOptions options = WindowOptions.Default;
         options.Size = new Vector2D<int>(800, 600);
         options.Title = "Engine";
         _windowContext = Window.Create(options);
     }
-    private static void InitializeEngineEvents()
+    private  void InitializeEngineEvents()
     {
         _windowContext.FramebufferResize += OnViewportResize;
         _windowContext.Load += OnWindowLoad;
@@ -53,12 +58,12 @@ public static class GraphicsEngine
         _windowContext.Closing += OnClose;
     }
 
-    private static void OnClose()
+    private  void OnClose()
     {
         OnWindowClosed?.Invoke();
     }
 
-    private static void OnWindowLoad()
+    private  void OnWindowLoad()
     {
         try
         {
@@ -66,7 +71,6 @@ public static class GraphicsEngine
             Api.ClearColor(Color.Black);
             OnApiInitialized?.Invoke(Api);
             OnWindowInitialized?.Invoke(_windowContext);
-
         }
         catch (Exception e)
         {
@@ -74,19 +78,24 @@ public static class GraphicsEngine
             throw;
         }
     }
-    private static void OnUpdate(double dt)
+    private  void OnUpdate(double dt)
     {
         OnUpdateLoopTick?.Invoke(dt);
     }
-    private static void OnRender(double deltaTime = 0)
+    private void OnRender(double deltaTime = 0)
     {
         Api.Clear(ClearBufferMask.ColorBufferBit);
+        _spriteRendererSystem.Update((float)deltaTime);
         _windowContext.Title = $"Lunar Engine FPS: {(int)(1 / deltaTime)}";
-        OnGraphicsRender?.Invoke(deltaTime);
     }
-    private static void OnViewportResize(Vector2D<int> viewport)
+    private  void OnViewportResize(Vector2D<int> viewport)
     {
         Api.Viewport(viewport);
         OnViewportResized?.Invoke(viewport);
     }
+}
+
+
+public struct NeedsInitialization
+{
 }

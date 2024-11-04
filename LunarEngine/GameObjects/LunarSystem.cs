@@ -21,10 +21,6 @@ public partial class ScriptableSystem : BaseSystem<World, float>
     {
         
     }
-    public override void Update(in float t)
-    {
-        
-    }
     public virtual void Tick(float dt)
     {
         

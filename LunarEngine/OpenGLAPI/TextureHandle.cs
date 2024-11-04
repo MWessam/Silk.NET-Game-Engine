@@ -3,7 +3,7 @@ using StbImageSharp;
 
 namespace LunarEngine.OpenGLAPI;
 
-public class TextureHandle : IDisposable
+public struct TextureHandle : IDisposable
     {
         private uint _handle;
         private GL _gl;

@@ -8,7 +8,7 @@ internal interface IBindable
     void Unbind();
 }
 
-public class BufferObject<TDataType> : IDisposable, IBindable
+public struct BufferObject<TDataType> : IDisposable, IBindable
     where TDataType : unmanaged
 {
     private uint _handle;
