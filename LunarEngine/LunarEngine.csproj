@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <PackageReference Include="Arch" Version="1.2.8" />
+      <PackageReference Include="Arch.EventBus" Version="1.0.2" />
       <PackageReference Include="Arch.System" Version="1.0.5" />
       <PackageReference Include="Arch.System.SourceGenerator" Version="1.2.1" />
       <PackageReference Include="Hexa.NET.ImGui" Version="2.1.10" />

@@ -29,13 +29,5 @@ public partial class ScriptableSystem : BaseSystem<World, float>
     public sealed override void Initialize()
     {
     }
-
-    public sealed override void AfterUpdate(in float t)
-    {
-    }
-
-    public sealed override void BeforeUpdate(in float t)
-    {
-    }
 }
 

@@ -53,8 +53,8 @@ public class GraphicsEngine
     {
         _windowContext.FramebufferResize += OnViewportResize;
         _windowContext.Load += OnWindowLoad;
-        _windowContext.Render += OnRender;
         _windowContext.Update += OnUpdate;
+        _windowContext.Render += OnRender;
         _windowContext.Closing += OnClose;
     }
 
@@ -85,7 +85,7 @@ public class GraphicsEngine
     private void OnRender(double deltaTime = 0)
     {
         Api.Clear(ClearBufferMask.ColorBufferBit);
-        _spriteRendererSystem.Update((float)deltaTime);
+        _spriteRendererSystem.Render((float)deltaTime);
         _windowContext.Title = $"Lunar Engine FPS: {(int)(1 / deltaTime)}";
     }
     private  void OnViewportResize(Vector2D<int> viewport)

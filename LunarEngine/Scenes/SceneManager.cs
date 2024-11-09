@@ -65,7 +65,7 @@ public class SceneManager
             var scene = _scenes[i]!;
             if (!scene.IsActive) return;
 
-            scene.Update((float)dt);
+            // scene.Update((float)dt);
         }
     }
     public void TickScenes(float fixedTimestamp)

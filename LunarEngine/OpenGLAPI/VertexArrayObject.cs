@@ -17,7 +17,7 @@ public struct VertexArrayObject<TVertexType, TIndexType> : IDisposable, IBindabl
         _handle = _gl.GenVertexArray();
     }
 
-    public unsafe void AddVertexBuffer(BufferObject<TVertexType> bufferObject)
+    public unsafe void AddVertexBuffer(ref BufferObject<TVertexType> bufferObject)
     {
         var elements = bufferObject.Layout.Elements;
         uint offset = 0;

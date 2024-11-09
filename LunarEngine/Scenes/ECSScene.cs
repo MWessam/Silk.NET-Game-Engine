@@ -6,6 +6,7 @@ using LunarEngine.Components;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
+using World = Arch.Core.World;
 
 namespace LunarEngine.Scenes;
 
@@ -24,8 +25,9 @@ public class ECSScene
     {
         World = World.Create();
         _camera = World.Create<Camera, Transform, Position, NeedsInitialization>();
-        World.Create<ShaderComponent, TextureComponent, NeedsInitialization>();
+        var shader = World.Create<TagComponent, ShaderComponent, NeedsInitialization>(new TagComponent("default"));
         _birb = World.Create<SpriteRendererComponent, Transform, Position, NeedsInitialization>();
+        
         TransformSystem = new TransformSystem(World);
         SpriteRendererSystem = new SpriteRendererSystem(GraphicsEngine.Api, World);
         CameraSystem = new CameraSystem(World);
@@ -36,9 +38,9 @@ public class ECSScene
     public int SceneId { get; set; }
     public void Awake()
     {
-        _shaderSystem.Awake();
         TransformSystem.Awake();
         SpriteRendererSystem.Awake();
+        _shaderSystem.Awake();
         CameraSystem.Awake();
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {
@@ -61,12 +63,13 @@ public class ECSScene
     {
         TransformSystem.Update(dt);
         CameraSystem.Update(dt);
+        _shaderSystem.Update(dt);
+        SpriteRendererSystem.Update(dt);
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {
             system.Update(dt);
         }
         _initializationSystem.Update(dt);
-        _shaderSystem.Update(dt);
     }
 
     public void Tick(float dt)

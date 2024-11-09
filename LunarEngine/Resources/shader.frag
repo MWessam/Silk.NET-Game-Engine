@@ -11,5 +11,4 @@ void main()
 //    FragColor = pow(texColor * fCol, vec4(10));
     vec4 texColor = texture(uTexture, fUv);
     FragColor = texColor * fCol;
-    
 }

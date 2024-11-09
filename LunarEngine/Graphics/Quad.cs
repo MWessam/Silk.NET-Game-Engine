@@ -28,12 +28,13 @@ public struct Quad
         ];
     }
 
-    public void BindToVAO(VertexArrayObject<float, uint> vao)
+    public void BindToVAO(ref VertexArrayObject<float, uint> vao)
     {
         vao.Bind();
         QuadVbo.Bind();
         QuadEbo.Bind();
-        vao.AddVertexBuffer(QuadVbo);
+        vao.AddVertexBuffer(ref QuadVbo);
+        vao.Unbind();
     }
     public static Quad CreateQuad(GL gl)
     {
