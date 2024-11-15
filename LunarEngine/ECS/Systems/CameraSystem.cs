@@ -37,7 +37,7 @@ public partial class CameraSystem : ScriptableSystem
     public void UpdateViewProjection(ref Camera camera, ref Position position, ref Transform transform)
     {
         var forward = new Vector3(transform.Value.M31, transform.Value.M32, transform.Value.M33);
-        var up = new Vector3(transform.Value.M11, transform.Value.M12, transform.Value.M13);
+        var up = new Vector3(transform.Value.M21, transform.Value.M22, transform.Value.M23);
         camera.View = Matrix4x4.CreateLookAt(position.Value, position.Value + forward, up);
         camera.Projection = Matrix4x4.CreateOrthographic(camera.Width, camera.Height, camera.Near, camera.Far);
     }

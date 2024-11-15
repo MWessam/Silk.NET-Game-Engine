@@ -1,12 +1,20 @@
+using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 
 namespace LunarEngine.GameObjects;
 
-public partial class ScriptableSystem : BaseSystem<World, float>
+public partial class ScriptableSystem : BaseSystem<World, double>
 {
+    protected CommandBuffer CommandBuffer;
     public ScriptableSystem(World world) : base(world)
     {
+        CommandBuffer = new CommandBuffer();
+    }
+
+    public void SetCommandBuffer(CommandBuffer commandBuffer)
+    {
+        CommandBuffer = commandBuffer;
     }
 
     public virtual void Awake()
@@ -21,13 +29,15 @@ public partial class ScriptableSystem : BaseSystem<World, float>
     {
         
     }
-    public virtual void Tick(float dt)
+    public virtual void Tick(double dt)
     {
         
     }
+    
 
     public sealed override void Initialize()
     {
     }
+    
 }
 

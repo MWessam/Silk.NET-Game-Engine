@@ -4,7 +4,7 @@ using LunarEngine.GameObjects;
 using Serilog;
 
 namespace LunarEngine.Physics;
-public struct RigidBody2DComponent
+public struct RigidBody2D
 {
     public float Mass;
     public float GravityScale;
@@ -15,6 +15,9 @@ public struct RigidBody2DComponent
     public Vector3 Acceleration;
     public Vector3 NetForce;
 }
-public struct InterpolatingComponent
+public struct Interpolating
+{
+}
+public struct NeedsPhysicsInitialization
 {
 }

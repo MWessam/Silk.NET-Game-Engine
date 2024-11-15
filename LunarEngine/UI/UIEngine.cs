@@ -1,79 +1,29 @@
+using ImGuiNET;
 using LunarEngine.Graphics;
-using Hexa.NET.ImGui;
-using Hexa.NET.ImGuizmo;
+using Silk.NET.Input;
 using Silk.NET.Maths;
+using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 
 namespace LunarEngine.UI;
 
-public class UIEngine
+public static class UIEngine
 {
-    private ImGuiContextPtr _context;
-    private IView _view;
-    private bool _frameBegun;
-    private int _windowWidth;
-    private int _windowHeight;
+    private static ImGuiController _imGuiController;
+    public static void Initialize(IWindow window, GL gl, IInputContext inputContext)
+    {
+        _imGuiController = new ImGuiController(gl, window, inputContext);
 
-    public void InitializeIMGui()
-    {
-        _context = ImGui.CreateContext();
-        ImGui.SetCurrentContext(_context);
-        ImGui.StyleColorsDark();
-        
-        ImGuizmo.SetImGuiContext(_context);
-        ImGuiIOPtr io = ImGui.GetIO();
-        
-        io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
-        
-        // CreateDeviceResources();
-        // SetPerFrameImGuiData(1f / 60f);
-        BeginFrame();
-        
-    }
-    public void MakeCurrent()
-    {
-        ImGui.SetCurrentContext(_context);
-        ImGuizmo.SetImGuiContext(_context);
     }
 
-    public void Render()
+    public static void Update(float dt)
     {
-        if (_frameBegun)
-        {
-            ImGuiContextPtr currentContext = ImGui.GetCurrentContext();
-
-            if (currentContext != _context)
-            {
-                ImGui.SetCurrentContext(_context);
-                ImGuizmo.SetImGuiContext(_context);
-            }
-
-            _frameBegun = false;
-
-            ImGui.Render();
-            // RenderImDrawData(ImGui.GetDrawData());
-
-            if (currentContext != _context)
-            {
-                ImGui.SetCurrentContext(currentContext);
-                ImGuizmo.SetImGuiContext(currentContext);
-            }
-        }
-    }
-    private void BeginFrame()
-    {
-        ImGui.NewFrame();
-        ImGuizmo.BeginFrame();
-
-        _frameBegun = true;
-        // _keyboard = _input.Keyboards[0];
-
-        // _keyboard.KeyChar += OnKeyChar;
+        _imGuiController.Update(dt);
     }
 
-    private void OnWindowResized(Vector2D<int> viewport)
+    public static void Render()
     {
-        _windowWidth = viewport.X;
-        _windowHeight = viewport.Y;
+        _imGuiController.Render();
     }
 }

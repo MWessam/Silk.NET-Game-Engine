@@ -3,13 +3,6 @@ using LunarEngine.Graphics;
 using Serilog;
 
 namespace LunarEngine.GameObjects;
-
-public struct View
-{
-}
-public struct Projection
-{
-}
 public struct Camera
 {
     public Matrix4x4 View;

@@ -4,7 +4,6 @@ using Silk.NET.Input;
 
 namespace LunarEngine.InputEngine;
 
-
 public class Input
 {
     private Dictionary<Key, Action<Key>> _onKeyPressedMap = new();

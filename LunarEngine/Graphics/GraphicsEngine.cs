@@ -18,24 +18,19 @@ namespace LunarEngine.Graphics;
 
 public class GraphicsEngine
 {
-    public event Action<IWindow>? OnWindowInitialized;
+    public event Action<IWindow>? OnWindowLoad;
     public event Action<GL>? OnApiInitialized;
     public event Action<double>? OnUpdateLoopTick;
+    public event Action<double>? OnRenderLoopTick; 
     public event Action<Vector2D<int>>? OnViewportResized;
     public event Action OnWindowClosed;
     public Vector2 WindowResolution => new Vector2(_windowContext.Size.X, _windowContext.Size.Y);
     private IWindow _windowContext;
-    private SpriteRendererSystem _spriteRendererSystem;
     public static GL Api { get; private set; }
     public void Initialize()
     {
         InitializeWindow();
         InitializeEngineEvents();
-    }
-
-    public void InjectSpriteRendererSystem(SpriteRendererSystem spriteRendererSystem)
-    {
-        _spriteRendererSystem = spriteRendererSystem;
     }
     public void Start()
     {
@@ -52,7 +47,7 @@ public class GraphicsEngine
     private  void InitializeEngineEvents()
     {
         _windowContext.FramebufferResize += OnViewportResize;
-        _windowContext.Load += OnWindowLoad;
+        _windowContext.Load += _OnWindowLoad;
         _windowContext.Update += OnUpdate;
         _windowContext.Render += OnRender;
         _windowContext.Closing += OnClose;
@@ -63,14 +58,14 @@ public class GraphicsEngine
         OnWindowClosed?.Invoke();
     }
 
-    private  void OnWindowLoad()
+    private void _OnWindowLoad()
     {
         try
         {
             Api = GL.GetApi(_windowContext);
             Api.ClearColor(Color.Black);
             OnApiInitialized?.Invoke(Api);
-            OnWindowInitialized?.Invoke(_windowContext);
+            OnWindowLoad?.Invoke(_windowContext);
         }
         catch (Exception e)
         {
@@ -78,24 +73,19 @@ public class GraphicsEngine
             throw;
         }
     }
-    private  void OnUpdate(double dt)
+    private void OnUpdate(double dt)
     {
         OnUpdateLoopTick?.Invoke(dt);
     }
     private void OnRender(double deltaTime = 0)
     {
         Api.Clear(ClearBufferMask.ColorBufferBit);
-        _spriteRendererSystem.Render((float)deltaTime);
         _windowContext.Title = $"Lunar Engine FPS: {(int)(1 / deltaTime)}";
+        OnRenderLoopTick?.Invoke(deltaTime);
     }
     private  void OnViewportResize(Vector2D<int> viewport)
     {
         Api.Viewport(viewport);
         OnViewportResized?.Invoke(viewport);
     }
-}
-
-
-public struct NeedsInitialization
-{
 }

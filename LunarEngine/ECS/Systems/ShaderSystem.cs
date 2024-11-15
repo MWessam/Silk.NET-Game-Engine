@@ -20,17 +20,17 @@ public partial class ShaderSystem : ScriptableSystem
         InitShaderQuery(World);
     }
     [Query]
-    [All<ShaderComponent, TagComponent, NeedsInitialization>]
-    public void InitShader(ref ShaderComponent shaderComponent, ref TagComponent tagComponent)
+    [All<Shader, TagComponent, NeedsInitialization>]
+    public void InitShader(ref Shader shader, ref TagComponent tagComponent)
     {
-        shaderComponent.Value = AssetManager.ShaderLibrary.DefaultAsset.Shader;
+        shader.Value = AssetManager.ShaderLibrary.DefaultAsset.Shader;
     }
     [Event(order:0)]
     public void OnViewProjectionUpdated(ViewProjectionEvent evt)
     {
-        var shaderQueryDescription = new QueryDescription().WithAll<ShaderComponent>();
+        var shaderQueryDescription = new QueryDescription().WithAll<Shader>();
         ViewProjectionEvent @event = evt;
-        World.Query(shaderQueryDescription, (ref ShaderComponent shaderComponent) =>
+        World.Query(shaderQueryDescription, (ref Shader shaderComponent) =>
         {
             shaderComponent.Value.SetUniform("vp", @event.ViewProjection);
         });
@@ -38,9 +38,9 @@ public partial class ShaderSystem : ScriptableSystem
     [Event(order:0)]
     public void AssignShader(AssignShaderEvent evt)
     {
-        var shaderQueryDescription = new QueryDescription().WithAll<ShaderComponent, TagComponent>();
+        var shaderQueryDescription = new QueryDescription().WithAll<Shader, TagComponent>();
         AssignShaderEvent evtCopy = evt;
-        World.Query(shaderQueryDescription, (ref ShaderComponent shaderComponent, ref TagComponent tagComponent) =>
+        World.Query(shaderQueryDescription, (ref Shader shaderComponent, ref TagComponent tagComponent) =>
         {
             if (tagComponent.Name == evtCopy.ShaderName)
             {
@@ -49,10 +49,10 @@ public partial class ShaderSystem : ScriptableSystem
         });
     }
     [Query]
-    [All<ShaderComponent>]
-    public void UpdateDirtyUniforms(ref ShaderComponent shaderComponent)
+    [All<Shader>]
+    public void UpdateDirtyUniforms(ref Shader shader)
     {
-        shaderComponent.Value.UpdateDirtyUniforms();
+        shader.Value.UpdateDirtyUniforms();
     }
 }
 public struct AssignShaderEvent

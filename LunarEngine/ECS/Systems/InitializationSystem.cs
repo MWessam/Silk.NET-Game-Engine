@@ -11,7 +11,10 @@ public partial class InitializationSystem : ScriptableSystem
     public InitializationSystem(World world) : base(world)
     {
     }
-
+    public override void Start()
+    {
+        ConfirmInitializedStateQuery(World);
+    }
     [Query]
     [All<NeedsInitialization>]
     public void ConfirmInitializedState(Entity entity)

@@ -5,10 +5,12 @@ using LunarEngine.Graphics;
 using LunarEngine.InputEngine;
 using LunarEngine.Physics;
 using LunarEngine.Scenes;
+using LunarEngine.UI;
 using Serilog;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 
 namespace LunarEngine.GameEngine;
@@ -18,16 +20,9 @@ public class GameEngine
     private Input _input;
     private SceneManager _sceneManager;
     private bool _isRunning;
-    private object _physicsLock = 0;
-    private Thread _physicsLoop;
     private double _accumulatedTime;
-    private PhysicsEngine _physicsEngine = new();
     private GraphicsEngine _graphicsEngine;
-
-
-    private List<ScriptableSystem> _systems;
-
-    
+    private ImGuiController _imGuiController;
     public static GameEngine CreateGameEngine()
     {
         GameEngine engine = new GameEngine();
@@ -55,8 +50,9 @@ public class GameEngine
         _graphicsEngine = new GraphicsEngine();
         _graphicsEngine.Initialize();
         _graphicsEngine.OnUpdateLoopTick += GameLoop;
+        _graphicsEngine.OnRenderLoopTick += RenderLoop;
         _graphicsEngine.OnApiInitialized += OnApiInitialized;
-        _graphicsEngine.OnWindowInitialized += OnEngineStart;
+        _graphicsEngine.OnWindowLoad += OnEngineStart;
         _graphicsEngine.OnViewportResized += OnViewportResized;
         _graphicsEngine.OnWindowClosed += OnClose;
     }
@@ -74,12 +70,13 @@ public class GameEngine
     {
         _isRunning = true;
         IInputContext context = window.CreateInput();
+        // Assign keyboard events.
         foreach (var keyboard in context.Keyboards)
         {
             keyboard.KeyDown += _input.OnKeyDown;
             keyboard.KeyUp += _input.OnKeyUp;
         }
-
+        // Assign mouse events
         foreach (var mouse in context.Mice)
         {
             mouse.MouseDown += _input.OnMouseDown;
@@ -87,12 +84,10 @@ public class GameEngine
             mouse.MouseMove += _input.OnMouseMove;
             mouse.Scroll += _input.OnMouseScroll;
         }
-
+        UIEngine.Initialize(window, GraphicsEngine.Api, context);
         var activeSceneWorld = _sceneManager.ActiveScenes.World;
         _sceneManager.AwakeScenes();
         _sceneManager.StartScenes();
-        _graphicsEngine.InjectSpriteRendererSystem(_sceneManager.ActiveScenes.SpriteRendererSystem);
-        _physicsEngine.InitializePhysicsSystem(activeSceneWorld);
     }
 
     private void OnApiInitialized(GL gl)
@@ -102,27 +97,36 @@ public class GameEngine
     }
     private void LoadScene()
     {
-        var scene = new ECSScene();
+        var scene = new TestEcsScene();
         _sceneManager.AddScene(scene);
         
     }
     private void GameLoop(double dt)
     {
-        Time.DeltaTime = (float)dt;
+        Time.DeltaTime = dt;
         _accumulatedTime += dt;
         _input.Update(dt);
-        _sceneManager.ActiveScenes.Update((float)dt);
+        _sceneManager.ActiveScenes.Update(dt);
         while (_accumulatedTime >= PhysicsEngine.FIXED_TIMESTAMP)
         {
-            _physicsEngine.TickPhysics(PhysicsEngine.FIXED_TIMESTAMP);
+            PhysicsEngine.TickPhysics(PhysicsEngine.FIXED_TIMESTAMP);
             _sceneManager.TickScenes(PhysicsEngine.FIXED_TIMESTAMP);
             _accumulatedTime -= PhysicsEngine.FIXED_TIMESTAMP;
         }
-        _physicsEngine.InterpolatePhysics((float)(_accumulatedTime / PhysicsEngine.FIXED_TIMESTAMP));
+
+        PhysicsEngine.InterpolatedTime = (_accumulatedTime / PhysicsEngine.FIXED_TIMESTAMP);
+        _sceneManager.ActiveScenes.AfterUpdate();
+    }
+
+    private void RenderLoop(double dt)
+    {
+        UIEngine.Update((float)dt);
+        _sceneManager.ActiveScenes.RenderScenes(dt);
+        UIEngine.Render();
     }
 }
 
 public static class Time
 {
-    public static float DeltaTime { get; internal set; }
+    public static double DeltaTime { get; internal set; }
 }

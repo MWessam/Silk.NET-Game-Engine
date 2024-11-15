@@ -17,6 +17,7 @@ public struct Scale
 }
 public struct Transform
 {
+    public int Id;
     public Matrix4x4 Value;
 }
 public struct Parent

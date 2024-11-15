@@ -4,24 +4,16 @@ using LunarEngine.Graphics;
 using LunarEngine.OpenGLAPI;
 
 namespace LunarEngine.GameObjects;
-
-public interface IRenderer
-{
-    void Render();
-}
-
-public struct SpriteRendererComponent
+public struct SpriteRenderer
 {
     public Sprite Sprite;
     public Vector4 Color;
 }
-
-public struct ShaderComponent
+public struct Shader
 {
     public ShaderHandle Value;
 }
-
-public struct TextureComponent
+public struct Texture
 {
     public TextureHandle Value;
 }

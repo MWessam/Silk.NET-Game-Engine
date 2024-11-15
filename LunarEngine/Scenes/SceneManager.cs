@@ -68,7 +68,7 @@ public class SceneManager
             // scene.Update((float)dt);
         }
     }
-    public void TickScenes(float fixedTimestamp)
+    public void TickScenes(double fixedTimestamp)
     {
         for (var i = 0; i <= _lastSceneIndex; i++)
         {
