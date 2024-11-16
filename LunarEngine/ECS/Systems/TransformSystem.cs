@@ -38,13 +38,13 @@ public partial class TransformSystem : ScriptableSystem
                           Matrix4x4.CreateTranslation(Vector3.Zero);
     }
     [Query]
-    [All<Position, Transform, DirtyTransform>, None<Rotation, Scale, Camera>]
+    [All<Position, Transform>, None<Rotation, Scale, Camera>]
     public void UpdateTransformMatrixNoRotNoScale(Entity entity, ref Position position, ref Transform transform)
     {
         transform.Value = Matrix4x4.CreateScale(Vector3.One) *
                           Matrix4x4.CreateFromQuaternion(Quaternion.Identity) *
                           Matrix4x4.CreateTranslation(position.Value);
-        CommandBuffer.Remove<DirtyTransform>(entity);
+        // CommandBuffer.Remove<DirtyTransform>(entity);
     }
     [Query]
     [All<Rotation, Transform, DirtyTransform>, None<Position, Scale>]

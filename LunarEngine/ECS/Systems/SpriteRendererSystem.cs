@@ -54,7 +54,6 @@ public partial class SpriteRendererSystem : ScriptableSystem
     [All<SpriteRenderer, Transform>]
     public void Render([Data] in double dt, Entity entity, ref SpriteRenderer spriteRenderer, ref Transform transform)
     {
-        Log.Debug(transform.Value.Translation.ToString());
         spriteRenderer.Sprite.Render(new ()
         {
             Color = spriteRenderer.Color,

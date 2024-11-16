@@ -20,6 +20,6 @@ public class TestEcsScene : ECSScene
         {
             Value = "Birb"
         });
-        World.Add<NeedsPhysicsInitialization, RigidBody2D>(birb);
+        // World.Add<NeedsPhysicsInitialization, RigidBody2D>(birb);
     }
 }
