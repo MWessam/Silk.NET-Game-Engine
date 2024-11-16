@@ -33,7 +33,7 @@ public partial class PhysicsSystem : ScriptableSystem
     public void InitializePhysics(ref RigidBody2D rb)
     {
         rb.Mass = 1.0f;
-        rb.GravityScale = 1.0f;
+        rb.GravityScale = 0.4f;
     }
     [Query]
     [All<RigidBody2D, Position, Interpolating>]

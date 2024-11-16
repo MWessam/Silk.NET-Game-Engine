@@ -3,7 +3,6 @@ using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using LunarEngine.Components;
 using LunarEngine.ECS.Systems;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
@@ -26,6 +25,8 @@ public class ECSScene
     private readonly PhysicsSystem _physicsSystem;
     private readonly PhysicsInitializationSystem _physicsInitializationSystem;
     private readonly InputSystem _inputSystem;
+    private readonly HierarchySystem _hierarchySystem;
+    private readonly InspectorSystem _inspectorSystem;
     #endregion
     public CommandBuffer CommandBuffer = new CommandBuffer();
     public ECSScene()
@@ -39,6 +40,8 @@ public class ECSScene
         _physicsSystem = new PhysicsSystem(World);
         _physicsInitializationSystem = new PhysicsInitializationSystem(World);
         _inputSystem = new InputSystem(World);
+        _hierarchySystem = new HierarchySystem(World);
+        _inspectorSystem = new InspectorSystem(World);
     }
     public bool IsActive = true;
 
@@ -52,6 +55,7 @@ public class ECSScene
         _physicsSystem.Awake();
         _physicsInitializationSystem.Awake();
         _inputSystem.Awake();
+        _hierarchySystem.Awake();
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {
             system.Awake();
@@ -66,6 +70,7 @@ public class ECSScene
         _physicsSystem.Start();
         _physicsInitializationSystem.Start();
         _inputSystem.Start();
+        _hierarchySystem.Start();
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {
             system.Start();
@@ -75,6 +80,8 @@ public class ECSScene
 
     public void Update(double dt)
     {
+        _hierarchySystem.Update(dt);
+        _inspectorSystem.Update(dt);
         _physicsSystem.Update(dt);
         _transformSystem.Update(dt);
         _cameraSystem.Update(dt);
@@ -104,16 +111,5 @@ public class ECSScene
     public void RenderScenes(double dt)
     {
         _spriteRendererSystem.Render(dt);
-    }
-}
-
-public class TestEcsScene : ECSScene
-{
-    public TestEcsScene()
-    {
-        World.Create<Camera, Transform, Position, NeedsInitialization>();
-        World.Create<TagComponent, Shader, NeedsInitialization>(new TagComponent("default"));
-        var birb = World.Create<SpriteRenderer, Transform, Position, NeedsInitialization>();
-        World.Add<NeedsPhysicsInitialization, RigidBody2D>(birb);
     }
 }

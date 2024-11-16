@@ -103,6 +103,7 @@ public class GameEngine
     }
     private void GameLoop(double dt)
     {
+        UIEngine.Update((float)dt);
         Time.DeltaTime = dt;
         _accumulatedTime += dt;
         _input.Update(dt);
@@ -120,7 +121,6 @@ public class GameEngine
 
     private void RenderLoop(double dt)
     {
-        UIEngine.Update((float)dt);
         _sceneManager.ActiveScenes.RenderScenes(dt);
         UIEngine.Render();
     }

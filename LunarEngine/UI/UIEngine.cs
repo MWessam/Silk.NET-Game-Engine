@@ -10,20 +10,21 @@ namespace LunarEngine.UI;
 
 public static class UIEngine
 {
-    private static ImGuiController _imGuiController;
+    public static ImGuiController ImGUIController { get; private set; }
+
     public static void Initialize(IWindow window, GL gl, IInputContext inputContext)
     {
-        _imGuiController = new ImGuiController(gl, window, inputContext);
+        ImGUIController = new ImGuiController(gl, window, inputContext);
 
     }
 
     public static void Update(float dt)
     {
-        _imGuiController.Update(dt);
+        ImGUIController.Update(dt);
     }
 
     public static void Render()
     {
-        _imGuiController.Render();
+        ImGUIController.Render();
     }
 }
