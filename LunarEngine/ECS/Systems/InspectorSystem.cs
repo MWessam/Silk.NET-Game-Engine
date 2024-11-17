@@ -11,7 +11,10 @@ namespace LunarEngine.ECS.Systems;
 
 public interface IComponentInspector
 {
-    void OnDrawInspector(object component);
+}
+public interface IComponentInspector<T> : IComponentInspector where T : struct
+{
+    void OnDrawInspector(T component);
 }
 public partial class InspectorSystem : ScriptableSystem
 {
@@ -67,12 +70,32 @@ public partial class InspectorSystem : ScriptableSystem
                 Log.Error($"Couldn't find a valid component inspector for component {componentType.Name} found in entity {_entity.Id}");
                 continue;
             }
+            
+            // Check if component inspector is the valid generic one.
+            var inspectorType = componentInspector.GetType();
+            var expectedInspectorType = typeof(IComponentInspector<>).MakeGenericType(componentType);
+
+            if (!expectedInspectorType.IsAssignableFrom(inspectorType))
+            {
+                Log.Error($"Component inspector type mismatch: {inspectorType.Name} does not match expected {expectedInspectorType.Name} for component {componentType.Name}");
+                continue;
+            }
+            
+            // Get draw inspector method.
+            var methodName = "OnDrawInspector";
+            var drawMethod = expectedInspectorType.GetMethod(methodName);
+            if (drawMethod is null)
+            {
+                Log.Error($"For some unholy reason the method {methodName} is not found in type {expectedInspectorType.Name}...");
+                return;
+            }
+            
             // Store draw action as an action
             var drawAction = () =>
             {
                 ImGui.Text(componentType.Name);
                 ImGui.Separator();
-                componentInspector.OnDrawInspector(component);
+                drawMethod.Invoke(componentInspector, [component]);
                 World.Set(_entity, component);
                 ImGui.Separator();
             };
