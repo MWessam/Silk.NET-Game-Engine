@@ -20,6 +20,10 @@ public class TestEcsScene : ECSScene
         {
             Value = "Birb"
         });
+        var birb2 = World.Create<Name, SpriteRenderer, Transform, Position, NeedsInitialization>(new Name()
+        {
+            Value = "Birb2"
+        });
         // World.Add<NeedsPhysicsInitialization, RigidBody2D>(birb);
     }
 }
