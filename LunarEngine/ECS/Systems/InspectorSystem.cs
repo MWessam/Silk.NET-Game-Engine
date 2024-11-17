@@ -3,6 +3,7 @@ using Arch.Bus;
 using Arch.Core;
 using Arch.Core.Utils;
 using ImGuiNET;
+using LunarEngine.ECS.Components;
 using LunarEngine.GameObjects;
 using Serilog;
 
@@ -44,7 +45,13 @@ public partial class InspectorSystem : ScriptableSystem
     {
         if (!_isOpen) return;
         ImGui.Begin("Inspector");
+        
+        // Get a copy of all components of entity
         var components = World.GetAllComponents(_entity);
+        
+        // Store all draw actions such that I can prioritize name component.
+        LinkedList<Action> inspectorDrawCommandQueue = new();
+        
         foreach (var component in components)
         {
             if (component is null)
@@ -52,66 +59,33 @@ public partial class InspectorSystem : ScriptableSystem
                 Log.Error($"Null component found in entity{_entity.Id}");
                 continue;
             }
-            ImGui.Text(component.GetType().Name);
-            ImGui.Separator();
 
-            // Get component fields from the real type for serialization.
-            var type = component.GetType();
-            var fields = type.GetFields();
-            foreach (var field in fields)
+            // Get component type and its corresponding inspector.
+            var componentType = component.GetType();
+            if (!_componentInspectors.TryGetValue(componentType, out var componentInspector))
             {
-                // Get field name and value.
-                var fieldName = field.Name;
-                var fieldValue = field.GetValue(component);
-                
-                if (field.FieldType == typeof(int))
-                {
-                    int value = (int)fieldValue;
-                    if (ImGui.InputInt(fieldName, ref value))
-                    {
-                        field.SetValue(component, value);
-                    }
-                }
-                else if (field.FieldType == typeof(float))
-                {
-                    float value = (float)fieldValue;
-                    if (ImGui.InputFloat(fieldName, ref value))
-                    {
-                        field.SetValue(component, value);
-                    }
-                }
-                else if (field.FieldType == typeof(string))
-                {
-                    string value = fieldValue as string ?? string.Empty;
-                    if (ImGui.InputText(fieldName, ref value, 100))
-                    {
-                        field.SetValue(component, value);
-                    }
-                }
-                else if (field.FieldType == typeof(Vector3))
-                {
-                    Vector3 value = fieldValue is Vector3 ? (Vector3)fieldValue : default;
-                    if (ImGui.InputFloat3(fieldName, ref value))
-                    {
-                        field.SetValue(component, value);
-                    }
-                }
-                else if (field.FieldType == typeof(bool))
-                {
-                    bool value = (bool)fieldValue;
-                    if (ImGui.Checkbox(fieldName, ref value))
-                    {
-                        field.SetValue(component, value);
-                    }
-                }
-                else
-                {
-                    ImGui.Text($"{fieldName}: (Unsupported type)");
-                }
+                Log.Error($"Couldn't find a valid component inspector for component {componentType.Name} found in entity {_entity.Id}");
+                continue;
             }
-            World.Set(_entity, component);
-            ImGui.Separator();
-            
+            // Store draw action as an action
+            var drawAction = () =>
+            {
+                ImGui.Text(componentType.Name);
+                ImGui.Separator();
+                componentInspector.OnDrawInspector(component);
+                World.Set(_entity, component);
+                ImGui.Separator();
+            };
+            // Prioritize name component above all else.
+            if (component is Name)
+            {
+                inspectorDrawCommandQueue.AddFirst(drawAction);
+            }
+            else
+            {
+                // Add rest of components to the end.
+                inspectorDrawCommandQueue.AddLast(drawAction);
+            }
         }
         ImGui.End();
     }
