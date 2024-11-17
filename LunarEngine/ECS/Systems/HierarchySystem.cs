@@ -62,6 +62,17 @@ public partial class HierarchySystem : ScriptableSystem
             });
         }
     }
+    [Query]
+    private void UpdateHierarchyNoName(Entity entity)
+    {
+        if (ImGui.Selectable(entity.WorldId.ToString()))
+        {
+            EventBus.Send(new InspectorTarget()
+            {
+                Entity = entity
+            });
+        }
+    }
 }
 
 public struct InspectorTarget
