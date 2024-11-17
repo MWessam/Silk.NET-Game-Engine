@@ -66,7 +66,7 @@ public partial class HierarchySystem : ScriptableSystem
     [Query]
     private void UpdateHierarchyNoName(Entity entity)
     {
-        if (ImGui.Selectable(entity.WorldId.ToString()))
+        if (ImGui.Selectable(entity.Id.ToString()))
         {
             EventBus.Send(new InspectorTarget()
             {
