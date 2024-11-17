@@ -8,6 +8,10 @@ using Serilog;
 
 namespace LunarEngine.ECS.Systems;
 
+public interface IComponentInspector
+{
+    void OnDrawInspector(object component);
+}
 public partial class InspectorSystem : ScriptableSystem
 {
     private Entity _entity;
