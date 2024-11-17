@@ -34,6 +34,7 @@ public partial class HierarchySystem : ScriptableSystem
             if (ImGui.BeginListBox(""))
             {
                 UpdateHierarchyQuery(World);  // Render the hierarchy content
+                UpdateHierarchyNoNameQuery(World);
                 ImGui.EndListBox();
             }
             ImGui.End();
