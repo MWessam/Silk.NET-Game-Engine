@@ -16,6 +16,16 @@ public partial class InspectorSystem : ScriptableSystem
 {
     private Entity _entity;
     private bool _isOpen = false;
+    private Dictionary<Type, IComponentInspector> _componentInspectors = new();
+
+    public void AddComponentInspector<T>(IComponentInspector componentInspector) where T : struct
+    {
+        if (_componentInspectors.TryAdd(typeof(T), componentInspector))
+        {
+            Log.Error($"Component inspector of type {nameof(T)} is already added.");
+            return;
+        }
+    }
     public InspectorSystem(World world) : base(world)
     {
         Hook();
