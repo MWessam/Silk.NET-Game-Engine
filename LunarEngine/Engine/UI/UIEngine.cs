@@ -32,6 +32,12 @@ public static class UIEngine
 
 public static class EditorUIEngine
 {
+    /// <summary>
+    /// Creates drag and keyboard input vector3 field.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="label">MANDATORY! LABEL MUST BE UNIQUE. To hide label, u can prefix it with ##</param>
+    /// <param name="dragSpeed"></param>
     public static void DrawInputDragFloat3UIElement(ref Vector3 value, string label, float dragSpeed = 0.1f)
     {
         Vector3 currentValue = value;
@@ -44,6 +50,30 @@ public static class EditorUIEngine
             value = currentValue;
         }
     }
+    /// <summary>
+    /// Creates drag and keyboard input vector4 field.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="label">MANDATORY! LABEL MUST BE UNIQUE. To hide label, u can prefix it with ##</param>
+    /// <param name="dragSpeed"></param>
+    public static void DrawInputDragFloat4UIElement(ref Vector4 value, string label, float dragSpeed = 0.1f)
+    {
+        Vector4 currentValue = value;
+        if (ImGui.DragFloat4($"{label}##drag", ref currentValue, dragSpeed))
+        {
+            value = currentValue;
+        }
+        if (ImGui.InputFloat4($"{label}##input", ref currentValue))
+        {
+            value = currentValue;
+        }
+    }
+    /// <summary>
+    /// Creates drag and keyboard input float field.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="label">MANDATORY! LABEL MUST BE UNIQUE. To hide label, u can prefix it with ##</param>
+    /// <param name="dragSpeed"></param>
     public static void DrawInputDragFloatUIElement(ref float value, string label, float dragSpeed = 0.1f)
     {
         float currentValue = value;
@@ -56,6 +86,11 @@ public static class EditorUIEngine
             value = currentValue;
         }
     }
+    /// <summary>
+    /// Creates keyboard input vector3 field.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="label">MANDATORY! LABEL MUST BE UNIQUE. To hide label, u can prefix it with ##</param>
     public static void DrawInputFloatUIElement(ref float value, string label)
     {
         float currentValue = value;
