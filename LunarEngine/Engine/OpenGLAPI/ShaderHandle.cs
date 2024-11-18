@@ -39,6 +39,7 @@ public struct ShaderHandle : IDisposable, IBindable
         {
             uniform();
         }
+        _dirtyUniformQueue.Clear();
     }
     public void SetUniform(string name, int value)
     {
