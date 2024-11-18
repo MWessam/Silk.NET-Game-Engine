@@ -103,9 +103,14 @@ public partial class InspectorSystem : ScriptableSystem
                     if (ImGui.Selectable(_componentTypes[i].Name, isSelected))
                     {
                         _selectedComponent = i;  // Update the selected component index
-                        var genericMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add").MakeGenericMethod(_componentTypes[_selectedComponent]);
+                        var selectedComponentType = _componentTypes[_selectedComponent];
+                        if (World.GetAllComponents(_entity).Any(x => x!.GetType() == selectedComponentType))
+                        {
+                            return;
+                        }
+                        var genericMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add").MakeGenericMethod(selectedComponentType);
                         genericMethod.Invoke(CommandBuffer,
-                            [_entity, Activator.CreateInstance(_componentTypes[_selectedComponent])]);
+                            [_entity, Activator.CreateInstance(selectedComponentType)]);
                         
                         _isComponentDropdownOpen = false;
                     }
