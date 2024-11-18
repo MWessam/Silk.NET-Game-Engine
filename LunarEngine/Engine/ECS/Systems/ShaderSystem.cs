@@ -4,6 +4,7 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Assets;
+using LunarEngine.Engine.ECS.Components;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
 
@@ -60,7 +61,7 @@ public struct AssignShaderEvent
     public Sprite Sprite;
     public string ShaderName;
 }
-public struct TagComponent
+public struct TagComponent : IComponent
 {
     public string Name;
 

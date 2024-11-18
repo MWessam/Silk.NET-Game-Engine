@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Reflection;
 using Arch.Buffer;
 using Arch.Bus;
 using Arch.Core;
@@ -6,6 +7,7 @@ using ImGuiNET;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
 using LunarEngine.Engine.ECS.Components;
+using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.UI;
 using Serilog;
@@ -21,7 +23,10 @@ public partial class InspectorSystem : ScriptableSystem
     private Dictionary<Type, IComponentInspector> _componentInspectors = new();
     private List<Type> _componentTypes = new();
     private UiMenu _inspectorMenu;
-    
+    private MethodInfo _genericCommandBufferAddMethod;
+    private MethodInfo _genericCommandBufferRemoveMethod;
+    private List<Type> _defaultComponents = new();
+
     public void AddComponentInspector<T>(IComponentInspector componentInspector) where T : struct
     {
         if (_componentInspectors.TryAdd(typeof(T), componentInspector))
@@ -33,6 +38,14 @@ public partial class InspectorSystem : ScriptableSystem
     }
     public InspectorSystem(World world) : base(world)
     {
+        _defaultComponents =
+        [
+            typeof(Transform),
+            typeof(SpriteRenderer),
+            typeof(Name),
+            typeof(TagComponent),
+            typeof(Camera),
+        ];
         DiscoverAndAddComponentInspectors();
         Hook();
     }
@@ -93,8 +106,7 @@ public partial class InspectorSystem : ScriptableSystem
                         {
                             return;
                         }
-                        var genericMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add").MakeGenericMethod(selectedComponentType);
-                        genericMethod.Invoke(CommandBuffer,
+                        _genericCommandBufferAddMethod.MakeGenericMethod(selectedComponentType).Invoke(CommandBuffer,
                             [_entity, Activator.CreateInstance(selectedComponentType)]);
                         
                         _isComponentDropdownOpen = false;
@@ -157,6 +169,14 @@ public partial class InspectorSystem : ScriptableSystem
             var drawAction = () =>
             {
                 ImGui.Text(componentType.Name);
+                if (_defaultComponents.All(x => x.Name != componentType.Name))
+                {
+                    ImGui.SameLine();
+                    if (ImGui.Button($"Remove##{componentType.Name}"))
+                    {
+                        _genericCommandBufferRemoveMethod.MakeGenericMethod(componentType).Invoke(CommandBuffer, [_entity]);
+                    }
+                }
                 ImGui.Separator();
                 object?[] parameters = [component];
                 drawMethod.Invoke(componentInspector, parameters);
@@ -184,6 +204,10 @@ public partial class InspectorSystem : ScriptableSystem
         return;
     }
 
+    /// <summary>
+    /// Looks through every assembly and finds every class that implement IComponentInspector.
+    /// Creates an instance of them and adds them to componentInspectors map.
+    /// </summary>
     private void DiscoverAndAddComponentInspectors()
     {
         // Find all types in the current AppDomain that implement IComponentInspector<>
@@ -193,6 +217,8 @@ public partial class InspectorSystem : ScriptableSystem
             .Where(type => type.GetInterfaces()
                 .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentInspector<>)))
             .ToList();
+        
+        // Find all Component types in the current appdomain that implement IComponent.
         var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => !type.IsAbstract && !type.IsInterface)
@@ -202,15 +228,15 @@ public partial class InspectorSystem : ScriptableSystem
 
         foreach (var inspectorType in inspectorTypes)
         {
-            // Get the component type handled by the inspector
+            // Find IComponentInspector generic interface.
             var interfaceType = inspectorType.GetInterfaces()
                 .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentInspector<>));
+            
+            // Store the generic inspector component type.
             var componentType = interfaceType.GetGenericArguments()[0];
 
             // Create an instance of the inspector and add it
-            var inspectorInstance = Activator.CreateInstance(inspectorType) as IComponentInspector;
-
-            if (inspectorInstance != null)
+            if (Activator.CreateInstance(inspectorType) is IComponentInspector inspectorInstance)
             {
                 if (_componentInspectors.TryAdd(componentType, inspectorInstance))
                 {
@@ -226,5 +252,9 @@ public partial class InspectorSystem : ScriptableSystem
                 Log.Error($"Failed to create an instance of {inspectorType.Name}.");
             }
         }
+
+        // Cache add and remove commands for components.
+        _genericCommandBufferRemoveMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Remove");
+        _genericCommandBufferAddMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add");
     }
 }
