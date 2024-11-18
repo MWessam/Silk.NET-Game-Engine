@@ -29,18 +29,19 @@ public partial class PhysicsSystem : ScriptableSystem
         CommandBuffer.Playback(World);
     }
     [Query]
-    [All<RigidBody2D, NeedsPhysicsInitialization>]
+    [All<RigidBody2D>]
     public void InitializePhysics(ref RigidBody2D rb)
     {
+        if (rb.IsInitialized) return;
         rb.Mass = 1.0f;
         rb.GravityScale = 0.4f;
+        rb.IsInitialized = true;
     }
     [Query]
     [All<RigidBody2D, Position, Interpolating>]
     private void InterpolatePhysics(Entity entity, ref Position pos, ref RigidBody2D rb)
     {
         pos.Value = Vector3.Lerp(rb.PreviousPosition, rb.CurrentPosition, (float)PhysicsEngine.InterpolatedTime);
-        CommandBuffer.Add<DirtyTransform>(entity);
     }
     [Query]
     [All<RigidBody2D>]
@@ -61,6 +62,5 @@ public partial class PhysicsSystem : ScriptableSystem
     private void PhysicsUpdatePositionTick(Entity entity, ref RigidBody2D rb, ref Position pos)
     {
         pos.Value = rb.CurrentPosition;
-        CommandBuffer.Add<DirtyTransform>(entity);
     }
 }

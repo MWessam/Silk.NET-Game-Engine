@@ -1,9 +1,10 @@
 using System.Numerics;
+using LunarEngine.Engine.ECS.Components;
 using LunarEngine.Graphics;
 using Serilog;
 
 namespace LunarEngine.GameObjects;
-public struct Camera
+public struct Camera : IComponent
 {
     public Matrix4x4 View;
     public Matrix4x4 Projection;

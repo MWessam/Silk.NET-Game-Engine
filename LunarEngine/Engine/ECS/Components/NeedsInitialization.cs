@@ -1,5 +1,7 @@
+using LunarEngine.Engine.ECS.Components;
+
 namespace LunarEngine.Graphics;
 
-public struct NeedsInitialization
+public struct NeedsInitialization : IComponent
 {
 }

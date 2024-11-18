@@ -1,10 +1,11 @@
 using System.Numerics;
+using Arch.Buffer;
 using Arch.Bus;
 using Arch.Core;
-using Arch.Core.Utils;
 using ImGuiNET;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
+using LunarEngine.Engine.ECS.Components;
 using LunarEngine.GameObjects;
 using Serilog;
 
@@ -15,15 +16,19 @@ public partial class InspectorSystem : ScriptableSystem
 {
     private Entity _entity;
     private bool _isOpen = false;
+    private bool _isComponentDropdownOpen = false;
+    private int _selectedComponent = -1;
     private Dictionary<Type, IComponentInspector> _componentInspectors = new();
+    private List<Type> _componentTypes = new();
     private float _hierarchyWidth = 320f;     // Initial width of the hierarchy panel
-
+    
     public void AddComponentInspector<T>(IComponentInspector componentInspector) where T : struct
     {
         if (_componentInspectors.TryAdd(typeof(T), componentInspector))
         {
             Log.Error($"Component inspector of type {nameof(T)} is already added.");
             return;
+            
         }
     }
     public InspectorSystem(World world) : base(world)
@@ -33,7 +38,9 @@ public partial class InspectorSystem : ScriptableSystem
     }
     public override void Update(in double t)
     {
+        CommandBuffer = new();
         UpdateInspector();
+        CommandBuffer.Playback(World);
     }
     [Event(order: 0)]
     public void OnInspectorTargetSelected(InspectorTarget entity)
@@ -59,6 +66,7 @@ public partial class InspectorSystem : ScriptableSystem
                 _isOpen = false;
             }
             DrawComponentInspectors();
+            DrawAddComponent();
             ImGui.End();
         }
         else
@@ -72,8 +80,39 @@ public partial class InspectorSystem : ScriptableSystem
             {
                 _isOpen = true;
             }
-            
             ImGui.End();
+        }
+    }
+
+    private void DrawAddComponent()
+    {
+        if (ImGui.Button("+ Add Component"))
+        {
+            _isComponentDropdownOpen = !_isComponentDropdownOpen;
+        }
+
+        if (_isComponentDropdownOpen)
+        {
+            if (ImGui.BeginCombo("Select Component Type: ",
+                    _selectedComponent == -1 ? "None" : _componentTypes[_selectedComponent].Name))
+            {
+                // Loop through component types and create an item for each one
+                for (int i = 0; i < _componentTypes.Count; i++)
+                {
+                    bool isSelected = (_selectedComponent == i);
+                    if (ImGui.Selectable(_componentTypes[i].Name, isSelected))
+                    {
+                        _selectedComponent = i;  // Update the selected component index
+                        var genericMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add").MakeGenericMethod(_componentTypes[_selectedComponent]);
+                        genericMethod.Invoke(CommandBuffer,
+                            [_entity, Activator.CreateInstance(_componentTypes[_selectedComponent])]);
+                        
+                        _isComponentDropdownOpen = false;
+                    }
+                }
+
+                ImGui.EndCombo();  // End the combo box
+            }
         }
     }
 
@@ -164,6 +203,12 @@ public partial class InspectorSystem : ScriptableSystem
             .Where(type => type.GetInterfaces()
                 .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentInspector<>)))
             .ToList();
+        var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => !type.IsAbstract && !type.IsInterface)
+            .Where(type => typeof(IComponent).IsAssignableFrom(type))
+            .ToList();
+        _componentTypes = componentTypes;
 
         foreach (var inspectorType in inspectorTypes)
         {
