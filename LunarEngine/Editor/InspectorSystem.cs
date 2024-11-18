@@ -72,6 +72,7 @@ public partial class InspectorSystem : ScriptableSystem
             {
                 _isOpen = true;
             }
+            
             ImGui.End();
         }
     }

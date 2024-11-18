@@ -2,6 +2,9 @@ using System.Numerics;
 using ImGuiNET;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
+using LunarEngine.GameObjects;
+using LunarEngine.Physics;
+using LunarEngine.UI;
 
 namespace LunarEngine.ECS.Systems;
 
@@ -17,15 +20,7 @@ public class PositionInspector : IComponentInspector<Position>
 {
     public void OnDrawInspector(ref Position component)
     {
-        Vector3 currentValue = component.Value;
-        if (ImGui.DragFloat3("##drag", ref currentValue, 0.1f))
-        {
-            component.Value = currentValue;
-        }
-        if (ImGui.InputFloat3("##input", ref currentValue))
-        {
-            component.Value = currentValue;
-        }
+        EditorUIEngine.DrawInputDragFloat3UIElement(ref component.Value);
     }
 }
 public class NameInspector : IComponentInspector<Name>
@@ -37,5 +32,31 @@ public class NameInspector : IComponentInspector<Name>
         {
             component.Value = currentValue;
         }
+    }
+}
+
+public class CameraInspector : IComponentInspector<Camera>
+{
+    public void OnDrawInspector(ref Camera component)
+    {
+        ImGui.Text("Near");
+        EditorUIEngine.DrawInputDragFloatUIElement(ref component.Near);
+        
+        ImGui.Text("Far");
+        EditorUIEngine.DrawInputDragFloatUIElement(ref component.Far);
+        
+        ImGui.Text("Width");
+        EditorUIEngine.DrawInputDragFloatUIElement(ref component.Width);
+        
+        ImGui.Text("Height");
+        EditorUIEngine.DrawInputDragFloatUIElement(ref component.Height);
+    }
+}
+
+public class RigidBody2DInspector : IComponentInspector<RigidBody2D>
+{
+    public void OnDrawInspector(ref RigidBody2D component)
+    {
+        
     }
 }
