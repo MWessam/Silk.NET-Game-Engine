@@ -20,7 +20,7 @@ public class PositionInspector : IComponentInspector<Position>
 {
     public void OnDrawInspector(ref Position component)
     {
-        EditorUIEngine.DrawInputDragFloat3UIElement(ref component.Value);
+        EditorUIEngine.DrawInputDragFloat3UIElement(ref component.Value, "##position");
     }
 }
 public class NameInspector : IComponentInspector<Name>
@@ -39,17 +39,16 @@ public class CameraInspector : IComponentInspector<Camera>
 {
     public void OnDrawInspector(ref Camera component)
     {
-        ImGui.Text("Near");
-        EditorUIEngine.DrawInputDragFloatUIElement(ref component.Near);
+        EditorUIEngine.DrawInputFloatUIElement(ref component.Near, "Near");
         
         ImGui.Text("Far");
-        EditorUIEngine.DrawInputDragFloatUIElement(ref component.Far);
+        EditorUIEngine.DrawInputFloatUIElement(ref component.Far, "Far");
         
         ImGui.Text("Width");
-        EditorUIEngine.DrawInputDragFloatUIElement(ref component.Width);
+        EditorUIEngine.DrawInputFloatUIElement(ref component.Width, "Width");
         
         ImGui.Text("Height");
-        EditorUIEngine.DrawInputDragFloatUIElement(ref component.Height);
+        EditorUIEngine.DrawInputFloatUIElement(ref component.Height, "Height");
     }
 }
 
