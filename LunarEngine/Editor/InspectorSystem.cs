@@ -7,6 +7,7 @@ using LunarEngine.Components;
 using LunarEngine.ECS.Components;
 using LunarEngine.Engine.ECS.Components;
 using LunarEngine.GameObjects;
+using LunarEngine.UI;
 using Serilog;
 
 namespace LunarEngine.ECS.Systems;
@@ -15,12 +16,11 @@ namespace LunarEngine.ECS.Systems;
 public partial class InspectorSystem : ScriptableSystem
 {
     private Entity _entity;
-    private bool _isOpen = false;
     private bool _isComponentDropdownOpen = false;
     private int _selectedComponent = -1;
     private Dictionary<Type, IComponentInspector> _componentInspectors = new();
     private List<Type> _componentTypes = new();
-    private float _hierarchyWidth = 320f;     // Initial width of the hierarchy panel
+    private UiMenu _inspectorMenu;
     
     public void AddComponentInspector<T>(IComponentInspector componentInspector) where T : struct
     {
@@ -36,6 +36,18 @@ public partial class InspectorSystem : ScriptableSystem
         DiscoverAndAddComponentInspectors();
         Hook();
     }
+
+    public override void Awake()
+    {
+        _inspectorMenu = new UiMenu()
+        {
+            Alignment = EAlignment.AlignTop,
+            Justification = EJustification.JustifyRight,
+            StretchY = true,
+            Label = "Inspector",
+            MenuWidth = 240,
+        };
+    }
     public override void Update(in double t)
     {
         CommandBuffer = new();
@@ -46,42 +58,15 @@ public partial class InspectorSystem : ScriptableSystem
     public void OnInspectorTargetSelected(InspectorTarget entity)
     {
         _entity = entity.Entity;
-        _isOpen = true;
+        _inspectorMenu.UiState = EUiState.Open;
     }
     public void UpdateInspector()
     {
-        var screenHeight = ImGui.GetIO().DisplaySize.Y;
-        var screenWidth = ImGui.GetIO().DisplaySize.X;
-        
-        if (_isOpen)
+        _inspectorMenu.DrawMenu(() =>
         {
-            // Calculate the position to anchor to the right
-            var positionX = screenWidth - _hierarchyWidth;
-            // Set the position and size of the hierarchy window (panel)
-            ImGui.SetNextWindowPos(new Vector2(positionX, 0), ImGuiCond.Always);  // Anchor to the top-left corner
-            ImGui.SetNextWindowSize(new Vector2(_hierarchyWidth, screenHeight), ImGuiCond.Always); // Fixed height, variable width
-            ImGui.Begin("Inspector", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize );
-            if (ImGui.Button("<##Collapse"))
-            {
-                _isOpen = false;
-            }
             DrawComponentInspectors();
             DrawAddComponent();
-            ImGui.End();
-        }
-        else
-        {
-            // Calculate the position to anchor to the right
-            var positionX = screenWidth - 48;
-            ImGui.SetNextWindowPos(new Vector2(positionX, 0), ImGuiCond.Always);  // Anchor to the top-left corner
-            ImGui.SetNextWindowSize(new Vector2(48, screenHeight), ImGuiCond.Always); // Fixed height, variable width
-            ImGui.Begin("", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize );
-            if (ImGui.Button(">##Inspector"))
-            {
-                _isOpen = true;
-            }
-            ImGui.End();
-        }
+        });
     }
 
     private void DrawAddComponent()

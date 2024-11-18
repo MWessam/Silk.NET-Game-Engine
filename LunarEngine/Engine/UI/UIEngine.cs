@@ -16,6 +16,7 @@ public static class UIEngine
     public static void Initialize(IWindow window, GL gl, IInputContext inputContext)
     {
         ImGUIController = new ImGuiController(gl, window, inputContext);
+        ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
 
     }
 
@@ -99,4 +100,162 @@ public static class EditorUIEngine
             value = currentValue;
         }
     }
+
+
+}
+
+public class UiMenu
+{
+    public float MenuWidth;
+    public float MenuHeight;
+    public float PositionX;
+    public float PositionY;
+    public bool StretchY;
+    public bool StretchX;
+    public EAlignment Alignment = EAlignment.None;
+    public EJustification Justification = EJustification.None;
+    public EUiState UiState;
+    public string Label;
+    public void DrawMenu(Action innerUiContentDrawCall)
+    {
+        var displaySize = ImGui.GetIO().DisplaySize;
+        switch (UiState)
+        {
+            case EUiState.Open:
+                PositionContent(displaySize);
+                ResizeWindow(displaySize);
+                ImGui.Begin(Label, ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize);
+                if (ImGui.Button($"-##Collapse{Label}"))
+                {
+                    UiState = EUiState.Close;
+                }
+                innerUiContentDrawCall.Invoke();
+                break;
+            
+            default:
+            case EUiState.Close:
+                float sizeY = AdjustHeight(displaySize);
+                PositionContent(displaySize, PositionX, PositionY, 20, sizeY);
+                ResizeWindow(20, sizeY);
+                ImGui.Begin(Label, ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize );
+                if (ImGui.Button($"+##{Label}"))
+                {
+                    UiState = EUiState.Open;
+                }
+                break;
+        }
+        ImGui.End();
+    }
+
+    private void ResizeWindow(float sizeX, float sizeY)
+    {
+        ImGui.SetNextWindowSize(new Vector2(sizeX, sizeY), ImGuiCond.Always);
+    }
+    private void ResizeWindow(Vector2 displaySize)
+    {
+        var adjustedWidth = AdjustWidth(displaySize);
+        var adjustedHeight = AdjustHeight(displaySize);
+        ImGui.SetNextWindowSize(new Vector2(adjustedWidth, adjustedHeight), ImGuiCond.Always); // Fixed height, variable width
+    }
+    private void PositionContent(Vector2 displaySize)
+    {
+        var justifiedPositionX = JusitfyPosition(displaySize, PositionX, MenuWidth);
+        var justifiedPositionY = AlignPosition(displaySize, PositionY, MenuHeight);
+        ImGui.SetNextWindowPos(new Vector2(justifiedPositionX, justifiedPositionY), ImGuiCond.Always); // Anchor to the top-left corner
+    }
+    private void PositionContent(Vector2 displaySize, float positionX, float positionY, float width, float height)
+    {
+        var justifiedPositionX = JusitfyPosition(displaySize, positionY, width);
+        var justifiedPositionY = AlignPosition(displaySize, positionY, height);
+        ImGui.SetNextWindowPos(new Vector2(justifiedPositionX, justifiedPositionY), ImGuiCond.Always); // Anchor to the top-left corner
+    }
+    private float AdjustHeight(Vector2 displaySize)
+    {
+        float modifiedHeight;
+        if (StretchY)
+        {
+            modifiedHeight = displaySize.Y - MenuHeight;
+        }
+        else
+        {
+            modifiedHeight = MenuHeight;
+        }
+        return modifiedHeight;
+    }
+    private float AdjustWidth(Vector2 displaySize)
+    {
+        float modifiedWidth;
+        if (StretchX)
+        {
+            modifiedWidth = displaySize.X - MenuWidth;
+        }
+        else
+        {
+            modifiedWidth = MenuWidth;
+        }
+        return modifiedWidth;
+    }
+    private float JusitfyPosition(Vector2 displaySize, float positionX, float width)
+    {
+        float justifiedPosX;
+        switch (Justification)
+        {
+            case EJustification.JustifyCenter:
+                justifiedPosX = (displaySize.X / 2) + positionX;
+                break;
+            case EJustification.JustifyLeft:
+                justifiedPosX = positionX;
+                break;
+            case EJustification.JustifyRight:
+                justifiedPosX = displaySize.X - positionX - width;
+                break;
+            default:
+                justifiedPosX = positionX;
+                break;
+        }
+        return justifiedPosX;
+    }
+    private float AlignPosition(Vector2 displaySize, float positionY, float height)
+    {
+        float alignedPosY;
+        switch (Alignment)
+        {
+            case EAlignment.AlignCenter:
+                alignedPosY = (displaySize.Y / 2) + positionY;
+                break;
+            case EAlignment.AlignTop:
+                alignedPosY = 0 + positionY;
+                break;
+            case EAlignment.AlignBottom:
+                alignedPosY = displaySize.Y - positionY;
+                break;
+            default:
+                alignedPosY = PositionY;
+                break;
+        }
+
+        return alignedPosY;
+    }
+}
+
+public enum EUiState
+{
+    Close,
+    Open,
+}
+
+public enum EAlignment
+{
+    None,
+    AlignTop,
+    AlignBottom,
+    AlignCenter,
+}
+
+public enum EJustification
+{
+    None,
+    JustifyLeft,
+    JustifyRight,
+    JustifyCenter,
 }

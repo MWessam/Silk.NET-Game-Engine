@@ -56,6 +56,7 @@ public class ECSScene
         _physicsInitializationSystem.Awake();
         _inputSystem.Awake();
         _hierarchySystem.Awake();
+        _inspectorSystem.Awake();
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {
             system.Awake();

@@ -12,44 +12,34 @@ namespace LunarEngine.ECS.Systems;
 
 public partial class HierarchySystem : ScriptableSystem
 {
-    private bool _isOpen = true;        // To track if the hierarchy is collapsed
-    private float _hierarchyWidth = 320f;     // Initial width of the hierarchy panel
+    private UiMenu _hierarchyMenu;
     public HierarchySystem(World world) : base(world)
     {
     }
 
+    public override void Awake()
+    {
+        _hierarchyMenu = new UiMenu()
+        {
+            MenuWidth = 240,
+            Alignment = EAlignment.AlignTop,
+            Justification = EJustification.JustifyLeft,
+            Label = "Hierarchy",
+            StretchY = true,
+        };
+    }
     public override void Update(in double d)
     {
-        var screenHeight = ImGui.GetIO().DisplaySize.Y;
-        if (_isOpen)
+        _hierarchyMenu.DrawMenu(() =>
         {
-            // Set the position and size of the hierarchy window (panel)
-            ImGui.SetNextWindowPos(new Vector2(0, 0), ImGuiCond.Always);  // Anchor to the top-left corner
-            ImGui.SetNextWindowSize(new Vector2(_hierarchyWidth, screenHeight), ImGuiCond.Always); // Fixed height, variable width
-            ImGui.Begin("Hierarchy", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize );
-            if (ImGui.Button("<##Collapse"))
-            {
-                _isOpen = false;
-            }
             if (ImGui.BeginListBox(""))
             {
                 UpdateHierarchyQuery(World);  // Render the hierarchy content
                 UpdateHierarchyNoNameQuery(World);
                 ImGui.EndListBox();
             }
-            ImGui.End();
-        }
-        else
-        {
-            ImGui.SetNextWindowPos(new Vector2(0, 0), ImGuiCond.Always);  // Anchor to the top-left corner
-            ImGui.SetNextWindowSize(new Vector2(20, screenHeight), ImGuiCond.Always); // Fixed height, variable width
-            ImGui.Begin("Hierarchy", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize );
-            if (ImGui.Button(">##Hierarchy"))
-            {
-                _isOpen = true;
-            }
-            ImGui.End();
-        }
+        });
+
     }
     [Query]
     [All<Name>]
