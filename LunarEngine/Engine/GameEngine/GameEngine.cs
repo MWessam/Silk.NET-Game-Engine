@@ -1,6 +1,4 @@
-using Arch.Core.Extensions;
 using LunarEngine.Assets;
-using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
 using LunarEngine.InputEngine;
 using LunarEngine.Physics;
@@ -10,7 +8,6 @@ using Serilog;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
-using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 
 namespace LunarEngine.GameEngine;

@@ -3,16 +3,17 @@ using Arch.Bus;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using ImGuiNET;
+using Hexa.NET.ImGui;
 using LunarEngine.ECS.Components;
 using LunarEngine.GameObjects;
 using LunarEngine.UI;
+using Serilog;
 
 namespace LunarEngine.ECS.Systems;
 
 public partial class HierarchySystem : ScriptableSystem
 {
-    private UiMenu _hierarchyMenu;
+    private IUiElement _hierarchyMenu;
     public HierarchySystem(World world) : base(world)
     {
     }
@@ -30,9 +31,9 @@ public partial class HierarchySystem : ScriptableSystem
     }
     public override void Update(in double d)
     {
-        _hierarchyMenu.DrawMenu(() =>
+        _hierarchyMenu.Draw(() =>
         {
-            if (ImGui.BeginListBox(""))
+            if (ImGui.BeginListBox("##HierarchyList"))
             {
                 UpdateHierarchyQuery(World);  // Render the hierarchy content
                 UpdateHierarchyNoNameQuery(World);
@@ -41,6 +42,10 @@ public partial class HierarchySystem : ScriptableSystem
         });
 
     }
+
+    private string[] options = ["Option A", "Option B"];
+    private int _option;
+    
     [Query]
     [All<Name>]
     private void UpdateHierarchy(Entity entity, ref Name name)
@@ -51,6 +56,16 @@ public partial class HierarchySystem : ScriptableSystem
             {
                 Entity = entity
             });
+        }
+        if (ImGui.BeginPopupContextItem($"ContextMenu_{name.Value}"))
+        {
+            
+            // // Add a combo box for options
+            if (ImGui.Combo("Actions", ref _option, options, options.Length))
+            {
+                Log.Debug($"Selected {options[_option]}");
+            }
+            ImGui.EndPopup();
         }
     }
     [Query]

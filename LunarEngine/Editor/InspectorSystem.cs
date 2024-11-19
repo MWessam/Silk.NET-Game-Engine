@@ -11,6 +11,7 @@ using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.UI;
 using Serilog;
+using ImGuiDir = Hexa.NET.ImGui.ImGuiDir;
 
 namespace LunarEngine.ECS.Systems;
 
@@ -58,7 +59,9 @@ public partial class InspectorSystem : ScriptableSystem
             Justification = EJustification.JustifyRight,
             StretchY = true,
             Label = "Inspector",
+            // ImGuiDir = ImGuiDir.Right,
             MenuWidth = 240,
+            PositionX = 16,
         };
     }
     public override void Update(in double t)
@@ -75,7 +78,7 @@ public partial class InspectorSystem : ScriptableSystem
     }
     public void UpdateInspector()
     {
-        _inspectorMenu.DrawMenu(() =>
+        _inspectorMenu.Draw(() =>
         {
             DrawComponentInspectors();
             DrawAddComponent();

@@ -16,9 +16,9 @@ public class RotationInspector : IComponentInspector<Rotation>
 {
     public void OnDrawInspector(ref Rotation component)
     {
-        var rotationAngles = component.Value.ToEulerAngles();
+        var rotationAngles = component.Value.ToEulerAngles().RadianToDegree();
         EditorUIEngine.DrawInputDragFloat3UIElement(ref rotationAngles, "##rotation");
-        component.Value = rotationAngles.ToQuaternion();
+        component.Value = rotationAngles.DegreeToRadian().ToQuaternion();
     }
 }
 

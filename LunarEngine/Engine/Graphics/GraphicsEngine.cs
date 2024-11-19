@@ -64,6 +64,8 @@ public class GraphicsEngine
         {
             Api = GL.GetApi(_windowContext);
             Api.ClearColor(Color.Black);
+            Api.Enable(GLEnum.Blend);
+            Api.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             OnApiInitialized?.Invoke(Api);
             OnWindowLoad?.Invoke(_windowContext);
         }

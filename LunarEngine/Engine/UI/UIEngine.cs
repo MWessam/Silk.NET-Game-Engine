@@ -1,33 +1,82 @@
 using System.Numerics;
-using ImGuiNET;
-using LunarEngine.Graphics;
+using Hexa.NET.ImGui;
 using Silk.NET.Input;
-using Silk.NET.Maths;
 using Silk.NET.OpenGL;
-using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 
 namespace LunarEngine.UI;
 
 public static class UIEngine
 {
+    public static uint DockspaceId;
+    private static bool _isInitialized;
     public static ImGuiController ImGUIController { get; private set; }
 
     public static void Initialize(IWindow window, GL gl, IInputContext inputContext)
     {
         ImGUIController = new ImGuiController(gl, window, inputContext);
         ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
-
     }
 
     public static void Update(float dt)
     {
         ImGUIController.Update(dt);
+        DockSpace();
     }
 
     public static void Render()
     {
         ImGUIController.Render();
+    }
+
+    private static void DockSpace()
+    {
+        // ImGuiViewportPtr viewport = ImGui.GetMainViewport();
+        // ImGui.SetNextWindowPos(viewport.Pos);
+        // ImGui.SetNextWindowSize(viewport.Size);
+        // ImGui.SetNextWindowViewport(viewport.ID);
+        // ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
+        // ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f);
+        // ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
+        // ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0, 0, 0, 0)); // Fully transparent
+        // ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0, 0, 0, 0));   // Hide borders
+        // ImGui.SetNextWindowBgAlpha(0.0f);
+        // ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoTitleBar |
+        //                                ImGuiWindowFlags.NoCollapse |
+        //                                ImGuiWindowFlags.NoResize |
+        //                                ImGuiWindowFlags.NoMove |
+        //                                ImGuiWindowFlags.NoBackground |
+        //                                ImGuiWindowFlags.NoBringToFrontOnFocus |
+        //                                ImGuiWindowFlags.NoNavFocus;
+        DockspaceId = ImGui.DockSpaceOverViewport((ImGuiDockNodeFlags)ImGuiDockNodeFlagsPrivate.NoWindowMenuButton | ImGuiDockNodeFlags.PassthruCentralNode);
+        if (!_isInitialized)
+        {
+            SetupDockLayout(DockspaceId);
+        }
+        
+    }
+    static unsafe void SetupDockLayout(uint dockspaceID)
+    {
+        // Split the dock space into regions
+        uint leftDockId = 0;
+        uint rightDockId = 0;
+        uint centerGapId = 0;
+        ImGuiP.DockBuilderSplitNode(dockspaceID, ImGuiDir.Left, 0.2f, &leftDockId, &rightDockId);
+        var tr = ImGuiP.DockBuilderSplitNode(rightDockId, ImGuiDir.Left, 0.3f, &centerGapId, &rightDockId);
+        
+        
+        // Dock windows into specific regions
+        ImGuiP.DockBuilderDockWindow("Hierarchy", leftDockId);
+        ImGuiP.DockBuilderDockWindow("Inspector", centerGapId);
+        
+        // Finalize the layout
+        ImGuiP.DockBuilderFinish(dockspaceID);
+        _isInitialized = true;
+    }
+
+    public static void PreRender()
+    {
+        DockSpace();
     }
 }
 
@@ -103,8 +152,27 @@ public static class EditorUIEngine
 
 
 }
-
-public class UiMenu
+public interface IUiElement
+{
+    void Draw(Action innerUiElementDrawCall);
+}
+public class DockableUiMenu : IUiElement
+{
+    public string Label;
+    public ImGuiDir ImGuiDir;
+    private bool _isInitialized = false;
+    public void Draw(Action? innerUiElementDrawCall = null)
+    {
+        if (!_isInitialized)
+        {
+            // SetupDockLayout(UIEngine.DockspaceId);
+        }
+        ImGui.Begin(Label);
+        innerUiElementDrawCall?.Invoke();
+        ImGui.End();
+    }
+}
+public class UiMenu : IUiElement
 {
     public float MenuWidth;
     public float MenuHeight;
@@ -116,7 +184,7 @@ public class UiMenu
     public EJustification Justification = EJustification.None;
     public EUiState UiState;
     public string Label;
-    public void DrawMenu(Action innerUiContentDrawCall)
+    public void Draw(Action innerUiContentDrawCall)
     {
         var displaySize = ImGui.GetIO().DisplaySize;
         switch (UiState)
@@ -129,7 +197,7 @@ public class UiMenu
                 {
                     UiState = EUiState.Close;
                 }
-                innerUiContentDrawCall.Invoke();
+                innerUiContentDrawCall();
                 break;
             
             default:
@@ -165,7 +233,7 @@ public class UiMenu
     }
     private void PositionContent(Vector2 displaySize, float positionX, float positionY, float width, float height)
     {
-        var justifiedPositionX = JusitfyPosition(displaySize, positionY, width);
+        var justifiedPositionX = JusitfyPosition(displaySize, positionX, width);
         var justifiedPositionY = AlignPosition(displaySize, positionY, height);
         ImGui.SetNextWindowPos(new Vector2(justifiedPositionX, justifiedPositionY), ImGuiCond.Always); // Anchor to the top-left corner
     }
