@@ -1,9 +1,8 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
-using LunarEngine.OpenGLAPI;
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.Graphics;
+namespace LunarEngine.Engine.Graphics;
 
 public class Sprite : IDisposable
 {

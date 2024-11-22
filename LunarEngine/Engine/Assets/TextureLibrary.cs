@@ -1,5 +1,5 @@
+using LunarEngine.Engine.Graphics;
 using LunarEngine.Graphics;
-using LunarEngine.OpenGLAPI;
 using Silk.NET.OpenGL;
 
 namespace LunarEngine.Assets;

@@ -1,4 +1,4 @@
-using LunarEngine.OpenGLAPI;
+using LunarEngine.Engine.Graphics;
 
 namespace LunarEngine.Assets;
 

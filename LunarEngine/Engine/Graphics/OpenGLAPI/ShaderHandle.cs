@@ -1,7 +1,7 @@
 using System.Numerics;
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.OpenGLAPI;
+namespace LunarEngine.Engine.Graphics;
 
 public struct ShaderHandle : IDisposable, IBindable
 {

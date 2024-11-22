@@ -4,6 +4,7 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.ECS.Systems;
+using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;

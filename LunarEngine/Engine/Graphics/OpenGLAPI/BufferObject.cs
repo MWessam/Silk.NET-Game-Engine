@@ -1,6 +1,6 @@
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.OpenGLAPI;
+namespace LunarEngine.Engine.Graphics;
 
 internal interface IBindable
 {

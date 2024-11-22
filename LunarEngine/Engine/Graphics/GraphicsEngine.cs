@@ -1,22 +1,12 @@
 using System.Drawing;
-using System.Numerics;
-using Arch.Core;
-using Arch.Core.Extensions;
-using Arch.System;
-using Arch.System.SourceGenerator;
-using LunarEngine.Assets;
-using LunarEngine.Components;
 using LunarEngine.ECS.Systems;
-using LunarEngine.GameEngine;
-using LunarEngine.GameObjects;
-using LunarEngine.OpenGLAPI;
 using LunarEngine.UI;
 using Serilog;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
-namespace LunarEngine.Graphics;
+namespace LunarEngine.Engine.Graphics;
 
 public static class GraphicsEngine
 {
@@ -89,6 +79,7 @@ public static class GraphicsEngine
     private static void OnRender(double deltaTime = 0)
     {
         _sceneSystem.PreRenderScene(deltaTime);
+        _renderTarget.Resize(_sceneSystem.NewViewport);
         if (_renderTarget.DefaultRenderTarget)
         {
             Api.Clear(ClearBufferMask.ColorBufferBit);
@@ -111,7 +102,7 @@ public static class GraphicsEngine
         Api.Viewport(viewport);
         OnViewportResized?.Invoke(viewport);
     }
-    public static void SetRenderTarget(FrameBuffer sceneFrameBuffer)
+    internal static void SetRenderTarget(FrameBuffer sceneFrameBuffer)
     {
         _renderTarget = sceneFrameBuffer;
     }

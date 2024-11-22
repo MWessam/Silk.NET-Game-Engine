@@ -1,9 +1,8 @@
 using System.Drawing;
-using System.Numerics;
-using LunarEngine.Graphics;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
+namespace LunarEngine.Engine.Graphics;
 public unsafe class FrameBuffer : IDisposable
 {
     private GL _api;

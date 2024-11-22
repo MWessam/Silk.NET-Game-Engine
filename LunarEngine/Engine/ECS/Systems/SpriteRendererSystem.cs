@@ -5,9 +5,9 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Assets;
 using LunarEngine.Components;
+using LunarEngine.Engine.Graphics;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
-using LunarEngine.OpenGLAPI;
 using Serilog;
 using Silk.NET.OpenGL;
 

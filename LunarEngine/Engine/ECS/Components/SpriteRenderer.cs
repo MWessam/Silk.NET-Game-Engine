@@ -1,8 +1,8 @@
 using System.Numerics;
 using LunarEngine.Assets;
 using LunarEngine.Engine.ECS.Components;
+using LunarEngine.Engine.Graphics;
 using LunarEngine.Graphics;
-using LunarEngine.OpenGLAPI;
 
 namespace LunarEngine.GameObjects;
 public struct SpriteRenderer : IComponent
