@@ -1,6 +1,7 @@
 using System.Numerics;
 using Arch.Bus;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Hexa.NET.ImGui;
@@ -20,17 +21,19 @@ public partial class HierarchySystem : ScriptableSystem
 
     public override void Awake()
     {
-        _hierarchyMenu = new UiMenu()
+        _hierarchyMenu = new DockableUiMenu()
         {
-            MenuWidth = 240,
-            Alignment = EAlignment.AlignTop,
-            Justification = EJustification.JustifyLeft,
+            // MenuWidth = 240,
+            // Alignment = EAlignment.AlignTop,
+            // Justification = EJustification.JustifyLeft,
             Label = "Hierarchy",
-            StretchY = true,
+            ImGuiDir = ImGuiDir.Left,
+            // StretchY = true,
         };
     }
     public override void Update(in double d)
     {
+        CommandBuffer = new();
         _hierarchyMenu.Draw(() =>
         {
             if (ImGui.BeginListBox("##HierarchyList"))
@@ -40,11 +43,11 @@ public partial class HierarchySystem : ScriptableSystem
                 ImGui.EndListBox();
             }
         });
-
+        CommandBuffer.Playback(World);
     }
 
-    private string[] options = ["Option A", "Option B"];
-    private int _option;
+    private string[] _options = ["Delete", "Option 2"];
+    private int _option = -1;
     
     [Query]
     [All<Name>]
@@ -54,28 +57,34 @@ public partial class HierarchySystem : ScriptableSystem
         {
             EventBus.Send(new InspectorTarget()
             {
-                Entity = entity
+                Entity = World.Reference(entity)
             });
         }
         if (ImGui.BeginPopupContextItem($"ContextMenu_{name.Value}"))
         {
             
             // // Add a combo box for options
-            if (ImGui.Combo("Actions", ref _option, options, options.Length))
+            if (ImGui.Combo("Actions", ref _option, _options, _options.Length))
             {
-                Log.Debug($"Selected {options[_option]}");
+                switch (_options[_option])
+                {
+                    case "Delete":
+                        CommandBuffer.Destroy(entity);
+                        break;
+                }
             }
             ImGui.EndPopup();
         }
     }
     [Query]
+    [None<Name>]
     private void UpdateHierarchyNoName(Entity entity)
     {
         if (ImGui.Selectable(entity.Id.ToString()))
         {
             EventBus.Send(new InspectorTarget()
             {
-                Entity = entity
+                Entity = World.Reference(entity)
             });
         }
     }
@@ -83,5 +92,5 @@ public partial class HierarchySystem : ScriptableSystem
 
 public struct InspectorTarget
 {
-    public Entity Entity;
+    public EntityReference Entity;
 }

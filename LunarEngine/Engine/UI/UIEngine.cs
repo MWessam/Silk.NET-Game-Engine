@@ -67,7 +67,8 @@ public static class UIEngine
         
         // Dock windows into specific regions
         ImGuiP.DockBuilderDockWindow("Hierarchy", leftDockId);
-        ImGuiP.DockBuilderDockWindow("Inspector", centerGapId);
+        ImGuiP.DockBuilderDockWindow("Scene", centerGapId);
+        ImGuiP.DockBuilderDockWindow("Inspector", rightDockId);
         
         // Finalize the layout
         ImGuiP.DockBuilderFinish(dockspaceID);

@@ -1,4 +1,5 @@
 using LunarEngine.Assets;
+using LunarEngine.ECS.Systems;
 using LunarEngine.Graphics;
 using LunarEngine.InputEngine;
 using LunarEngine.Physics;
@@ -18,18 +19,16 @@ public class GameEngine
     private SceneManager _sceneManager;
     private bool _isRunning;
     private double _accumulatedTime;
-    private GraphicsEngine _graphicsEngine;
     private ImGuiController _imGuiController;
     public static GameEngine CreateGameEngine()
     {
         GameEngine engine = new GameEngine();
         engine.Initialize();
-        
         return engine;
     }
     internal void StartEngine()
     {
-        _graphicsEngine.Start();
+        GraphicsEngine.Start();
     }
     private void Initialize()
     {
@@ -44,14 +43,13 @@ public class GameEngine
     }
     private void CreateWindow()
     {
-        _graphicsEngine = new GraphicsEngine();
-        _graphicsEngine.Initialize();
-        _graphicsEngine.OnUpdateLoopTick += GameLoop;
-        _graphicsEngine.OnRenderLoopTick += RenderLoop;
-        _graphicsEngine.OnApiInitialized += OnApiInitialized;
-        _graphicsEngine.OnWindowLoad += OnEngineStart;
-        _graphicsEngine.OnViewportResized += OnViewportResized;
-        _graphicsEngine.OnWindowClosed += OnClose;
+        GraphicsEngine.Initialize();
+        GraphicsEngine.OnUpdateLoopTick += GameLoop;
+        GraphicsEngine.OnRenderLoopTick += RenderLoop;
+        GraphicsEngine.OnApiInitialized += OnApiInitialized;
+        GraphicsEngine.OnWindowLoad += OnEngineStart;
+        GraphicsEngine.OnViewportResized += OnViewportResized;
+        GraphicsEngine.OnWindowClosed += OnClose;
     }
 
     private void OnClose()
@@ -119,7 +117,6 @@ public class GameEngine
     private void RenderLoop(double dt)
     {
         _sceneManager.ActiveScenes.RenderScenes(dt);
-        UIEngine.Render();
     }
 }
 

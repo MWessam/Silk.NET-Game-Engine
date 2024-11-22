@@ -18,12 +18,12 @@ namespace LunarEngine.ECS.Systems;
 
 public partial class InspectorSystem : ScriptableSystem
 {
-    private Entity _entity;
+    private EntityReference _entity;
     private bool _isComponentDropdownOpen = false;
     private int _selectedComponent = -1;
     private Dictionary<Type, IComponentInspector> _componentInspectors = new();
     private List<Type> _componentTypes = new();
-    private UiMenu _inspectorMenu;
+    private IUiElement _inspectorMenu;
     private MethodInfo _genericCommandBufferAddMethod;
     private MethodInfo _genericCommandBufferRemoveMethod;
     private List<Type> _defaultComponents = new();
@@ -53,15 +53,15 @@ public partial class InspectorSystem : ScriptableSystem
 
     public override void Awake()
     {
-        _inspectorMenu = new UiMenu()
+        _inspectorMenu = new DockableUiMenu()
         {
-            Alignment = EAlignment.AlignTop,
-            Justification = EJustification.JustifyRight,
-            StretchY = true,
+            // Alignment = EAlignment.AlignTop,
+            // Justification = EJustification.JustifyRight,
+            // StretchY = true,
             Label = "Inspector",
-            // ImGuiDir = ImGuiDir.Right,
-            MenuWidth = 240,
-            PositionX = 16,
+            ImGuiDir = ImGuiDir.Right,
+            // MenuWidth = 240,
+            // PositionX = 16,
         };
     }
     public override void Update(in double t)
@@ -74,10 +74,11 @@ public partial class InspectorSystem : ScriptableSystem
     public void OnInspectorTargetSelected(InspectorTarget entity)
     {
         _entity = entity.Entity;
-        _inspectorMenu.UiState = EUiState.Open;
+        // _inspectorMenu.UiState = EUiState.Open;
     }
     public void UpdateInspector()
     {
+        if (!World.IsAlive(_entity)) return;
         _inspectorMenu.Draw(() =>
         {
             DrawComponentInspectors();
@@ -134,7 +135,7 @@ public partial class InspectorSystem : ScriptableSystem
             object component = components[i];
             if (component is null)
             {
-                Log.Error($"Null component found in entity{_entity.Id}");
+                Log.Error($"Null component found in entity{_entity.Entity.Id}");
                 continue;
             }
 
