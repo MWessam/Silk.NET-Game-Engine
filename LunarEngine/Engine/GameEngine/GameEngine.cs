@@ -21,6 +21,9 @@ public class GameEngine
     private bool _isRunning;
     private double _accumulatedTime;
     private ImGuiController _imGuiController;
+    private Renderer _renderer;
+    private Editor? _editor;
+
     public static GameEngine CreateGameEngine()
     {
         GameEngine engine = new GameEngine();
@@ -29,12 +32,13 @@ public class GameEngine
     }
     internal void StartEngine()
     {
-        GraphicsEngine.Start();
+        _renderer.Start();
     }
     private void Initialize()
     {
         _input = Input.Create();
         _sceneManager = new SceneManager();
+        _editor = Editor.Create();
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
@@ -44,13 +48,12 @@ public class GameEngine
     }
     private void CreateWindow()
     {
-        GraphicsEngine.Initialize();
-        GraphicsEngine.OnUpdateLoopTick += GameLoop;
-        GraphicsEngine.OnRenderLoopTick += RenderLoop;
-        GraphicsEngine.OnApiInitialized += OnApiInitialized;
-        GraphicsEngine.OnWindowLoad += OnEngineStart;
-        GraphicsEngine.OnViewportResized += OnViewportResized;
-        GraphicsEngine.OnWindowClosed += OnClose;
+        _renderer = Renderer.CreateRenderer();
+        _renderer.OnUpdateLoopTick += GameLoop;
+        _renderer.OnApiInitialized += OnApiInitialized;
+        _renderer.OnWindowLoad += OnEngineStart;
+        _renderer.OnViewportResized += OnViewportResized;
+        _renderer.OnWindowClosed += OnClose;
     }
 
     private void OnClose()
@@ -80,10 +83,11 @@ public class GameEngine
             mouse.MouseMove += _input.OnMouseMove;
             mouse.Scroll += _input.OnMouseScroll;
         }
-        UIEngine.Initialize(window, GraphicsEngine.Api, context);
+        UIEngine.Initialize(window, _renderer.Api, context);
         var activeSceneWorld = _sceneManager.ActiveScenes.World;
         _sceneManager.AwakeScenes();
         _sceneManager.StartScenes();
+        _editor.Initialize(_sceneManager.ActiveScenes);
     }
 
     private void OnApiInitialized(GL gl)
@@ -103,21 +107,16 @@ public class GameEngine
         Time.DeltaTime = dt;
         _accumulatedTime += dt;
         _input.Update(dt);
-        _sceneManager.ActiveScenes.Update(dt);
         while (_accumulatedTime >= PhysicsEngine.FIXED_TIMESTAMP)
         {
             PhysicsEngine.TickPhysics(PhysicsEngine.FIXED_TIMESTAMP);
             _sceneManager.TickScenes(PhysicsEngine.FIXED_TIMESTAMP);
             _accumulatedTime -= PhysicsEngine.FIXED_TIMESTAMP;
         }
-
         PhysicsEngine.InterpolatedTime = (_accumulatedTime / PhysicsEngine.FIXED_TIMESTAMP);
+        _sceneManager.ActiveScenes.Update(dt);
         _sceneManager.ActiveScenes.AfterUpdate();
-    }
-
-    private void RenderLoop(double dt)
-    {
-        _sceneManager.ActiveScenes.RenderScenes(dt);
+        _editor.EditorLoop(_sceneManager.ActiveScenes, (float)dt);
     }
 }
 

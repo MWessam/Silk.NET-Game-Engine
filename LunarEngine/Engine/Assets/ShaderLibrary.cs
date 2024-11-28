@@ -32,7 +32,7 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
     public ShaderAsset CreateShader(string name, string vertexPath, string fragPath)
     {
         var texture = new ShaderAsset(
-            new ShaderHandle(GraphicsEngine.Api, vertexPath, fragPath),
+            new ShaderHandle(Renderer.Instance.Api, vertexPath, fragPath),
             name
         );
         return texture;
@@ -42,6 +42,6 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
 public static class TestShaders
 {
     public static ShaderAsset BasicShader() => new(
-        new ShaderHandle(GraphicsEngine.Api, @"..\..\..\Resources\shader.vert", @"..\..\..\Resources\shader.frag"),
+        new ShaderHandle(Renderer.Instance.Api, @"..\..\..\Resources\shader.vert", @"..\..\..\Resources\shader.frag"),
         "default");
 }

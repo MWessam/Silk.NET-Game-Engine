@@ -24,17 +24,19 @@ public partial class PhysicsSystem : ScriptableSystem
     public override void Tick(double dt)
     {
         CommandBuffer = new();
+        InitializePhysicsQuery(World);
         PhysicsTickQuery(World, in dt);
         PhysicsUpdatePositionTickQuery(World);
         CommandBuffer.Playback(World);
     }
     [Query]
-    [All<RigidBody2D>]
-    public void InitializePhysics(ref RigidBody2D rb)
+    [All<RigidBody2D, Position>]
+    public void InitializePhysics(ref RigidBody2D rb, ref Position position)
     {
         if (rb.IsInitialized) return;
         rb.Mass = 1.0f;
         rb.GravityScale = 0.4f;
+        rb.CurrentPosition = position.Value;
         rb.IsInitialized = true;
     }
     [Query]
@@ -44,7 +46,7 @@ public partial class PhysicsSystem : ScriptableSystem
         pos.Value = Vector3.Lerp(rb.PreviousPosition, rb.CurrentPosition, (float)PhysicsEngine.InterpolatedTime);
     }
     [Query]
-    [All<RigidBody2D>]
+    [All<RigidBody2D, Position>]
     private void PhysicsTick([Data] in double deltaT, Entity entity, ref RigidBody2D rb)
     {
         float deltaTFloat = (float)deltaT;

@@ -7,7 +7,7 @@ using LunarEngine.Graphics;
 namespace LunarEngine.GameObjects;
 public struct SpriteRenderer : IComponent
 {
-    public Sprite Sprite;
+    public Sprite? Sprite;
     public Vector4 Color;
 }
 public struct Shader : IComponent

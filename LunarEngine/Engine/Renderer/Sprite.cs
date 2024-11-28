@@ -70,7 +70,7 @@ public class Sprite : IDisposable
         }
         public Sprite Build()
         {
-            var gl = GraphicsEngine.Api;
+            var gl = Renderer.Instance.Api;
             ArgumentNullException.ThrowIfNull(gl, nameof(gl));
             ArgumentNullException.ThrowIfNull(_shader, nameof(_shader));
             ArgumentNullException.ThrowIfNull(_texture, nameof(_texture));

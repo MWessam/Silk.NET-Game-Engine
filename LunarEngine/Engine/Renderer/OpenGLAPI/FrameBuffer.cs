@@ -67,18 +67,20 @@ public unsafe class FrameBuffer : IDisposable
     public void Unbind()
     {
         _api.BindFramebuffer(GLEnum.Framebuffer, 0);
-        _api.Viewport(GraphicsEngine.WindowContext.Size);
+        _api.Viewport(Renderer.Instance.WindowContext.Size);
     }
 
+    /// <summary>
+    /// MAKE SURE FBO IS BOUND FIRST!
+    /// </summary>
+    /// <param name="newSize"></param>
     public void Resize(Vector2D<int> newSize)
     {
         _size = newSize;
-        Bind();
         _api.BindTexture(GLEnum.Texture2D, _colorTexture);
         _api.TexImage2D(GLEnum.Texture2D, 0, (int)GLEnum.Rgba, (uint)_size.X, (uint)_size.Y, 0, GLEnum.Rgba, GLEnum.UnsignedByte, null);
         _api.BindTexture(GLEnum.Texture2D, _depthTexture);
         _api.TexImage2D(GLEnum.Texture2D, 0, (int)GLEnum.DepthComponent, (uint)_size.X, (uint)_size.Y, 0, GLEnum.DepthComponent, GLEnum.Float, null);
-        Unbind();
     }
 
     public void Dispose()

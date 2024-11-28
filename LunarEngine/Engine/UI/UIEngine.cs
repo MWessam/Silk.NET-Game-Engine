@@ -68,13 +68,13 @@ public static class UIEngine
         // Dock windows into specific regions
         ImGuiP.DockBuilderDockWindow("Hierarchy", leftDockId);
         ImGuiP.DockBuilderDockWindow("Scene", centerGapId);
+        ImGuiP.DockBuilderDockWindow("Game", centerGapId);
         ImGuiP.DockBuilderDockWindow("Inspector", rightDockId);
         
         // Finalize the layout
         ImGuiP.DockBuilderFinish(dockspaceID);
         _isInitialized = true;
     }
-
     public static void PreRender()
     {
         DockSpace();
@@ -150,8 +150,18 @@ public static class EditorUIEngine
             value = currentValue;
         }
     }
+}
 
+public struct ContextAction
+{
+    public string Label;
+    public Action? OnSelect;
 
+    public ContextAction(string label, Action? onSelect)
+    {
+        Label = label;
+        OnSelect = onSelect;
+    }
 }
 public interface IUiElement
 {

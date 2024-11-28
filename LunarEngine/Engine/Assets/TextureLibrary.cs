@@ -33,7 +33,7 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
     public TextureAsset CreateTexture(string name, string path)
     {
         var texture = new TextureAsset(
-            new TextureHandle(GraphicsEngine.Api, path),
+            new TextureHandle(Renderer.Instance.Api, path),
             name
         );
         return texture;
@@ -44,7 +44,7 @@ public static class TestTextures
 {
     public static TextureAsset BirbTexture() =>
         new(
-            new TextureHandle(GraphicsEngine.Api, @"..\..\..\Resources\birb.jpg"),
+            new TextureHandle(Renderer.Instance.Api, @"..\..\..\Resources\birb.jpg"),
             "birb"
             );
 }

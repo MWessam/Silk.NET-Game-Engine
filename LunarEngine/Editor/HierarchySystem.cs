@@ -1,22 +1,33 @@
-using System.Numerics;
 using Arch.Bus;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Hexa.NET.ImGui;
+using LunarEngine.Components;
 using LunarEngine.ECS.Components;
 using LunarEngine.GameObjects;
 using LunarEngine.UI;
-using Serilog;
 
 namespace LunarEngine.ECS.Systems;
 
 public partial class HierarchySystem : ScriptableSystem
 {
     private IUiElement _hierarchyMenu;
+    private string[] _options;
+    private string[] _hierarchyOptions;
+    private int _option = -1;
+    private int _hierarchyOption = -1;
+
     public HierarchySystem(World world) : base(world)
     {
+        _options =
+        [
+            "Delete"
+        ];
+        _hierarchyOptions =
+        [
+            "Create Entity"
+        ];
     }
 
     public override void Awake()
@@ -36,24 +47,40 @@ public partial class HierarchySystem : ScriptableSystem
         CommandBuffer = new();
         _hierarchyMenu.Draw(() =>
         {
+            if (ImGui.BeginPopupContextItem($"ContextMenu_Hierarchy"))
+            {
+                // // Add a combo box for options
+                if (ImGui.Combo("Actions##Hierarchy", ref _hierarchyOption, _hierarchyOptions, _hierarchyOptions.Length))
+                {
+                    switch (_hierarchyOption)
+                    {
+                        case 0:
+                            
+                            var entity = CommandBuffer.Create([typeof(Name), typeof(Transform)]);
+                            CommandBuffer.Set(entity, new Name()
+                            {
+                                Value = "Entity"
+                            });
+                            break;
+                    }
+                    _hierarchyOption = -1;
+                }
+                ImGui.EndPopup();
+            }
             if (ImGui.BeginListBox("##HierarchyList"))
             {
                 UpdateHierarchyQuery(World);  // Render the hierarchy content
-                UpdateHierarchyNoNameQuery(World);
                 ImGui.EndListBox();
             }
         });
         CommandBuffer.Playback(World);
     }
 
-    private string[] _options = ["Delete", "Option 2"];
-    private int _option = -1;
-    
     [Query]
     [All<Name>]
     private void UpdateHierarchy(Entity entity, ref Name name)
     {
-        if (ImGui.Selectable(name.Value))
+        if (ImGui.Selectable($"{name.Value}##{entity.Id}"))
         {
             EventBus.Send(new InspectorTarget()
             {
@@ -62,9 +89,8 @@ public partial class HierarchySystem : ScriptableSystem
         }
         if (ImGui.BeginPopupContextItem($"ContextMenu_{name.Value}"))
         {
-            
             // // Add a combo box for options
-            if (ImGui.Combo("Actions", ref _option, _options, _options.Length))
+            if (ImGui.Combo("Actions##Entity", ref _option, _options, _options.Length))
             {
                 switch (_options[_option])
                 {
@@ -72,20 +98,9 @@ public partial class HierarchySystem : ScriptableSystem
                         CommandBuffer.Destroy(entity);
                         break;
                 }
+                _option = -1;
             }
             ImGui.EndPopup();
-        }
-    }
-    [Query]
-    [None<Name>]
-    private void UpdateHierarchyNoName(Entity entity)
-    {
-        if (ImGui.Selectable(entity.Id.ToString()))
-        {
-            EventBus.Send(new InspectorTarget()
-            {
-                Entity = World.Reference(entity)
-            });
         }
     }
 }

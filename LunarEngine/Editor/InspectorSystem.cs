@@ -42,10 +42,8 @@ public partial class InspectorSystem : ScriptableSystem
         _defaultComponents =
         [
             typeof(Transform),
-            typeof(SpriteRenderer),
             typeof(Name),
             typeof(TagComponent),
-            typeof(Camera),
         ];
         DiscoverAndAddComponentInspectors();
         Hook();
@@ -108,10 +106,10 @@ public partial class InspectorSystem : ScriptableSystem
                         var selectedComponentType = _componentTypes[_selectedComponent];
                         if (World.GetAllComponents(_entity).Any(x => x!.GetType() == selectedComponentType))
                         {
-                            return;
+                            break;
                         }
                         _genericCommandBufferAddMethod.MakeGenericMethod(selectedComponentType).Invoke(CommandBuffer,
-                            [_entity, Activator.CreateInstance(selectedComponentType)]);
+                            [_entity.Entity, Activator.CreateInstance(selectedComponentType)]);
                         
                         _isComponentDropdownOpen = false;
                     }
@@ -178,7 +176,7 @@ public partial class InspectorSystem : ScriptableSystem
                     ImGui.SameLine();
                     if (ImGui.Button($"Remove##{componentType.Name}"))
                     {
-                        _genericCommandBufferRemoveMethod.MakeGenericMethod(componentType).Invoke(CommandBuffer, [_entity]);
+                        _genericCommandBufferRemoveMethod.MakeGenericMethod(componentType).Invoke(CommandBuffer, [_entity.Entity]);
                     }
                 }
                 ImGui.Separator();

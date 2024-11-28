@@ -20,6 +20,13 @@ public partial class CameraSystem : ScriptableSystem
         InitializeCameraQuery(World);
     }
 
+    public override void Update(in double dt)
+    {
+        InitializeCameraQuery(World);
+        UpdateViewProjectionQuery(World);
+        UpdateViewProjectionUniformQuery(World);
+    }
+
     [Query]
     [All<Camera, Position, NeedsInitialization>]
     public void InitializeCamera(Entity entity, ref Camera camera, ref Position position)

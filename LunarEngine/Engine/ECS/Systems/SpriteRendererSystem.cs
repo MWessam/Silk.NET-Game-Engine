@@ -1,4 +1,5 @@
 using System.Numerics;
+using Arch.Buffer;
 using Arch.Bus;
 using Arch.Core;
 using Arch.System;
@@ -28,16 +29,21 @@ public partial class SpriteRendererSystem : ScriptableSystem
     }
     public override void Update(in double data)
     {
+        CommandBuffer = new CommandBuffer();
         InitSpritesQuery(World);
+        CommandBuffer.Playback(World);
     }
     public void Render(in double data)
     {
+        CommandBuffer = new CommandBuffer();
         RenderQuery(World, in data);
+        CommandBuffer.Playback(World);
     }
     [Query]
-    [All<SpriteRenderer, NeedsInitialization>]
+    [All<SpriteRenderer>]
     public void InitSprites(Entity entity, ref SpriteRenderer spriteRenderer)
     {
+        if (spriteRenderer.Sprite != null) return;
         var sprite = Sprite.GetSpriteBuilder()
             .WithTexture(AssetManager.TextureLibrary.DefaultAsset.Texture)
             .Build();
@@ -54,10 +60,12 @@ public partial class SpriteRendererSystem : ScriptableSystem
     [All<SpriteRenderer, Transform>]
     public void Render([Data] in double dt, Entity entity, ref SpriteRenderer spriteRenderer, ref Transform transform)
     {
-        spriteRenderer.Sprite.Render(new ()
+        var spriteDrawCommand = new SpriteDrawCommand();
+        spriteDrawCommand.Init(spriteRenderer.Sprite, new SpriteData()
         {
             Color = spriteRenderer.Color,
-            TransformMatrix = transform.Value,
+            TransformMatrix = transform.Value
         });
+        Renderer.Instance.SubmitRenderCommand(spriteDrawCommand);
     }
 }
