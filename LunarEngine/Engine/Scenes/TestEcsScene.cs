@@ -1,5 +1,7 @@
+using ComponentFactories;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
+using LunarEngine.Engine.ECS.Components;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
@@ -11,19 +13,31 @@ public class TestEcsScene : ECSScene
 {
     public TestEcsScene()
     {
-        World.Create<Name, Camera, Transform, Position, NeedsInitialization>(new()
+        World.Create<Name, Camera, Transform, Position, IsInstantiating>(new()
         {
             Value = "Camera",
         });
-        World.Create<TagComponent, Shader, NeedsInitialization>(new TagComponent("default"));
-        var birb = World.Create<Name, SpriteRenderer, Transform, Position, NeedsInitialization>(new Name()
+        World.Create<TagComponent, Shader, IsInstantiating>(new TagComponent("default"));
+        var birb = World.Create<Name, SpriteRenderer, Transform, Position, IsInstantiating>(new Name()
         {
             Value = "Birb"
         });
-        var birb2 = World.Create<Name, SpriteRenderer, Transform, Position, NeedsInitialization>(new Name()
+        
+        var wallLeft = World.Create<Name, SpriteRenderer, Transform, Position, Scale, BoxCollider2D, IsInstantiating>(new Name()
         {
-            Value = "Birb2"
+            Value = "Wall Left"
         });
-        // World.Add<NeedsPhysicsInitialization, RigidBody2D>(birb);
+        var wallRight = World.Create<Name, SpriteRenderer, Transform, Position, Scale, BoxCollider2D, IsInstantiating>(new Name()
+        {
+            Value = "Wall Right"
+        });
+        var wallUp = World.Create<Name, SpriteRenderer, Transform, Position, Scale, BoxCollider2D, IsInstantiating>(new Name()
+        {
+            Value = "Wall Up"
+        });
+        var wallDown = World.Create<Name, SpriteRenderer, Transform, Position, Scale, BoxCollider2D, IsInstantiating>(new Name()
+        {
+            Value = "Wall Down"
+        });
     }
 }

@@ -1,14 +1,15 @@
 using System.Numerics;
+using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
 using Silk.NET.OpenGL;
 
 namespace LunarEngine.Assets;
-public static class AssetManager
+public class AssetManager : Singleton<AssetManager>, ISingletonObject, IDisposable
 {
-    public static ShaderLibrary ShaderLibrary;
-    public static TextureLibrary TextureLibrary;
-    public static void InitializeAssetManager()
+    public ShaderLibrary ShaderLibrary;
+    public TextureLibrary TextureLibrary;
+    public void InitializeAssetManager()
     {
         ShaderLibrary = ShaderLibrary
             .CreateLibraryBuilder<ShaderLibrary>()
@@ -19,5 +20,14 @@ public static class AssetManager
             .WithAsset("birb", TestTextures.BirbTexture())
             .Build();
         
+    }
+    
+    public void InitSingleton()
+    {
+    }
+
+    public void Dispose()
+    {
+        // TODO release managed resources here
     }
 }

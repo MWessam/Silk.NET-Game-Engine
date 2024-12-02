@@ -3,6 +3,7 @@ using System.Reflection;
 using Arch.Buffer;
 using Arch.Bus;
 using Arch.Core;
+using ComponentFactories;
 using ImGuiNET;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
@@ -109,7 +110,7 @@ public partial class InspectorSystem : ScriptableSystem
                             break;
                         }
                         _genericCommandBufferAddMethod.MakeGenericMethod(selectedComponentType).Invoke(CommandBuffer,
-                            [_entity.Entity, Activator.CreateInstance(selectedComponentType)]);
+                            [_entity.Entity, ComponentFactoryManager.Instance.GetDefaultComponent(selectedComponentType)]);
                         
                         _isComponentDropdownOpen = false;
                     }
@@ -139,53 +140,47 @@ public partial class InspectorSystem : ScriptableSystem
 
             // Get component type and its corresponding inspector.
             var componentType = component.GetType();
-            if (!_componentInspectors.TryGetValue(componentType, out var componentInspector))
+            Action drawAction = null;
+            if (_componentInspectors.TryGetValue(componentType, out var componentInspector))
             {
-                // Log.Error(
-                // $"Couldn't find a valid component inspector for component {componentType.Name} found in entity {_entity.Id}");
-                continue;
-            }
+                
+                // Check if component inspector is the valid generic one.
+                var inspectorType = componentInspector.GetType();
+                var expectedInspectorType = typeof(IComponentInspector<>).MakeGenericType(componentType);
 
-            // Check if component inspector is the valid generic one.
-            var inspectorType = componentInspector.GetType();
-            var expectedInspectorType = typeof(IComponentInspector<>).MakeGenericType(componentType);
-
-            if (!expectedInspectorType.IsAssignableFrom(inspectorType))
-            {
-                Log.Error(
-                    $"Component inspector type mismatch: {inspectorType.Name} does not match expected {expectedInspectorType.Name} for component {componentType.Name}");
-                continue;
-            }
-
-            // Get draw inspector method.
-            var methodName = "OnDrawInspector";
-            var drawMethod = expectedInspectorType.GetMethod(methodName);
-            if (drawMethod is null)
-            {
-                Log.Error(
-                    $"For some unholy reason the method {methodName} is not found in type {expectedInspectorType.Name}...");
-                return;
-            }
-
-            // Store draw action as an action
-            var drawAction = () =>
-            {
-                ImGui.Text(componentType.Name);
-                if (_defaultComponents.All(x => x.Name != componentType.Name))
+                if (!expectedInspectorType.IsAssignableFrom(inspectorType))
                 {
-                    ImGui.SameLine();
-                    if (ImGui.Button($"Remove##{componentType.Name}"))
-                    {
-                        _genericCommandBufferRemoveMethod.MakeGenericMethod(componentType).Invoke(CommandBuffer, [_entity.Entity]);
-                    }
+                    Log.Error(
+                        $"Component inspector type mismatch: {inspectorType.Name} does not match expected {expectedInspectorType.Name} for component {componentType.Name}");
+                    continue;
                 }
-                ImGui.Separator();
-                object?[] parameters = [component];
-                drawMethod.Invoke(componentInspector, parameters);
-                component = parameters[0];
-                World.Set(_entity, component);
-                ImGui.Separator();
-            };
+
+                // Get draw inspector method.
+                var methodName = "OnDrawInspector";
+                var drawMethod = expectedInspectorType.GetMethod(methodName);
+                if (drawMethod is null)
+                {
+                    Log.Error(
+                        $"For some unholy reason the method {methodName} is not found in type {expectedInspectorType.Name}...");
+                    return;
+                }
+
+                // Store draw action as an action
+                drawAction = () =>
+                {
+                    DrawComponentName(componentType);
+                    object?[] parameters = [component];
+                    drawMethod.Invoke(componentInspector, parameters);
+                    component = parameters[0];
+                    World.Set(_entity, component);
+                    ImGui.Separator();
+                };
+            }
+            else
+            { 
+                // Just draw default inspector for component.
+                drawAction = () => DrawComponentName(componentType);
+            }
             // Prioritize name component above all else.
             if (component is Name)
             {
@@ -204,6 +199,20 @@ public partial class InspectorSystem : ScriptableSystem
         }
 
         return;
+    }
+
+    private void DrawComponentName(Type componentType)
+    {
+        ImGui.Text(componentType.Name);
+        if (_defaultComponents.All(x => x.Name != componentType.Name))
+        {
+            ImGui.SameLine();
+            if (ImGui.Button($"Remove##{componentType.Name}"))
+            {
+                _genericCommandBufferRemoveMethod.MakeGenericMethod(componentType).Invoke(CommandBuffer, [_entity.Entity]);
+            }
+        }
+        ImGui.Separator();
     }
 
     /// <summary>
@@ -260,3 +269,4 @@ public partial class InspectorSystem : ScriptableSystem
         _genericCommandBufferAddMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add");
     }
 }
+

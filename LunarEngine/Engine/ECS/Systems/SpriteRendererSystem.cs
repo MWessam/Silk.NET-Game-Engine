@@ -45,7 +45,7 @@ public partial class SpriteRendererSystem : ScriptableSystem
     {
         if (spriteRenderer.Sprite != null) return;
         var sprite = Sprite.GetSpriteBuilder()
-            .WithTexture(AssetManager.TextureLibrary.DefaultAsset.Texture)
+            .WithTexture(AssetManager.Instance.TextureLibrary.DefaultAsset.Texture)
             .Build();
         spriteRenderer.Color = Vector4.One;
         sprite.Initialize(_quad);

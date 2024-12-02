@@ -4,8 +4,10 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Components;
+using LunarEngine.ECS.Systems;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
+using Silk.NET.Maths;
 
 namespace LunarEngine.GameEngine;
 
@@ -28,7 +30,7 @@ public partial class CameraSystem : ScriptableSystem
     }
 
     [Query]
-    [All<Camera, Position, NeedsInitialization>]
+    [All<Camera, Position, IsInstantiating>]
     public void InitializeCamera(Entity entity, ref Camera camera, ref Position position)
     {
         camera.Width = 5;
@@ -58,5 +60,15 @@ public partial class CameraSystem : ScriptableSystem
             ViewProjection = viewProjection,
         };
         EventBus.Send(viewProjectionEvent);
+    }
+
+    public void UpdateViewportCamera(Vector2D<int> viewport)
+    {
+        var cameraQuery = new QueryDescription().WithAll<Camera>();
+        float aspectRatio = (float)viewport.X / viewport.Y;
+        World.Query(cameraQuery, (ref Camera camera) =>
+        {
+            camera.Width = camera.Height * aspectRatio;
+        });
     }
 }

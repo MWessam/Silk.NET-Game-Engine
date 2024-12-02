@@ -4,6 +4,7 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Assets;
+using LunarEngine.Components;
 using LunarEngine.Engine.ECS.Components;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameObjects;
@@ -22,10 +23,10 @@ public partial class ShaderSystem : ScriptableSystem
         InitShaderQuery(World);
     }
     [Query]
-    [All<Shader, TagComponent, NeedsInitialization>]
+    [All<Shader, TagComponent, IsInstantiating>]
     public void InitShader(ref Shader shader, ref TagComponent tagComponent)
     {
-        shader.Value = AssetManager.ShaderLibrary.DefaultAsset.Shader;
+        shader.Value = AssetManager.Instance.ShaderLibrary.DefaultAsset.Shader;
     }
     [Event(order:0)]
     public void OnViewProjectionUpdated(ViewProjectionEvent evt)

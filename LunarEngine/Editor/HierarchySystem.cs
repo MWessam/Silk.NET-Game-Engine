@@ -2,6 +2,7 @@ using Arch.Bus;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using ComponentFactories;
 using Hexa.NET.ImGui;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
@@ -17,6 +18,7 @@ public partial class HierarchySystem : ScriptableSystem
     private string[] _hierarchyOptions;
     private int _option = -1;
     private int _hierarchyOption = -1;
+    private EntityFactory _entityFactory;
 
     public HierarchySystem(World world) : base(world)
     {
@@ -41,6 +43,7 @@ public partial class HierarchySystem : ScriptableSystem
             ImGuiDir = ImGuiDir.Left,
             // StretchY = true,
         };
+        _entityFactory = new();
     }
     public override void Update(in double d)
     {
@@ -55,12 +58,7 @@ public partial class HierarchySystem : ScriptableSystem
                     switch (_hierarchyOption)
                     {
                         case 0:
-                            
-                            var entity = CommandBuffer.Create([typeof(Name), typeof(Transform)]);
-                            CommandBuffer.Set(entity, new Name()
-                            {
-                                Value = "Entity"
-                            });
+                            _entityFactory.CreateEntity(CommandBuffer);
                             break;
                     }
                     _hierarchyOption = -1;

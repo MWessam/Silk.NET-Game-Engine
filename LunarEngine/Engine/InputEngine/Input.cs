@@ -1,10 +1,11 @@
 using System.Numerics;
+using LunarEngine.GameEngine;
 using Serilog;
 using Silk.NET.Input;
 
 namespace LunarEngine.InputEngine;
 
-public class Input
+public class Input : Singleton<Input>, ISingletonObject, IDisposable
 {
     private Dictionary<Key, Action<Key>> _onKeyPressedMap = new();
     private Dictionary<Key, Action<Key>> _onKeyReleasedMap = new();
@@ -17,19 +18,8 @@ public class Input
     private HashSet<MouseButton> _heldMouseButtons = new();
     public event Action<Vector2> OnMouseMoved;
     public Vector2 KeyboardAxis;
-    public static Input Instance
-    {
-        get
-        {
-            if (s_instance is null)
-            {
-                s_instance = new Input();
-                return s_instance;
-            }
-            return s_instance;
-        }
-    }
-    private Input()
+
+    public Input()
     {
         AddKeyHeldListener(Key.W, OnWPressed); 
         AddKeyHeldListener(Key.A, OnAPressed); 
@@ -40,15 +30,7 @@ public class Input
         AddKeyUpListener(Key.S, OnSReleased); 
         AddKeyUpListener(Key.D, OnDReleased); 
     }
-    public static Input Create()
-    {
-        if (s_instance is null)
-        {
-            s_instance = new Input();
-            return s_instance;
-        }
-        return s_instance;
-    }
+
 
     #region LISTENERS
 
@@ -252,4 +234,13 @@ public class Input
     }
 
     #endregion
+
+    public void InitSingleton()
+    {
+        
+    }
+
+    public void Dispose()
+    {
+    }
 }

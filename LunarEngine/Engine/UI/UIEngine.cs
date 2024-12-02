@@ -89,6 +89,24 @@ public static class EditorUIEngine
     /// <param name="value"></param>
     /// <param name="label">MANDATORY! LABEL MUST BE UNIQUE. To hide label, u can prefix it with ##</param>
     /// <param name="dragSpeed"></param>
+    public static void DrawInputDragFloat2UIElement(ref Vector2 value, string label, float dragSpeed = 0.1f)
+    {
+        Vector2 currentValue = value;
+        if (ImGui.DragFloat2($"{label}##drag", ref currentValue, dragSpeed))
+        {
+            value = currentValue;
+        }
+        if (ImGui.InputFloat2($"{label}##input", ref currentValue))
+        {
+            value = currentValue;
+        }
+    }
+    /// <summary>
+    /// Creates drag and keyboard input vector3 field.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="label">MANDATORY! LABEL MUST BE UNIQUE. To hide label, u can prefix it with ##</param>
+    /// <param name="dragSpeed"></param>
     public static void DrawInputDragFloat3UIElement(ref Vector3 value, string label, float dragSpeed = 0.1f)
     {
         Vector3 currentValue = value;
@@ -148,6 +166,20 @@ public static class EditorUIEngine
         if (ImGui.InputFloat($"{label}##input", ref currentValue))
         {
             value = currentValue;
+        }
+    }
+
+    /// <summary>
+    /// Creates bool input field.
+    /// </summary>
+    /// <param name="componentIsInterpolating"></param>
+    /// <param name="label"></param>
+    public static void DrawBoolUIElement(ref bool componentIsInterpolating, string label)
+    {
+        bool currentValue = componentIsInterpolating;
+        if (ImGui.Checkbox(label, ref currentValue))
+        {
+            componentIsInterpolating = currentValue;
         }
     }
 }

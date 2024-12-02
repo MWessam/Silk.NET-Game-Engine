@@ -43,4 +43,13 @@ public static class VectorExtensions
     {
         return Quaternion.CreateFromYawPitchRoll(eulerAngles.Y, eulerAngles.X, eulerAngles.Z);
     }
+
+    public static Vector2 AsVector2(this Vector3 vector3)
+    {
+        return new Vector2(vector3.X, vector3.Y);
+    }
+    public static Vector3 AsVector3(this Vector2 vector2, float z = 0.0f)
+    {
+        return new Vector3(vector2.X, vector2.Y, z);
+    }
 }

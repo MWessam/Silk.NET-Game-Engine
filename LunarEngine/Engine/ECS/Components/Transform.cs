@@ -1,25 +1,62 @@
-using System.Collections;
 using System.Numerics;
-using LunarEngine.Utilities;
-using Arch.Core;
 using LunarEngine.Engine.ECS.Components;
-
 namespace LunarEngine.Components;
 public struct Position : IComponent
 {
-    public Vector3 Value;
+    internal Vector3 _value;
+    public Vector3 Value
+    {
+        get
+        {
+            return _value;
+        }
+        set
+        {
+            if (_value == value) return;
+            _value = value;
+            IsDirty = true;
+        }
+    }
+    public bool IsDirty;
 }
 public struct Rotation : IComponent
 {
-    public Quaternion Value;
+    internal Quaternion _value;
+    public Quaternion Value
+    {
+        get
+        {
+            return _value;
+        }
+        set
+        {
+            if (_value == value) return;
+            _value = value;
+            IsDirty = true;
+        }
+    }
+    public bool IsDirty;
 }
 public struct Scale : IComponent
 {
-    public Vector3 Value;
+    internal Vector3 _value;
+    public Vector3 Value
+    {
+        get
+        {
+            return _value;
+        }
+        set
+        {
+            if (_value == value) return;
+            _value = value;
+            IsDirty = true;
+        }
+    }
+    public bool IsDirty;
 }
 public struct Transform : IComponent
 {
-    public int Id;
     public Matrix4x4 Value;
 }
 public struct Parent : IComponent

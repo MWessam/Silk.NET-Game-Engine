@@ -25,7 +25,6 @@ public class ECSScene
     private readonly InitializationSystem _initializationSystem;
     private readonly ShaderSystem _shaderSystem;
     private readonly PhysicsSystem _physicsSystem;
-    private readonly PhysicsInitializationSystem _physicsInitializationSystem;
     private readonly InputSystem _inputSystem;
     #endregion
     public CommandBuffer CommandBuffer = new CommandBuffer();
@@ -38,7 +37,6 @@ public class ECSScene
         _initializationSystem = new InitializationSystem(World);
         _shaderSystem = new ShaderSystem(World);
         _physicsSystem = new PhysicsSystem(World);
-        _physicsInitializationSystem = new PhysicsInitializationSystem(World);
         _inputSystem = new InputSystem(World);
     }
     public bool IsActive = true;
@@ -51,7 +49,6 @@ public class ECSScene
         _spriteRendererSystem.Awake();
         _cameraSystem.Awake();
         _physicsSystem.Awake();
-        _physicsInitializationSystem.Awake();
         _inputSystem.Awake();
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {
@@ -65,13 +62,12 @@ public class ECSScene
         _spriteRendererSystem.Start();
         _cameraSystem.Start();
         _physicsSystem.Start();
-        _physicsInitializationSystem.Start();
         _inputSystem.Start();
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {
             system.Start();
         }
-        _initializationSystem.Start();
+        _initializationSystem.Update(0);
     }
 
     public void Update(double dt)
@@ -109,6 +105,6 @@ public class ECSScene
 
     public void SetSceneCameraViewport(Vector2D<int> newViewport)
     {
-        // _cameraSystem.SetCameraViewportQuery(newViewport);
+        _cameraSystem.UpdateViewportCamera(newViewport);
     }
 }

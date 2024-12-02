@@ -1,24 +1,17 @@
+using Arch.Buffer;
 using LunarEngine.Engine.Graphics;
+using LunarEngine.GameEngine;
 using LunarEngine.Scenes;
 using LunarEngine.UI;
+using Silk.NET.Maths;
 
 namespace LunarEngine.ECS.Systems;
 
-public class Editor
+public class Editor : Singleton<Editor>, ISingletonObject, IDisposable
 {
-    public static Editor? Instance;
     private HierarchySystem _hierarchySystem;
     private InspectorSystem _inspectorSystem;
     private SceneSystem _sceneSystem;
-
-    public static Editor Create()
-    {
-        if (Instance is not null) return Instance;
-        var editor = new Editor();
-        Instance = editor;
-        return editor;
-    }
-
     public void Initialize(ECSScene scene)
     {
         _hierarchySystem = new HierarchySystem(scene.World);
@@ -31,10 +24,21 @@ public class Editor
     public void EditorLoop(ECSScene scene, in float dt)
     {
         Renderer.Instance.Clear();
+        _sceneSystem.Draw(Renderer.Instance, scene, dt);
         _hierarchySystem.Update(dt);
         _inspectorSystem.Update(dt);
-        _sceneSystem.Draw(Renderer.Instance, scene, dt);
         UIEngine.Render();
     }
-    private Editor(){}
+    public void InitSingleton()
+    {
+        
+    }
+    public void Dispose()
+    {
+        
+    }
+
+    public void OnViewportResize(Vector2D<int> viewport)
+    {
+    }
 }

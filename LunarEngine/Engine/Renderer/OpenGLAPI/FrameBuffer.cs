@@ -1,4 +1,5 @@
 using System.Drawing;
+using LunarEngine.GameEngine;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
@@ -67,7 +68,7 @@ public unsafe class FrameBuffer : IDisposable
     public void Unbind()
     {
         _api.BindFramebuffer(GLEnum.Framebuffer, 0);
-        _api.Viewport(Renderer.Instance.WindowContext.Size);
+        _api.Viewport(Application.Viewport);
     }
 
     /// <summary>
