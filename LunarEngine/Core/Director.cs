@@ -51,7 +51,7 @@ public class Director : Singleton<Director>, ISingletonObject, IDisposable
 
     public void LoadRenderer(IWindow window, IInputContext context, GL api)
     {
-        _renderer.Api = api;
+        _renderer.InitializeRenderer(api);
         UIEngine.Initialize(window, api, context);
     }
 
@@ -93,6 +93,10 @@ public class Director : Singleton<Director>, ISingletonObject, IDisposable
     public void InitializeAssetManager()
     {
         _assetManager.InitializeAssetManager();
+        _assetManager.TextureLibrary.CreateTexture("water", @"..\..\..\Resources\water.png");
+        _assetManager.TextureLibrary.CreateTexture("square", @"..\..\..\Resources\square.jpg");
+        _assetManager.ShaderLibrary.CreateShader("wave", @"..\..\..\Resources\wave.vert", @"..\..\..\Resources\wave.frag");
+        _assetManager.ShaderLibrary.CreateShader("wireframe_gizmo", @"..\..\..\Resources\Debug\wireframe_gizmo.vert", @"..\..\..\Resources\Debug\wireframe_gizmo.frag");
     }
 
     public void InitializeInput(IInputContext context)

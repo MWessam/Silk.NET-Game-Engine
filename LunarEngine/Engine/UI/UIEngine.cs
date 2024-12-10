@@ -1,5 +1,6 @@
 using System.Numerics;
 using Hexa.NET.ImGui;
+using LunarEngine.Physics;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
@@ -176,11 +177,19 @@ public static class EditorUIEngine
     /// <param name="label"></param>
     public static void DrawBoolUIElement(ref bool componentIsInterpolating, string label)
     {
-        bool currentValue = componentIsInterpolating;
-        if (ImGui.Checkbox(label, ref currentValue))
+        if (ImGui.Checkbox(label, ref componentIsInterpolating))
         {
-            componentIsInterpolating = currentValue;
         }
+    }
+
+    public static bool DrawEnumUIElement(ref int currentItemIndex, string label, params Enum[] enums)
+    {
+        if (ImGui.Combo($"Enum##{label}", ref currentItemIndex, enums.Select(x => x.ToString()).ToArray(), enums.Length))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
 

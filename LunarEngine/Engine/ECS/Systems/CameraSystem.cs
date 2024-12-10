@@ -13,6 +13,7 @@ namespace LunarEngine.GameEngine;
 
 public partial class CameraSystem : ScriptableSystem
 {
+    public static Camera SceneCamera;
     public CameraSystem(World world) : base(world)
     {
     }
@@ -40,6 +41,7 @@ public partial class CameraSystem : ScriptableSystem
         
         position.Value = new Vector3(0.0f, 0.0f, -1.0f);
         World.Add<DirtyTransform>(entity);
+        SceneCamera = camera;
     }
     [Query]
     [All<Camera, Position, Transform>]
@@ -55,6 +57,8 @@ public partial class CameraSystem : ScriptableSystem
     public void UpdateViewProjectionUniform(ref Camera camera)
     {
         var viewProjection = camera.View * camera.Projection;
+        camera.ViewProjection = viewProjection;
+        SceneCamera = camera;
         var viewProjectionEvent = new ViewProjectionEvent()
         {
             ViewProjection = viewProjection,
@@ -64,10 +68,13 @@ public partial class CameraSystem : ScriptableSystem
 
     public void UpdateViewportCamera(Vector2D<int> viewport)
     {
+        // const float PPU = 10;
         var cameraQuery = new QueryDescription().WithAll<Camera>();
-        float aspectRatio = (float)viewport.X / viewport.Y;
+        var aspectRatio = (float)viewport.X / viewport.Y;
         World.Query(cameraQuery, (ref Camera camera) =>
         {
+            // var orthoSize = viewport.Y / (2 * PPU);
+            // camera.Height = orthoSize;
             camera.Width = camera.Height * aspectRatio;
         });
     }

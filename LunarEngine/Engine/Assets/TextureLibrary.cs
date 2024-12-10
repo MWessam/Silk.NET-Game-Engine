@@ -1,5 +1,7 @@
 using LunarEngine.Engine.Graphics;
+using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
+using Serilog;
 using Silk.NET.OpenGL;
 
 namespace LunarEngine.Assets;
@@ -33,9 +35,14 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
     public TextureAsset CreateTexture(string name, string path)
     {
         var texture = new TextureAsset(
-            new TextureHandle(Renderer.Instance.Api, path),
+            LGTexture.CreateTexture(Renderer.Instance.Api, path),
             name
         );
+        if (!AddAsset(name, texture))
+        {
+            Log.Error($"Couldn't save texture {name} as a texture with that name already exists.");
+        }
+        
         return texture;
     }
 }
@@ -44,7 +51,7 @@ public static class TestTextures
 {
     public static TextureAsset BirbTexture() =>
         new(
-            new TextureHandle(Renderer.Instance.Api, @"..\..\..\Resources\birb.jpg"),
+            LGTexture.CreateTexture(Renderer.Instance.Api, @"..\..\..\Resources\birb.jpg"),
             "birb"
             );
 }

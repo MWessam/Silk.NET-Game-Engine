@@ -16,47 +16,12 @@ public partial class ShaderSystem : ScriptableSystem
 {
     public ShaderSystem(World world) : base(world)
     {
-        Hook();
     }
     public override void Awake()
     {
-        InitShaderQuery(World);
     }
-    [Query]
-    [All<Shader, TagComponent, IsInstantiating>]
-    public void InitShader(ref Shader shader, ref TagComponent tagComponent)
-    {
-        shader.Value = AssetManager.Instance.ShaderLibrary.DefaultAsset.Shader;
-    }
-    [Event(order:0)]
-    public void OnViewProjectionUpdated(ViewProjectionEvent evt)
-    {
-        var shaderQueryDescription = new QueryDescription().WithAll<Shader>();
-        ViewProjectionEvent @event = evt;
-        World.Query(shaderQueryDescription, (ref Shader shaderComponent) =>
-        {
-            shaderComponent.Value.SetUniform("vp", @event.ViewProjection);
-        });
-    }
-    [Event(order:0)]
-    public void AssignShader(AssignShaderEvent evt)
-    {
-        var shaderQueryDescription = new QueryDescription().WithAll<Shader, TagComponent>();
-        AssignShaderEvent evtCopy = evt;
-        World.Query(shaderQueryDescription, (ref Shader shaderComponent, ref TagComponent tagComponent) =>
-        {
-            if (tagComponent.Name == evtCopy.ShaderName)
-            {
-                evtCopy.Sprite.ChangeShader(shaderComponent.Value);
-            }
-        });
-    }
-    [Query]
-    [All<Shader>]
-    public void UpdateDirtyUniforms(ref Shader shader)
-    {
-        shader.Value.UpdateDirtyUniforms();
-    }
+
+
 }
 public struct AssignShaderEvent
 {

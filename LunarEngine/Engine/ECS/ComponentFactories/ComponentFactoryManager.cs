@@ -57,7 +57,8 @@ namespace ComponentFactories
         {
             return new Scale()
             {
-                Value = Vector3.One,
+                UserValue = Vector3.One,
+                BaseValue = Vector3.One,
             };
         }
     }

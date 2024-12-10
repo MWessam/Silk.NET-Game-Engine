@@ -9,8 +9,9 @@ public struct BoxCollider2D : IComponent
     public float Height;
 
     // Gets the min and max values for the AABB
-    public float MinX => Position.X - Width / 2f;
-    public float MaxX => Position.X + Width / 2f;
-    public float MinY => Position.Y - Height / 2f;
-    public float MaxY => Position.Y + Height / 2f;
+    //TODO: Figure out WHY TF DOES NOT DIVIDING IT BY 2 WORK??
+    public float MinX => Position.X - Width;
+    public float MaxX => Position.X + Width;
+    public float MinY => Position.Y - Height;
+    public float MaxY => Position.Y + Height;
 }

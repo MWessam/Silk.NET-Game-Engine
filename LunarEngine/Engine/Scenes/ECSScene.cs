@@ -73,10 +73,10 @@ public class ECSScene
     public void Update(double dt)
     {
         _physicsSystem.Update(dt);
+        _spriteRendererSystem.Update(dt);
         _transformSystem.Update(dt);
         _cameraSystem.Update(dt);
         _shaderSystem.Update(dt);
-        _spriteRendererSystem.Update(dt);
         _inputSystem.Update(dt);
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {

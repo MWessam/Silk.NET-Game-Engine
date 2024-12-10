@@ -57,19 +57,19 @@ public partial class TransformSystem : ScriptableSystem
     [All<Scale, Transform>, None<Rotation, Position>]
     public void UpdateTransformMatrixNoRotNoPos(Entity entity, ref Scale scale, ref Transform transform)
     {
-        CalculateTransform(ref transform, Quaternion.Identity, Vector3.Zero, scale.Value, scale.IsDirty);
+        CalculateTransform(ref transform, Quaternion.Identity, Vector3.Zero, scale.ActualValue, scale.IsDirty);
     }
     [Query]
     [All<Position, Scale, Transform>, None<Rotation>]
     public void UpdateTransformMatrixNoRot(Entity entity, ref Position position, ref Scale scale, ref Transform transform)
     {
-        CalculateTransform(ref transform, Quaternion.Identity, position.Value, scale.Value, position.IsDirty || scale.IsDirty);
+        CalculateTransform(ref transform, Quaternion.Identity, position.Value, scale.ActualValue, position.IsDirty || scale.IsDirty);
     }
     [Query]
     [All<Rotation, Scale, Transform>, None<Position>]
     public void UpdateTransformMatrixNoPos(Entity entity, ref Rotation rotation, ref Scale scale, ref Transform transform)
     {
-        CalculateTransform(ref transform, rotation.Value, Vector3.Zero, scale.Value, rotation.IsDirty || scale.IsDirty);
+        CalculateTransform(ref transform, rotation.Value, Vector3.Zero, scale.ActualValue, rotation.IsDirty || scale.IsDirty);
     }
     [Query]
     [All<Rotation, Position, Transform>, None<Scale>]
@@ -81,7 +81,7 @@ public partial class TransformSystem : ScriptableSystem
     [All<Position, Rotation, Scale, Transform>]
     public void UpdateTransformMatrixAll(Entity entity, ref Rotation rotation, ref Position position, ref Scale scale, ref Transform transform)
     {
-        CalculateTransform(ref transform, rotation.Value, position.Value, scale.Value, rotation.IsDirty || position.IsDirty || scale.IsDirty);
+        CalculateTransform(ref transform, rotation.Value, position.Value, scale.ActualValue, rotation.IsDirty || position.IsDirty || scale.IsDirty);
     }
 
     private static void CalculateTransform(ref Transform transform, Quaternion rotation, Vector3 position, Vector3 scale, bool isDirty)
@@ -90,6 +90,5 @@ public partial class TransformSystem : ScriptableSystem
         transform.Value = Matrix4x4.CreateScale(scale) *
                           Matrix4x4.CreateFromQuaternion(rotation) *
                           Matrix4x4.CreateTranslation(position);
-        
     }
 }

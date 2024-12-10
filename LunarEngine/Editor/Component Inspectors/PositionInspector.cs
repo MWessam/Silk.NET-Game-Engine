@@ -30,8 +30,8 @@ public class ScaleInspector : IComponentInspector<Scale>
 {
     public void OnDrawInspector(ref Scale component)
     {
-        var value = component.Value;
+        var value = component.UserValue;
         EditorUIEngine.DrawInputDragFloat3UIElement(ref value, "##scale");
-        component.Value = value;
+        component.UserValue = value;
     }
 }

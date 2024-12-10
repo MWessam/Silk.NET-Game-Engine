@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace LunarEngine.Utilities;
 
@@ -51,5 +52,27 @@ public static class VectorExtensions
     public static Vector3 AsVector3(this Vector2 vector2, float z = 0.0f)
     {
         return new Vector3(vector2.X, vector2.Y, z);
+    }
+
+    public static float[] AsFloatArray(this Vector2 vec)
+    {
+        return [vec.X, vec.Y];
+    }
+    public static float[] AsFloatArray(this Vector3 vec)
+    {
+        return [vec.X, vec.Y, vec.Z];
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float[] ConvertVectorsToFloats(ReadOnlySpan<Vector2> vectors)
+    {
+        Span<float> floatArray = stackalloc float[vectors.Length * 2];
+        var length = vectors.Length * 2;
+        for (var i = 0; i < vectors.Length; i++)
+        {
+            floatArray[i * 2] = vectors[i].X;
+            floatArray[i * 2 + 1] = vectors[i].Y;
+        }
+        return floatArray.ToArray();
     }
 }

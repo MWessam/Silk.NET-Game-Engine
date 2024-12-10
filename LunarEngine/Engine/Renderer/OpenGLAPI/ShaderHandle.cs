@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Numerics;
 using Silk.NET.OpenGL;
 
@@ -35,6 +36,7 @@ public struct ShaderHandle : IDisposable, IBindable
 
     public void UpdateDirtyUniforms()
     {
+        Bind();
         foreach (var uniform in _dirtyUniformQueue)
         {
             uniform();
@@ -52,7 +54,13 @@ public struct ShaderHandle : IDisposable, IBindable
     {
         GL? gl = _gl;
         ShaderUniformLibrary? library = _uniforms;
-        _dirtyUniformQueue.Enqueue(() => {gl.Uniform1(library.GetUniform(name), value);});
+        if (library.TryGetUniform(name, out var uniform))
+        {
+            _dirtyUniformQueue.Enqueue(() =>
+            {
+                gl.Uniform1(library.GetUniform(name), value);
+            });
+        }
     }
     public void SetUniform(string name, Vector2 vec2)
     {
@@ -80,6 +88,7 @@ public struct ShaderHandle : IDisposable, IBindable
 
     private unsafe void _SetUniform(string name, Matrix4x4 mat4)
     {
+        Bind();
         _gl.UniformMatrix4(_uniforms.GetUniform(name), 1, false, (float*)&mat4);
     }
 
@@ -124,7 +133,6 @@ public struct ShaderHandle : IDisposable, IBindable
             {
                 return uniform;
             }
-
             var uniformToGet = gl.GetUniformLocation(handle, name);
             if (uniformToGet < 0)
             {
@@ -132,6 +140,23 @@ public struct ShaderHandle : IDisposable, IBindable
             }
 
             return uniformToGet;
+        }
+
+        internal bool TryGetUniform(string name, out int uniformToGet)
+        {
+            uniformToGet = -1;
+            if (_uniforms.TryGetValue(name, out uniformToGet))
+            {
+                return true;
+            }
+
+            uniformToGet = gl.GetUniformLocation(handle, name);
+            if (uniformToGet < 0)
+            {
+                return false;
+                throw new UniformNotFoundException($"Specified uniform {name} was not found");
+            }
+            return true;
         }
         private class UniformNotFoundException(string message) : Exception(message);
     }

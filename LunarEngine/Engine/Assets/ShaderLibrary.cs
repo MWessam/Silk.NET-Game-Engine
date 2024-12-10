@@ -1,5 +1,6 @@
 using LunarEngine.Engine.Graphics;
 using LunarEngine.Graphics;
+using Serilog;
 using Silk.NET.OpenGL;
 
 namespace LunarEngine.Assets;
@@ -31,11 +32,15 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
     }
     public ShaderAsset CreateShader(string name, string vertexPath, string fragPath)
     {
-        var texture = new ShaderAsset(
+        var shader = new ShaderAsset(
             new ShaderHandle(Renderer.Instance.Api, vertexPath, fragPath),
             name
         );
-        return texture;
+        if (!AddAsset(name, shader))
+        {
+            Log.Error($"Couldn't save texture {name} as a texture with that name already exists.");
+        }
+        return shader;
     }
 }
 

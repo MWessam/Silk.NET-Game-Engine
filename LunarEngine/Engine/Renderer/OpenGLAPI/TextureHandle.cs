@@ -11,22 +11,18 @@ public struct TextureHandle : IDisposable
         public uint Handle => _handle;
 
 
-        public unsafe TextureHandle(GL gl, string path)
+        public unsafe TextureHandle(GL gl, ImageResult image)
         {
             _gl = gl;
             _handle = _gl.GenTexture();
             Bind();
             
-            // Load the image from memory.
-            ImageResult result = ImageResult.FromMemory(File.ReadAllBytes(path), ColorComponents.RedGreenBlueAlpha);
-            
-            fixed (byte* ptr = result.Data)
+            fixed (byte* ptr = image.Data)
             {
                 // Create our texture and upload the image data.
-                _gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba, (uint) result.Width, 
-                    (uint) result.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
+                _gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba, (uint) image.Width, 
+                    (uint) image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
             }
-
             SetParameters();
         }
 
@@ -44,8 +40,9 @@ public struct TextureHandle : IDisposable
             {
                 //Setting the data of a texture.
                 _gl.TexImage2D(TextureTarget.Texture2D, 0, (int) InternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
-                SetParameters();
             }
+            SetParameters();
+
         }
 
 

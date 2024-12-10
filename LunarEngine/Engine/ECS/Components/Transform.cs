@@ -39,20 +39,37 @@ public struct Rotation : IComponent
 }
 public struct Scale : IComponent
 {
-    internal Vector3 _value;
-    public Vector3 Value
+    internal Vector3 _userValue;
+    internal Vector3 _baseValue;
+    public Vector3 UserValue
     {
         get
         {
-            return _value;
+            return _userValue;
         }
         set
         {
-            if (_value == value) return;
-            _value = value;
+            if (_userValue == value) return;
+            _userValue = value;
             IsDirty = true;
+            ActualValue = _userValue * _baseValue;
         }
     }
+    public Vector3 BaseValue
+    {
+        get
+        {
+            return _baseValue;
+        }
+        set
+        {
+            if (_baseValue == value) return;
+            _baseValue = value;
+            IsDirty = true;
+            ActualValue = _userValue * _baseValue;
+        }
+    }
+    public Vector3 ActualValue;
     public bool IsDirty;
 }
 public struct Transform : IComponent

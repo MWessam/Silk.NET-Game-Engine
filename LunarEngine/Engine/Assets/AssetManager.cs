@@ -19,7 +19,6 @@ public class AssetManager : Singleton<AssetManager>, ISingletonObject, IDisposab
             .CreateLibraryBuilder<TextureLibrary>()
             .WithAsset("birb", TestTextures.BirbTexture())
             .Build();
-        
     }
     
     public void InitSingleton()

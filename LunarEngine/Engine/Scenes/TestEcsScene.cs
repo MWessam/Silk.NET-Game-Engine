@@ -1,3 +1,4 @@
+using System.Numerics;
 using ComponentFactories;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
@@ -17,27 +18,25 @@ public class TestEcsScene : ECSScene
         {
             Value = "Camera",
         });
-        World.Create<TagComponent, Shader, IsInstantiating>(new TagComponent("default"));
-        var birb = World.Create<Name, SpriteRenderer, Transform, Position, IsInstantiating>(new Name()
+        var birb = World.Create<Name, SpriteRenderer, Transform, BoxCollider2D, Position, Scale, IsInstantiating>(new Name()
         {
             Value = "Birb"
+        });
+        World.Set(birb, new Scale()
+        {
+            BaseValue = Vector3.One,
+            UserValue = Vector3.One,
         });
         
         var wallLeft = World.Create<Name, SpriteRenderer, Transform, Position, Scale, BoxCollider2D, IsInstantiating>(new Name()
         {
-            Value = "Wall Left"
+            Value = "Collider"
         });
-        var wallRight = World.Create<Name, SpriteRenderer, Transform, Position, Scale, BoxCollider2D, IsInstantiating>(new Name()
+        World.Set(wallLeft, new Scale()
         {
-            Value = "Wall Right"
+            BaseValue = Vector3.One,
+            UserValue = Vector3.One
         });
-        var wallUp = World.Create<Name, SpriteRenderer, Transform, Position, Scale, BoxCollider2D, IsInstantiating>(new Name()
-        {
-            Value = "Wall Up"
-        });
-        var wallDown = World.Create<Name, SpriteRenderer, Transform, Position, Scale, BoxCollider2D, IsInstantiating>(new Name()
-        {
-            Value = "Wall Down"
-        });
+
     }
 }

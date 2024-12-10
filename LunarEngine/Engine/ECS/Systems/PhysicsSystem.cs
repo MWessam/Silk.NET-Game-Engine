@@ -33,9 +33,10 @@ public partial class PhysicsSystem : ScriptableSystem
     {
         CommandBuffer = new();
         InitializePhysicsQuery(World);
+        InitializeAABBQuery(World);
+        InitializeRigidbodyAABBQuery(World);
         PhysicsTickQuery(World, in dt);
         PhysicsUpdatePositionTickQuery(World);
-        UpdateAABBRigidbodyQuery(World);
         UpdateAABBPositionQuery(World);
         CheckCollisionsQuery(World);
         CommandBuffer.Playback(World);
@@ -50,15 +51,26 @@ public partial class PhysicsSystem : ScriptableSystem
         rb.CurrentPosition = position.Value.AsVector2();
         rb.IsInitialized = true;
     }
-
     [Query]
-    [All<BoxCollider2D, RigidBody2D>]
-    public void UpdateAABBRigidbody(Entity entity, ref BoxCollider2D box, ref RigidBody2D rb)
+    [All<BoxCollider2D, IsInstantiating>]
+    public void InitializeAABB(Entity entity, ref BoxCollider2D box)
     {
         if (World.TryGet(entity, out Scale scale))
         {
-            box.Width = scale.Value.X;
-            box.Height = scale.Value.Y;
+            scale.UserValue = Vector3.One;
+            box.Width = scale.ActualValue.X;
+            box.Height = scale.ActualValue.Y;
+        }
+    }
+    [Query]
+    [All<BoxCollider2D, RigidBody2D, IsInstantiating>]
+    public void InitializeRigidbodyAABB(Entity entity, ref BoxCollider2D box, ref RigidBody2D rb)
+    {
+        if (World.TryGet(entity, out Scale scale))
+        {
+            scale.UserValue = Vector3.One;
+            box.Width = scale.ActualValue.X;
+            box.Height = scale.ActualValue.Y;
         }
         box.Position = rb.CurrentPosition;
     }
@@ -68,8 +80,8 @@ public partial class PhysicsSystem : ScriptableSystem
     {
         if (World.TryGet(entity, out Scale scale))
         {
-            box.Width = scale.Value.X;
-            box.Height = scale.Value.Y;
+            box.Width = scale.ActualValue.X;
+            box.Height = scale.ActualValue.Y;
         }
         box.Position = position.Value.AsVector2();
     }
@@ -77,6 +89,7 @@ public partial class PhysicsSystem : ScriptableSystem
     [All<RigidBody2D, Position>]
     private void PhysicsTick([Data] in double deltaT, Entity entity, ref RigidBody2D rb, ref Position position)
     {
+        if (rb.BodyType == EBodyType.Static) return;
         // // Update angular motion
         // float angularAcceleration = rb.NetTorque / rb.MomentOfInertia;
         // rb.AngularVelocityRadSec += angularAcceleration * (float)deltaT;
@@ -99,6 +112,7 @@ public partial class PhysicsSystem : ScriptableSystem
     [All<RigidBody2D, Position, Transform>]
     private void PhysicsUpdatePositionTick(Entity entity, ref RigidBody2D rb, ref Position pos, ref Transform transform)
     {
+        if (rb.BodyType == EBodyType.Static) return;
         if (rb.IsInterpolating) return;
         pos.Value = rb.CurrentPosition.AsVector3(pos.Value.Z);
         pos.IsDirty = true;
@@ -108,6 +122,7 @@ public partial class PhysicsSystem : ScriptableSystem
     [All<RigidBody2D, Position, Transform>]
     private void PhysicsInterpolation(Entity entity, ref RigidBody2D rb, ref Position pos, ref Transform transform)
     {
+        if (rb.BodyType == EBodyType.Static) return;
         if (!rb.IsInterpolating) return;
         pos.Value = Vector3.Lerp(rb.PreviousPosition.AsVector3(), rb.CurrentPosition.AsVector3(), PhysicsEngine.InterpolatedTime);
         pos.IsDirty = true;
@@ -115,12 +130,13 @@ public partial class PhysicsSystem : ScriptableSystem
     }
 
     [Query]
-    [All<BoxCollider2D, RigidBody2D>]
-    private void CheckCollisions(Entity entity, ref BoxCollider2D box1, ref RigidBody2D rb1)
+    [All<BoxCollider2D, RigidBody2D, Position>]
+    private void CheckCollisions(Entity entity, ref BoxCollider2D box1, ref RigidBody2D rb1, ref Position position)
     {
-        QueryDescription nestedCollisionQuery = new QueryDescription().WithAll<BoxCollider2D, Position>();
+        QueryDescription staticCollidersQuery = new QueryDescription().WithAll<BoxCollider2D, Position>();
         BoxCollider2D box1Copy = box1;
-        World.Query(in nestedCollisionQuery, (Entity entity2, ref BoxCollider2D box2) =>
+        bool hasCollided = false;
+        World.Query(in staticCollidersQuery, (Entity entity2, ref BoxCollider2D box2) =>
         {
             if (entity2 == entity)
             {
@@ -129,12 +145,14 @@ public partial class PhysicsSystem : ScriptableSystem
             if (CheckAABBCollision(box1Copy, box2))
             {
                 ResolveCollision(ref box1Copy, ref box2);
+                hasCollided = true;
             }
         });
-        if (box1.Position != box1Copy.Position)
+        if (hasCollided)
         {
-            box1.Position = box1Copy.Position;
-            rb1.CurrentPosition = box1.Position;
+            rb1.CurrentPosition = box1Copy.Position;
+            rb1.PreviousPosition = box1Copy.Position;
+            position.Value = box1Copy.Position.AsVector3();
         }
     }
     
