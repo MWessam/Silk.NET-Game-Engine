@@ -42,13 +42,16 @@ public class SpriteDrawCommand : RenderCommand
 
 public class LineDrawCommand : RenderCommand
 {
-    public Vector2 StartPosition;
-    public Vector2 EndPosition;
+    public Vector2[] Points;
     public WireframeGizmosData_4FC LineInstanceData;
 
-    public LineDrawCommand()
+    public float[] Vertices { get; private set; }
+    public LineDrawCommand(Vector4 color, params Vector2[] points)
     {
         Type = CommandType.Line;
+        LineInstanceData = new WireframeGizmosData_4FC { Color = color };
+        Points = points;
+        Vertices = VectorExtensions.ConvertVectorsToFloats(points);
     }
     public void Init(WireframeGizmosData_4FC instance)
     {

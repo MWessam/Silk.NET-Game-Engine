@@ -36,7 +36,6 @@ public partial class PhysicsSystem : ScriptableSystem
         InitializeAABBQuery(World);
         InitializeRigidbodyAABBQuery(World);
         PhysicsTickQuery(World, in dt);
-        PhysicsUpdatePositionTickQuery(World);
         UpdateAABBPositionQuery(World);
         CheckCollisionsQuery(World);
         CommandBuffer.Playback(World);
@@ -90,6 +89,7 @@ public partial class PhysicsSystem : ScriptableSystem
     private void PhysicsTick([Data] in double deltaT, Entity entity, ref RigidBody2D rb, ref Position position)
     {
         if (rb.BodyType == EBodyType.Static) return;
+        rb.CurrentPosition = position.Value.AsVector2();
         // // Update angular motion
         // float angularAcceleration = rb.NetTorque / rb.MomentOfInertia;
         // rb.AngularVelocityRadSec += angularAcceleration * (float)deltaT;
@@ -107,16 +107,8 @@ public partial class PhysicsSystem : ScriptableSystem
         rb.CurrentPosition += rb.Velocity * deltaTFloat;
         rb.Velocity += rb.Acceleration * (deltaTFloat / 2);
         rb.TransientForce = Vector2.Zero;
-    }
-    [Query]
-    [All<RigidBody2D, Position, Transform>]
-    private void PhysicsUpdatePositionTick(Entity entity, ref RigidBody2D rb, ref Position pos, ref Transform transform)
-    {
-        if (rb.BodyType == EBodyType.Static) return;
-        if (rb.IsInterpolating) return;
-        pos.Value = rb.CurrentPosition.AsVector3(pos.Value.Z);
-        pos.IsDirty = true;
-
+        position.Value = rb.CurrentPosition.AsVector3(position.Value.Z);
+        position.IsDirty = true;
     }
     [Query]
     [All<RigidBody2D, Position, Transform>]
@@ -126,7 +118,6 @@ public partial class PhysicsSystem : ScriptableSystem
         if (!rb.IsInterpolating) return;
         pos.Value = Vector3.Lerp(rb.PreviousPosition.AsVector3(), rb.CurrentPosition.AsVector3(), PhysicsEngine.InterpolatedTime);
         pos.IsDirty = true;
-
     }
 
     [Query]
@@ -135,7 +126,9 @@ public partial class PhysicsSystem : ScriptableSystem
     {
         QueryDescription staticCollidersQuery = new QueryDescription().WithAll<BoxCollider2D, Position>();
         BoxCollider2D box1Copy = box1;
+        RigidBody2D rb1Copy = rb1;
         bool hasCollided = false;
+        
         World.Query(in staticCollidersQuery, (Entity entity2, ref BoxCollider2D box2) =>
         {
             if (entity2 == entity)
@@ -144,7 +137,7 @@ public partial class PhysicsSystem : ScriptableSystem
             }
             if (CheckAABBCollision(box1Copy, box2))
             {
-                ResolveCollision(ref box1Copy, ref box2);
+                ResolveCollision(ref rb1Copy, ref box1Copy, ref box2);
                 hasCollided = true;
             }
         });
@@ -153,10 +146,11 @@ public partial class PhysicsSystem : ScriptableSystem
             rb1.CurrentPosition = box1Copy.Position;
             rb1.PreviousPosition = box1Copy.Position;
             position.Value = box1Copy.Position.AsVector3();
+            rb1.Velocity = rb1Copy.Velocity;
         }
     }
     
-    private void ResolveCollision(ref BoxCollider2D box1, ref BoxCollider2D box2)
+    private void ResolveCollision(ref RigidBody2D rb1Copy, ref BoxCollider2D box1, ref BoxCollider2D box2)
     {
         // Calculate the overlap in both axes
         float overlapX = MathF.Min(box1.MaxX - box2.MinX, box2.MaxX - box1.MinX);
@@ -193,7 +187,7 @@ public partial class PhysicsSystem : ScriptableSystem
         // Reflect velocities or adjust based on restitution factor (bounciness, friction, etc.)
         // Example: apply simple elastic collision response (can be extended)
         float restitution = 0.8f; // Example restitution (bounciness)
-        // velocity1 = velocity1 * restitution;
+        rb1Copy.Velocity = rb1Copy.Velocity * restitution;
         // velocity2 = velocity2 * restitution;
     }
     

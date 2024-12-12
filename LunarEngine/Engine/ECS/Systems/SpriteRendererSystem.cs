@@ -79,15 +79,11 @@ public partial class SpriteRendererSystem : ScriptableSystem
             TransformMatrix = transform.Value
         });
         Renderer.Instance.SubmitRenderCommand(spriteDrawCommand);
-        Renderer.Instance.SubmitRenderCommand(new LineDrawCommand()
-        {
-            StartPosition = new Vector2(-1.5f, 0.5f),
-            EndPosition = new Vector2(1.0f, -0.9f),
-            LineInstanceData = new WireframeGizmosData_4FC()
-            {
-                Color = new Vector4(1.0f, 1.0f, 0.0f, 1.0f)
-            }
-        });
+        Renderer.Instance.SubmitRenderCommand(new LineDrawCommand(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), 
+            new Vector2(-1.5f, 0.5f),
+            new Vector2(1.0f, -0.9f),
+            new Vector2(1.9f, 1.0f),
+            new Vector2(0.0f, -0.3f)));
     }
 
     [Query]

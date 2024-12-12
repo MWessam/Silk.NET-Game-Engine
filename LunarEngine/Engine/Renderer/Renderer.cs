@@ -49,13 +49,13 @@ public class Gizmos : Singleton<Gizmos>, ISingletonObject, IDisposable
         _gizmosShader = AssetManager.Instance.ShaderLibrary.GetAsset("wireframe_gizmo").Shader;
         _wireframeVao.Bind();
         _wireframeGizmoVbo.Bind();
-        _wireframeGizmoVbo.SetBufferData([lineDrawCommand.StartPosition.X, lineDrawCommand.StartPosition.Y, lineDrawCommand.EndPosition.X, lineDrawCommand.EndPosition.Y]);
+        _wireframeGizmoVbo.SetBufferData(lineDrawCommand.Vertices);
         _wireframeGizmoInstanceVbo.Bind();
         _wireframeGizmoInstanceVbo.SetBufferData(lineDrawCommand.LineInstanceData);
         _gizmosShader.Bind();
         _gizmosShader.SetUniform("vp", CameraSystem.SceneCamera.ViewProjection);
         _gizmosShader.UpdateDirtyUniforms();
-        _api.DrawArrays(PrimitiveType.Lines, 0, 2);
+        _api.DrawArrays(PrimitiveType.LineStrip, 0, (uint)lineDrawCommand.Points.Length);
     }
 
     public void DrawQuad(QuadDrawCommand quadDrawCommand)
