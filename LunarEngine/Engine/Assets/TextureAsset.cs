@@ -1,12 +1,13 @@
-using LunarEngine.OpenGLAPI;
+using LunarEngine.Engine.Graphics;
+using LunarEngine.GameObjects;
 
 namespace LunarEngine.Assets;
 
 public class TextureAsset : IAsset
 {
-    public TextureHandle Texture;
+    public LGTexture Texture;
     public string TextureName;
-    public TextureAsset(TextureHandle texture, string textureName)
+    public TextureAsset(LGTexture texture, string textureName)
     {
         Texture = texture;
         TextureName = textureName;

@@ -4,13 +4,16 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Components;
+using LunarEngine.ECS.Systems;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
+using Silk.NET.Maths;
 
 namespace LunarEngine.GameEngine;
 
 public partial class CameraSystem : ScriptableSystem
 {
+    public static Camera SceneCamera;
     public CameraSystem(World world) : base(world)
     {
     }
@@ -20,8 +23,15 @@ public partial class CameraSystem : ScriptableSystem
         InitializeCameraQuery(World);
     }
 
+    public override void Update(in double dt)
+    {
+        InitializeCameraQuery(World);
+        UpdateViewProjectionQuery(World);
+        UpdateViewProjectionUniformQuery(World);
+    }
+
     [Query]
-    [All<Camera, Position, NeedsInitialization>]
+    [All<Camera, Position, IsInstantiating>]
     public void InitializeCamera(Entity entity, ref Camera camera, ref Position position)
     {
         camera.Width = 5;
@@ -31,6 +41,7 @@ public partial class CameraSystem : ScriptableSystem
         
         position.Value = new Vector3(0.0f, 0.0f, -1.0f);
         World.Add<DirtyTransform>(entity);
+        SceneCamera = camera;
     }
     [Query]
     [All<Camera, Position, Transform>]
@@ -46,10 +57,25 @@ public partial class CameraSystem : ScriptableSystem
     public void UpdateViewProjectionUniform(ref Camera camera)
     {
         var viewProjection = camera.View * camera.Projection;
+        camera.ViewProjection = viewProjection;
+        SceneCamera = camera;
         var viewProjectionEvent = new ViewProjectionEvent()
         {
             ViewProjection = viewProjection,
         };
         EventBus.Send(viewProjectionEvent);
+    }
+
+    public void UpdateViewportCamera(Vector2D<int> viewport)
+    {
+        // const float PPU = 10;
+        var cameraQuery = new QueryDescription().WithAll<Camera>();
+        var aspectRatio = (float)viewport.X / viewport.Y;
+        World.Query(cameraQuery, (ref Camera camera) =>
+        {
+            // var orthoSize = viewport.Y / (2 * PPU);
+            // camera.Height = orthoSize;
+            camera.Width = camera.Height * aspectRatio;
+        });
     }
 }

@@ -1,7 +1,12 @@
 using LunarEngine.Engine.ECS.Components;
 
-namespace LunarEngine.Graphics;
+namespace LunarEngine.Components;
 
-public struct NeedsInitialization : IComponent
+public struct IsInstantiating : IComponent
 {
+}
+
+public struct IsDestroying : IComponent
+{
+    
 }

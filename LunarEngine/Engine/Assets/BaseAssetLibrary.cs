@@ -1,4 +1,5 @@
 using System.Reflection;
+using LunarEngine.Engine.Graphics;
 using LunarEngine.Graphics;
 using Serilog;
 using Silk.NET.OpenGL;
@@ -93,7 +94,7 @@ public abstract class BaseAssetLibrary<TAsset> where TAsset : IAsset
 
         public TLibrary Build()
         {
-            _library.Gl = GraphicsEngine.Api;
+            _library.Gl = Renderer.Instance.Api;
             if (_assets.Count == 0)
             {
                 var defaultAsset = _library.DefaultAsset;

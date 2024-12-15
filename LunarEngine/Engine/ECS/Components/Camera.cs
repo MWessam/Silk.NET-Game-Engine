@@ -8,6 +8,7 @@ public struct Camera : IComponent
 {
     public Matrix4x4 View;
     public Matrix4x4 Projection;
+    public Matrix4x4 ViewProjection;
     public float Width;
     public float Height;
     public float Near;

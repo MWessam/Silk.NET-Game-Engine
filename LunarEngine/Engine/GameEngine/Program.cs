@@ -5,7 +5,7 @@ public class Program
 {
     static void Main(string[] args)
     {
-        GameEngine engine = GameEngine.CreateGameEngine();
-        engine.StartEngine();
+        Application application = new Application();
+        application.Run();
     }
 }

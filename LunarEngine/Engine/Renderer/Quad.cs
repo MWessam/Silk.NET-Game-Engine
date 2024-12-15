@@ -1,7 +1,6 @@
-using LunarEngine.OpenGLAPI;
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.Graphics;
+namespace LunarEngine.Engine.Graphics;
 
 public struct Quad
 {

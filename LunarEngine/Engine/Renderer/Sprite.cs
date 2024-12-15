@@ -1,19 +1,20 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
-using LunarEngine.OpenGLAPI;
+using LunarEngine.GameObjects;
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.Graphics;
+namespace LunarEngine.Engine.Graphics;
 
 public class Sprite : IDisposable
 {
-    public TextureHandle Texture { get; private set; }
+    public LGTexture Texture { get; private set; }
     public ShaderHandle Shader { get; private set; }
+    public int PPU = 1000;
     private BufferObject<float> _instanceBuffer;
     private VertexArrayObject<float, uint> _vao;
     private GL _gl;
     private int random = 0;
-    public Sprite(TextureHandle texture, ShaderHandle shader, GL gl)
+    public Sprite(LGTexture texture, ShaderHandle shader, GL gl)
     {
         Texture = texture;
         Shader = shader;
@@ -24,7 +25,7 @@ public class Sprite : IDisposable
     {
         Shader = shaderHandle;
     }
-    public void ChangeTexture(TextureHandle textureHandle)
+    public void ChangeTexture(LGTexture textureHandle)
     {
         Texture = textureHandle;
     }
@@ -55,7 +56,7 @@ public class Sprite : IDisposable
     public class Builder
     {
         private ShaderHandle _shader;
-        private TextureHandle _texture;
+        private LGTexture _texture;
         internal Builder()
         {
         }
@@ -64,14 +65,14 @@ public class Sprite : IDisposable
             _shader = shaderHandle;
             return this;
         }
-        public Builder WithTexture(TextureHandle textureHandle)
+        public Builder WithTexture(LGTexture texture)
         {
-            _texture = textureHandle;
+            _texture = texture;
             return this;
         }
         public Sprite Build()
         {
-            var gl = GraphicsEngine.Api;
+            var gl = Renderer.Instance.Api;
             ArgumentNullException.ThrowIfNull(gl, nameof(gl));
             ArgumentNullException.ThrowIfNull(_shader, nameof(_shader));
             ArgumentNullException.ThrowIfNull(_texture, nameof(_texture));

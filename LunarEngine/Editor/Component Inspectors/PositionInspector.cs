@@ -1,5 +1,6 @@
 using System.Numerics;
 using LunarEngine.Components;
+using LunarEngine.ECS.Systems;
 using LunarEngine.UI;
 using LunarEngine.Utilities;
 
@@ -9,16 +10,19 @@ public class PositionInspector : IComponentInspector<Position>
 {
     public void OnDrawInspector(ref Position component)
     {
-        EditorUIEngine.DrawInputDragFloat3UIElement(ref component.Value, "##position");
+        var value = component.Value;
+        EditorUIEngine.DrawInputDragFloat3UIElement(ref value, "##position");
+        component.Value = value;
+
     }
 }
 public class RotationInspector : IComponentInspector<Rotation>
 {
     public void OnDrawInspector(ref Rotation component)
     {
-        var rotationAngles = component.Value.ToEulerAngles();
+        var rotationAngles = component.Value.ToEulerAngles().RadianToDegree();
         EditorUIEngine.DrawInputDragFloat3UIElement(ref rotationAngles, "##rotation");
-        component.Value = rotationAngles.ToQuaternion();
+        component.Value = rotationAngles.DegreeToRadian().ToQuaternion();
     }
 }
 
@@ -26,6 +30,8 @@ public class ScaleInspector : IComponentInspector<Scale>
 {
     public void OnDrawInspector(ref Scale component)
     {
-        EditorUIEngine.DrawInputDragFloat3UIElement(ref component.Value, "##scale");
+        var value = component.UserValue;
+        EditorUIEngine.DrawInputDragFloat3UIElement(ref value, "##scale");
+        component.UserValue = value;
     }
 }

@@ -1,5 +1,8 @@
+using System.Numerics;
+using ComponentFactories;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
+using LunarEngine.Engine.ECS.Components;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
@@ -11,19 +14,29 @@ public class TestEcsScene : ECSScene
 {
     public TestEcsScene()
     {
-        World.Create<Name, Camera, Transform, Position, NeedsInitialization>(new()
+        World.Create<Name, Camera, Transform, Position, IsInstantiating>(new()
         {
             Value = "Camera",
         });
-        World.Create<TagComponent, Shader, NeedsInitialization>(new TagComponent("default"));
-        var birb = World.Create<Name, SpriteRenderer, Transform, Position, NeedsInitialization>(new Name()
+        var birb = World.Create<Name, SpriteRenderer, Transform, BoxCollider2D, Position, Scale, IsInstantiating>(new Name()
         {
             Value = "Birb"
         });
-        var birb2 = World.Create<Name, SpriteRenderer, Transform, Position, NeedsInitialization>(new Name()
+        World.Set(birb, new Scale()
         {
-            Value = "Birb2"
+            BaseValue = Vector3.One,
+            UserValue = Vector3.One,
         });
-        // World.Add<NeedsPhysicsInitialization, RigidBody2D>(birb);
+        
+        var wallLeft = World.Create<Name, SpriteRenderer, Transform, Position, Scale, BoxCollider2D, IsInstantiating>(new Name()
+        {
+            Value = "Collider"
+        });
+        World.Set(wallLeft, new Scale()
+        {
+            BaseValue = Vector3.One,
+            UserValue = Vector3.One
+        });
+
     }
 }

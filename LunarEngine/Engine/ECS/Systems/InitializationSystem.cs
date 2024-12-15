@@ -1,6 +1,7 @@
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using LunarEngine.Components;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
 
@@ -16,9 +17,15 @@ public partial class InitializationSystem : ScriptableSystem
         ConfirmInitializedStateQuery(World);
     }
     [Query]
-    [All<NeedsInitialization>]
+    [All<IsInstantiating>]
     public void ConfirmInitializedState(Entity entity)
     {
-        World.Remove<NeedsInitialization>(entity);
+        World.Remove<IsInstantiating>(entity);
+    }
+    [Query]
+    [All<IsDestroying>]
+    public void ConfirmDestroyedState(Entity entity)
+    {
+        World.Remove<IsDestroying>(entity);
     }
 }
