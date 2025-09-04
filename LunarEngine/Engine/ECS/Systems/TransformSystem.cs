@@ -15,6 +15,7 @@ public partial class TransformSystem : ScriptableSystem
 
     public TransformSystem(World world) : base(world)
     {
+        CommandBuffer = new();
     }
 
     public override void Awake()
@@ -24,7 +25,7 @@ public partial class TransformSystem : ScriptableSystem
 
     public override void Update(in double dt)
     {
-        CommandBuffer = new();
+        // CommandBuffer. = new();
         InitializeTransformMatrixQuery(World);
         UpdateTransformMatrixNoRotNoScaleQuery(World);
         UpdateTransformMatrixNoPosNoScaleQuery(World);
@@ -84,7 +85,7 @@ public partial class TransformSystem : ScriptableSystem
         CalculateTransform(ref transform, rotation.Value, position.Value, scale.ActualValue, rotation.IsDirty || position.IsDirty || scale.IsDirty);
     }
 
-    private static void CalculateTransform(ref Transform transform, Quaternion rotation, Vector3 position, Vector3 scale, bool isDirty)
+    public static void CalculateTransform(ref Transform transform, Quaternion rotation, Vector3 position, Vector3 scale, bool isDirty)
     {
         if (!isDirty) return;
         transform.Value = Matrix4x4.CreateScale(scale) *

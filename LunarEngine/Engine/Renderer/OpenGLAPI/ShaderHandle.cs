@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Numerics;
+using LunarEngine.Assets;
 using Silk.NET.OpenGL;
 
 namespace LunarEngine.Engine.Graphics;
+
 
 public struct ShaderHandle : IDisposable, IBindable
 {
@@ -11,13 +13,11 @@ public struct ShaderHandle : IDisposable, IBindable
     private ShaderUniformLibrary _uniforms;
     private Queue<Action> _dirtyUniformQueue = new();
 
-    public uint Handle => _handle;
-    public ShaderHandle(GL gl, string vertexPath, string fragmentPath)
+    public ShaderHandle(GL api, string vertexPath, string fragPath)
     {
-        _gl = gl;
-        
+        _gl = api;
         uint vertex = LoadShader(ShaderType.VertexShader, vertexPath);
-        uint fragment = LoadShader(ShaderType.FragmentShader, fragmentPath);
+        uint fragment = LoadShader(ShaderType.FragmentShader, fragPath);
         _handle = _gl.CreateProgram();
         _gl.AttachShader(_handle, vertex);
         _gl.AttachShader(_handle, fragment);
@@ -25,14 +25,19 @@ public struct ShaderHandle : IDisposable, IBindable
         _gl.GetProgram(_handle, GLEnum.LinkStatus, out var status);
         if (status == 0)
         {
-            throw new Exception($"Program failed to link with error: {_gl.GetProgramInfoLog(_handle)}");
+            var infoLog = _gl.GetProgramInfoLog(_handle);
+            throw new Exception($"Program failed to link. Vertex='{vertexPath}', Frag='{fragPath}', Error='{infoLog}'");
         }
         _gl.DetachShader(_handle, vertex);
         _gl.DetachShader(_handle, fragment);
         _gl.DeleteShader(vertex);
         _gl.DeleteShader(fragment);
         _uniforms = new ShaderUniformLibrary(_gl, _handle);
+
     }
+
+
+    public uint Handle => _handle;
 
     public void UpdateDirtyUniforms()
     {

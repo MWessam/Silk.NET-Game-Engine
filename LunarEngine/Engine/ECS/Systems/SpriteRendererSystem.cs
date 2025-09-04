@@ -19,7 +19,6 @@ public partial class SpriteRendererSystem : ScriptableSystem
     private GL _gl;
     public SpriteRendererSystem(GL gl, World world) : base(world)
     {
-        Hook();
         _gl = gl;
         _quad = Quad.CreateQuad(_gl);
     }
@@ -39,7 +38,6 @@ public partial class SpriteRendererSystem : ScriptableSystem
     {
         CommandBuffer = new CommandBuffer();
         RenderQuery(World, in data);
-        RenderOutlineQuery(World);
         CommandBuffer.Playback(World);
     }
     [Query]
@@ -79,27 +77,15 @@ public partial class SpriteRendererSystem : ScriptableSystem
             TransformMatrix = transform.Value
         });
         Renderer.Instance.SubmitRenderCommand(spriteDrawCommand);
-        Renderer.Instance.SubmitRenderCommand(new LineDrawCommand(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), 
-            new Vector2(-1.5f, 0.5f),
-            new Vector2(1.0f, -0.9f),
-            new Vector2(1.9f, 1.0f),
-            new Vector2(0.0f, -0.3f)));
     }
 
-    [Query]
-    [All<SpriteRenderer, Scale, Position>]
-    public void RenderOutline(ref SpriteRenderer spriteRenderer, ref Scale scale, ref Position position)
-    {
-        Renderer.Instance.SubmitRenderCommand(new QuadDrawCommand(position.Value.AsVector2(), scale.ActualValue.AsVector2() * 1.1f, Vector4.One));
-    }
-    [Event(order:0)]
-    public void OnViewProjectionUpdated(ViewProjectionEvent evt)
+
+    public void SetViewProjection(Matrix4x4 viewProjection)
     {
         var shaderQueryDescription = new QueryDescription().WithAll<SpriteRenderer>();
-        ViewProjectionEvent @event = evt;
         World.Query(shaderQueryDescription, (ref SpriteRenderer spriteRenderer) =>
         {
-            spriteRenderer.Sprite?.Shader.SetUniform("vp", @event.ViewProjection);
+            spriteRenderer.Sprite?.Shader.SetUniform("vp", viewProjection);
         });
     }
 }

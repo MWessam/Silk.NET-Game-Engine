@@ -11,12 +11,6 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
     {
         
     }
-
-    private ShaderLibrary(GL gl) : base(gl)
-    {
-        
-    }
-
     public override ShaderAsset DefaultAsset
     {
         get
@@ -25,7 +19,7 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
             {
                 return asset;
             }
-            asset = TestShaders.BasicShader();
+            asset = BasicShader();
             AddAsset("default", asset);
             return asset;
         }
@@ -33,20 +27,23 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
     public ShaderAsset CreateShader(string name, string vertexPath, string fragPath)
     {
         var shader = new ShaderAsset(
-            new ShaderHandle(Renderer.Instance.Api, vertexPath, fragPath),
+            vertexPath, 
+            fragPath,
             name
         );
         if (!AddAsset(name, shader))
         {
-            Log.Error($"Couldn't save texture {name} as a texture with that name already exists.");
+            Log.Error($"Couldn't save shader {name}. A shader with that name already exists.");
         }
         return shader;
     }
-}
 
-public static class TestShaders
-{
-    public static ShaderAsset BasicShader() => new(
-        new ShaderHandle(Renderer.Instance.Api, @"..\..\..\Resources\shader.vert", @"..\..\..\Resources\shader.frag"),
+    #region TEST
+
+    public ShaderAsset BasicShader() => new(
+        @"..\..\..\Resources\shader.vert", 
+        @"..\..\..\Resources\shader.frag",
         "default");
+
+    #endregion
 }

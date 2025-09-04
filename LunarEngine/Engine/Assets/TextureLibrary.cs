@@ -12,12 +12,6 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
     {
         
     }
-
-    private TextureLibrary(GL gl) : base(gl)
-    {
-        
-    }
-
     public override TextureAsset DefaultAsset         
     {
         get
@@ -26,16 +20,15 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
             {
                 return asset;
             }
-            asset = TestTextures.BirbTexture(); 
+            asset = BirbTexture(); 
             AddAsset("birb", asset);
             return asset;
         }
     }
-
     public TextureAsset CreateTexture(string name, string path)
     {
         var texture = new TextureAsset(
-            LGTexture.CreateTexture(Renderer.Instance.Api, path),
+            path,
             name
         );
         if (!AddAsset(name, texture))
@@ -45,13 +38,16 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
         
         return texture;
     }
+    #region TEST
+    public TextureAsset BirbTexture() =>
+        new(
+            @"..\..\..\Resources\birb.jpg",
+            "birb"
+        );
+    #endregion
 }
 
 public static class TestTextures
 {
-    public static TextureAsset BirbTexture() =>
-        new(
-            LGTexture.CreateTexture(Renderer.Instance.Api, @"..\..\..\Resources\birb.jpg"),
-            "birb"
-            );
+    
 }

@@ -19,6 +19,7 @@ public class SceneSystem
     private IUiElement _uiElement;
     private FrameBuffer _sceneFrameBuffer;
     public Vector2D<int> NewViewport;
+    private bool _isFocused = false;
     public void Awake()
     {
         _sceneFrameBuffer = new FrameBuffer(Renderer.Instance.Api, new Vector2D<int>(800, 600));
@@ -33,23 +34,31 @@ public class SceneSystem
 
     }
 
-    public void Draw(Renderer renderer, ECSScene scene, in double t)
+    public void Draw(ECSScene scene, EditorCamera camera, in double t)
     {
         double dt = t;
         _uiElement.Draw(() =>
         {
             var contentRegionAvail = ImGui.GetContentRegionAvail();
+            if (ImGui.IsWindowFocused() && !_isFocused)
+            {
+                _isFocused = true;
+                EventBus.Send(new SceneFocusEvent(_isFocused));
+
+            }
+            else if (!ImGui.IsWindowFocused() && _isFocused)
+            {
+                _isFocused = false;
+                EventBus.Send(new SceneFocusEvent(_isFocused));
+            }
             NewViewport = new Vector2D<int>((int)contentRegionAvail.X, (int)contentRegionAvail.Y);
             _sceneFrameBuffer.Bind();
             _sceneFrameBuffer.Resize(NewViewport);
             scene.SetSceneCameraViewport(NewViewport);
-            renderer.BeginFrame();
-            renderer.Clear();
-            scene.RenderScenes(dt);
-            renderer.Render(dt);
+            camera.UpdateViewportCamera(NewViewport);
+            scene.RenderScenes(dt, camera);
             ImGui.Image(_sceneFrameBuffer._colorTexture, new Vector2(_sceneFrameBuffer._size.X, _sceneFrameBuffer._size.Y), Vector2.UnitY, Vector2.UnitX);
             _sceneFrameBuffer.Unbind();
-            renderer.EndFrame();
         });
     }
 }
@@ -61,4 +70,14 @@ public struct OnViewportUpdated
 public class GameSystem
 {
     
+}
+
+public struct SceneFocusEvent
+{
+    public bool IsFocused;
+
+    public SceneFocusEvent(bool isFocused)
+    {
+        IsFocused = isFocused;
+    }
 }

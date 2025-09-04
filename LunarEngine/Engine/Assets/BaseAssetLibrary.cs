@@ -13,13 +13,8 @@ public interface IAsset
 public abstract class BaseAssetLibrary<TAsset> where TAsset : IAsset
 {
     private Dictionary<string, TAsset> _assets = new();
-    protected GL Gl;
     public abstract TAsset DefaultAsset { get; }
 
-    protected BaseAssetLibrary(GL gl)
-    {
-        Gl = gl;
-    }
     protected BaseAssetLibrary() {}
 
     public bool TryGetAsset(string assetName, out TAsset asset)
@@ -94,7 +89,6 @@ public abstract class BaseAssetLibrary<TAsset> where TAsset : IAsset
 
         public TLibrary Build()
         {
-            _library.Gl = Renderer.Instance.Api;
             if (_assets.Count == 0)
             {
                 var defaultAsset = _library.DefaultAsset;

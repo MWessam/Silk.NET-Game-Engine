@@ -1,8 +1,24 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using LunarEngine.Components;
 
 namespace LunarEngine.Utilities;
 
+public static class TransformExtensions
+{
+    public static Vector3 GetRight(this Transform transform)
+    {
+        return new Vector3(transform.Value.M11, transform.Value.M12, transform.Value.M13);
+    }
+    public static Vector3 GetUp(this Transform transform)
+    {
+        return new Vector3(transform.Value.M21, transform.Value.M22, transform.Value.M23);
+    }
+    public static Vector3 GetForward(this Transform transform)
+    {
+        return new Vector3(transform.Value.M31, transform.Value.M32, transform.Value.M33);
+    }
+}
 public static class VectorExtensions
 {
     public static Vector3 RadianToDegree(this Vector3 value)
@@ -11,6 +27,10 @@ public static class VectorExtensions
     }
 
     public static Vector3 DegreeToRadian(this Vector3 value)
+    {
+        return value * MathF.PI / 180.0f;
+    }
+    public static float DegreeToRadian(this float value)
     {
         return value * MathF.PI / 180.0f;
     }

@@ -36,7 +36,7 @@ namespace ComponentFactories
         {
             _defaultComponentFactories = new()
             {
-                {typeof(Camera), new DefaultCameraComponentFactory()},
+                {typeof(CameraComponent), new DefaultCameraComponentFactory()},
                 {typeof(RigidBody2D), new DefaultRigidBody2DComponentFactory()},
                 {typeof(BoxCollider2D), new DefaultAABBComponentFactory()},
                 {typeof(Scale), new DefaultScaleComponentFactory()}
@@ -66,12 +66,11 @@ namespace ComponentFactories
     {
         public IComponent Produce()
         {
-            return new Camera()
+            return new CameraComponent()
             {
-                Width = 5,
-                Height = 5,
-                Near = 0.1f,
-                Far = 1000.0f,
+                Camera = new Camera(5,5,0.1f,1000.0f)
+                {
+                },
             };
         }
     }

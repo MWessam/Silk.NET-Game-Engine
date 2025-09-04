@@ -34,48 +34,4 @@ public class SceneManager
         // TODO: Shift array to remove scenes and update their ids.
         return null;
     }
-    public void RemoveScene(ECSScene scene)
-    {
-        
-    }
-    public void AwakeScenes()
-    {
-        for (var i = 0; i <= _lastSceneIndex; i++)
-        {
-            var scene = _scenes[i]!;
-            if (!scene.IsActive) return;
-            
-            scene.Awake();
-        }
-    }
-    public void StartScenes()
-    {
-        for (var i = 0; i <= _lastSceneIndex; i++)
-        {
-            var scene = _scenes[i]!;
-            if (!scene.IsActive) return;
-
-            scene.Start();
-        }
-    }
-    public void UpdateScenes(double dt)
-    {
-        for (var i = 0; i <= _lastSceneIndex; i++)
-        {
-            var scene = _scenes[i]!;
-            if (!scene.IsActive) return;
-
-            // scene.Update((float)dt);
-        }
-    }
-    public void TickScenes(double fixedTimestamp)
-    {
-        for (var i = 0; i <= _lastSceneIndex; i++)
-        {
-            var scene = _scenes[i]!;
-            if (!scene.IsActive) return;
-
-            scene.Tick(fixedTimestamp);
-        }
-    }
 }

@@ -12,14 +12,10 @@ public class Sprite : IDisposable
     public int PPU = 1000;
     private BufferObject<float> _instanceBuffer;
     private VertexArrayObject<float, uint> _vao;
-    private GL _gl;
-    private int random = 0;
-    public Sprite(LGTexture texture, ShaderHandle shader, GL gl)
+    public Sprite(LGTexture texture, ShaderHandle shader)
     {
         Texture = texture;
         Shader = shader;
-        _gl = gl;
-        random = new Random().Next(1, 1000);
     }
     public void ChangeShader(ShaderHandle shaderHandle)
     {
@@ -29,13 +25,12 @@ public class Sprite : IDisposable
     {
         Texture = textureHandle;
     }
-    public unsafe void Render(SpriteData spriteData)
+    public void Bind(SpriteData spriteData)
     {
         _vao.Bind();
         _instanceBuffer.SetBufferData(spriteData);
         Texture.Bind();
         Shader.Bind();
-        _gl.DrawElements(GLEnum.Triangles, 6, GLEnum.UnsignedInt, (void*) 0);
     }
     
     public void Initialize(Quad quad)

@@ -16,8 +16,16 @@ public class Input : Singleton<Input>, ISingletonObject, IDisposable
     private static Input? s_instance;
     private HashSet<Key> _heldKeys = new();
     private HashSet<MouseButton> _heldMouseButtons = new();
+    private Vector2 _keyboardAxis;
+    private Vector2 _previousMousePosition;
+
     public event Action<Vector2> OnMouseMoved;
-    public Vector2 KeyboardAxis;
+    public event Action<float> OnMouseScrolled;
+    public event Action<Vector2> OnKeyboardAxisInput;
+    // private Vector2 _keyboardAxis;
+    public IInputContext InputContext { get; set; }
+    public Vector2 PreviousMousePosition => _previousMousePosition;
+
 
     public Input()
     {
@@ -30,6 +38,7 @@ public class Input : Singleton<Input>, ISingletonObject, IDisposable
         AddKeyUpListener(Key.S, OnSReleased); 
         AddKeyUpListener(Key.D, OnDReleased); 
     }
+
 
 
     #region LISTENERS
@@ -135,11 +144,14 @@ public class Input : Singleton<Input>, ISingletonObject, IDisposable
     }
     public void OnMouseMove(IMouse mouse, Vector2 move)
     {
-        OnMouseMoved?.Invoke(move);
+        var delta = move - _previousMousePosition;
+        delta.Y = -delta.Y;
+        OnMouseMoved?.Invoke(delta);
+        _previousMousePosition = move;
     }
     public void OnMouseScroll(IMouse mouse, ScrollWheel scroll)
     {
-        
+        OnMouseScrolled?.Invoke(scroll.Y);
     }
     private void AddKeyListener(Key key, Action<Key> action, Dictionary<Key, Action<Key>> actionMap)
     {
@@ -202,35 +214,58 @@ public class Input : Singleton<Input>, ISingletonObject, IDisposable
 
     private void OnDReleased(Key obj)
     {
-        KeyboardAxis.X = 0;
+        _keyboardAxis.X = 0;
+        OnKeyboardAxisInput?.Invoke(_keyboardAxis);
     }
     private void OnSReleased(Key obj)
     {
-        KeyboardAxis.Y = 0;
+        _keyboardAxis.Y = 0;
+        OnKeyboardAxisInput?.Invoke(_keyboardAxis);
+
     }
     private void OnAReleased(Key obj)
     {
-        KeyboardAxis.X = 0;
+        _keyboardAxis.X = 0;
+        OnKeyboardAxisInput?.Invoke(_keyboardAxis);
+
     }
     private void OnWReleased(Key obj)
     {
-        KeyboardAxis.Y = 0;
+        _keyboardAxis.Y = 0;
+        OnKeyboardAxisInput?.Invoke(_keyboardAxis);
+
     }
     private void OnWPressed(Key obj)
     {
-        KeyboardAxis.Y = 1.0f;
+        _keyboardAxis.Y = 1.0f;
+        OnKeyboardAxisInput?.Invoke(_keyboardAxis);
+
     }
     private void OnAPressed(Key obj)
     {
-        KeyboardAxis.X = 1.0f;
+        _keyboardAxis.X = 1.0f;
+        OnKeyboardAxisInput?.Invoke(_keyboardAxis);
+
     }
     private void OnSPressed(Key obj)
     {
-        KeyboardAxis.Y = -1.0f;
+        _keyboardAxis.Y = -1.0f;
+        OnKeyboardAxisInput?.Invoke(_keyboardAxis);
     }
     private void OnDPressed(Key obj)
     {
-        KeyboardAxis.X = -1.0f;
+        _keyboardAxis.X = -1.0f;
+        OnKeyboardAxisInput?.Invoke(_keyboardAxis);
+    }
+
+    #endregion
+
+    #region Mouse
+
+    public void LockAndHideCursor(bool isLock)
+    {
+        var mouse = InputContext.Mice[0];
+        mouse.Cursor.CursorMode = isLock ? CursorMode.Raw : CursorMode.Normal;
     }
 
     #endregion

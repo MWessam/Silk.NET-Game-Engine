@@ -14,10 +14,10 @@ public class TestEcsScene : ECSScene
 {
     public TestEcsScene()
     {
-        World.Create<Name, Camera, Transform, Position, IsInstantiating>(new()
-        {
-            Value = "Camera",
-        });
+        // World.Create<Name, CameraComponent, Transform, Position, IsInstantiating>(new()
+        // {
+            // Value = "Camera",
+        // });
         var birb = World.Create<Name, SpriteRenderer, Transform, BoxCollider2D, Position, Scale, IsInstantiating>(new Name()
         {
             Value = "Birb"

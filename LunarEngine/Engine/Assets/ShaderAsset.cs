@@ -1,16 +1,27 @@
 using LunarEngine.Engine.Graphics;
+using Silk.NET.OpenGL;
 
 namespace LunarEngine.Assets;
 
 public class ShaderAsset : IAsset
 {
-    public ShaderHandle Shader;
-    public string ShaderName;
-    public ShaderAsset(ShaderHandle shader, string shaderName)
+    private readonly string _vertexPath;
+    private readonly string _fragPath;
+    private ShaderHandle? _handle;
+
+    private string _name;
+    
+    public ShaderAsset(string vertexPath, string fragPath, string name)
     {
-        Shader = shader;
-        ShaderName = shaderName;
+        _vertexPath = vertexPath;
+        _fragPath = fragPath;
+        _name = name;
+    }
+    public ShaderHandle CreateHandle(GL api)
+    {
+        _handle ??= new ShaderHandle(api, _vertexPath, _fragPath);
+        return _handle.Value;
     }
 
-    public string Key => ShaderName;
+    public string Key => _name;
 }

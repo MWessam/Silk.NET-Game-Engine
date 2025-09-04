@@ -98,9 +98,33 @@ public class ECSScene
         CommandBuffer.Playback(World);
     }
 
+    public void RenderScenes(double dt, Camera camera)
+    {
+        Renderer.Instance.BeginFrame(camera.ViewProjection);
+        _spriteRendererSystem.SetViewProjection(camera.ViewProjection);
+        _spriteRendererSystem.Render(dt);
+        Renderer.Instance.EndFrame();
+    }
     public void RenderScenes(double dt)
     {
-        _spriteRendererSystem.Render(dt);
+        var cameraQuery = new QueryDescription().WithAll<CameraComponent>();
+        CameraComponent? primaryCamera = default;
+        World.Query(cameraQuery, (ref CameraComponent camera) =>
+        {
+            if (primaryCamera != null)
+            {
+                return;
+            }
+            if (camera.IsPrimary)
+            {
+                primaryCamera = camera;
+            }
+        });
+        if (primaryCamera == null)
+        {
+            return;
+        }
+        RenderScenes(dt, primaryCamera.Value.Camera);
     }
 
     public void SetSceneCameraViewport(Vector2D<int> newViewport)

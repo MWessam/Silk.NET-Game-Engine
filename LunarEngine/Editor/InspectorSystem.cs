@@ -65,7 +65,7 @@ public partial class InspectorSystem : ScriptableSystem
     }
     public override void Update(in double t)
     {
-        CommandBuffer = new();
+        
         UpdateInspector();
         CommandBuffer.Playback(World);
     }
@@ -78,11 +78,13 @@ public partial class InspectorSystem : ScriptableSystem
     public void UpdateInspector()
     {
         if (!World.IsAlive(_entity)) return;
-        _inspectorMenu.Draw(() =>
-        {
-            DrawComponentInspectors();
-            DrawAddComponent();
-        });
+        _inspectorMenu.Draw(InnerUiElementDrawCall);
+    }
+
+    private void InnerUiElementDrawCall()
+    {
+        DrawComponentInspectors();
+        DrawAddComponent();
     }
 
     private void DrawAddComponent()
@@ -127,7 +129,7 @@ public partial class InspectorSystem : ScriptableSystem
         var components = World.GetAllComponents(_entity);
         
         // Store all draw actions such that I can prioritize name component.
-        LinkedList<Action> inspectorDrawCommandQueue = new();
+        List<Action> inspectorDrawCommandQueue = new();
 
         for (var i = 0; i < components.Length; i++)
         {
@@ -184,12 +186,12 @@ public partial class InspectorSystem : ScriptableSystem
             // Prioritize name component above all else.
             if (component is Name)
             {
-                inspectorDrawCommandQueue.AddFirst(drawAction);
+                inspectorDrawCommandQueue.Insert(0, drawAction);
             }
             else
             {
                 // Add rest of components to the end.
-                inspectorDrawCommandQueue.AddLast(drawAction);
+                inspectorDrawCommandQueue.Add(drawAction);
             }
         }
 

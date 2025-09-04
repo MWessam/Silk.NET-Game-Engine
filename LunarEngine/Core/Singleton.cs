@@ -3,6 +3,7 @@ namespace LunarEngine.GameEngine;
 public abstract class Singleton<T> where T : ISingletonObject, IDisposable, new()
 {
     protected static T? s_instance;
+    private static bool _isCreating;
 
     public static T Instance
     {
@@ -11,14 +12,14 @@ public abstract class Singleton<T> where T : ISingletonObject, IDisposable, new(
             if (s_instance == null)
             {
                 s_instance = new();
-                s_instance.InitSingleton();
             }
             return s_instance;
         }
     }
 
-    public Singleton()
+    protected Singleton()
     {
+        if (_isCreating) return;
         if (s_instance != null)
         {
             s_instance.Dispose();
@@ -26,8 +27,15 @@ public abstract class Singleton<T> where T : ISingletonObject, IDisposable, new(
             s_instance.InitSingleton();
             return;
         }
+        else
+        {
+            _isCreating = true;
+            s_instance = new();
+            s_instance.InitSingleton();
+        }
     }
 }
+
 
 public interface ISingletonObject
 {

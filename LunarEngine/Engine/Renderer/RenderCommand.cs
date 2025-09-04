@@ -62,11 +62,11 @@ public class LineDrawCommand : RenderCommand
 public class QuadDrawCommand : RenderCommand
 {
     public WireframeGizmosData_4FC QuadInstanceData;
-    public Vector2 Position;
-    public Vector2 Scale;
+    public Vector3 Position;
+    public Vector3 Scale;
     private float[] _vertices;
     public float[] Vertices => _vertices;
-    public QuadDrawCommand(Vector2 position, Vector2 scale, Vector4 color)
+    public QuadDrawCommand(Vector3 position, Vector3 scale, Vector4 color)
     {
         Type = CommandType.Quad;
         QuadInstanceData = new WireframeGizmosData_4FC { Color = color };

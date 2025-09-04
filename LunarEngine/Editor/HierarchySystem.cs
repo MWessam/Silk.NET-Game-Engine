@@ -19,6 +19,8 @@ public partial class HierarchySystem : ScriptableSystem
     private int _option = -1;
     private int _hierarchyOption = -1;
     private EntityFactory _entityFactory;
+    private Action _uiElementDrawCall;
+    
 
     public HierarchySystem(World world) : base(world)
     {
@@ -30,6 +32,7 @@ public partial class HierarchySystem : ScriptableSystem
         [
             "Create Entity"
         ];
+        _uiElementDrawCall = InnerUiElementDrawCall;
     }
 
     public override void Awake()
@@ -47,31 +50,35 @@ public partial class HierarchySystem : ScriptableSystem
     }
     public override void Update(in double d)
     {
-        CommandBuffer = new();
-        _hierarchyMenu.Draw(() =>
-        {
-            if (ImGui.BeginPopupContextItem($"ContextMenu_Hierarchy"))
-            {
-                // // Add a combo box for options
-                if (ImGui.Combo("Actions##Hierarchy", ref _hierarchyOption, _hierarchyOptions, _hierarchyOptions.Length))
-                {
-                    switch (_hierarchyOption)
-                    {
-                        case 0:
-                            _entityFactory.CreateEntity(CommandBuffer);
-                            break;
-                    }
-                    _hierarchyOption = -1;
-                }
-                ImGui.EndPopup();
-            }
-            if (ImGui.BeginListBox("##HierarchyList"))
-            {
-                UpdateHierarchyQuery(World);  // Render the hierarchy content
-                ImGui.EndListBox();
-            }
-        });
+        _hierarchyMenu.Draw(_uiElementDrawCall);
         CommandBuffer.Playback(World);
+    }
+
+    private void InnerUiElementDrawCall()
+    {
+        if (ImGui.BeginPopupContextItem($"ContextMenu_Hierarchy"))
+        {
+            // // Add a combo box for options
+            if (ImGui.Combo("Actions##Hierarchy", ref _hierarchyOption, _hierarchyOptions, _hierarchyOptions.Length))
+            {
+                switch (_hierarchyOption)
+                {
+                    case 0:
+                        _entityFactory.CreateEntity(CommandBuffer);
+                        break;
+                }
+
+                _hierarchyOption = -1;
+            }
+
+            ImGui.EndPopup();
+        }
+
+        if (ImGui.BeginListBox("##HierarchyList"))
+        {
+            UpdateHierarchyQuery(World); // Render the hierarchy content
+            ImGui.EndListBox();
+        }
     }
 
     [Query]
@@ -82,7 +89,8 @@ public partial class HierarchySystem : ScriptableSystem
         {
             EventBus.Send(new InspectorTarget()
             {
-                Entity = World.Reference(entity)
+                Entity = World.Reference(entity),
+                EntityWorld = World,
             });
         }
         if (ImGui.BeginPopupContextItem($"ContextMenu_{name.Value}"))
@@ -106,4 +114,5 @@ public partial class HierarchySystem : ScriptableSystem
 public struct InspectorTarget
 {
     public EntityReference Entity;
+    public World EntityWorld;
 }

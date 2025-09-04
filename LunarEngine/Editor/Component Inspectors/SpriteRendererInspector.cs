@@ -10,6 +10,7 @@ public class SpriteRendererInspector : IComponentInspector<SpriteRenderer>
     public void OnDrawInspector(ref SpriteRenderer component)
     {
         EditorUIEngine.DrawInputDragFloat4UIElement(ref component.Color, "Color");
+        EditorUIEngine.DrawInputIntUIElement(ref component.Sprite.PPU, "PPU");
         var textures = AssetManager.Instance.TextureLibrary.GetAllAssets();
         var shaders = AssetManager.Instance.ShaderLibrary.GetAllAssets();
         if (ImGui.BeginListBox("Texture"))

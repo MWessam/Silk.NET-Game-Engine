@@ -4,19 +4,19 @@ using LunarEngine.UI;
 
 namespace LunarEngine.ECS.Systems;
 
-public class CameraInspector : IComponentInspector<Camera>
+public class CameraInspector : IComponentInspector<CameraComponent>
 {
-    public void OnDrawInspector(ref Camera component)
+    public void OnDrawInspector(ref CameraComponent component)
     {
-        EditorUIEngine.DrawInputFloatUIElement(ref component.Near, "Near");
+        EditorUIEngine.DrawInputFloatUIElement(ref component.Camera.Near, "Near");
         
         ImGui.Text("Far");
-        EditorUIEngine.DrawInputFloatUIElement(ref component.Far, "Far");
+        EditorUIEngine.DrawInputFloatUIElement(ref component.Camera.Far, "Far");
         
         ImGui.Text("Width");
-        EditorUIEngine.DrawInputFloatUIElement(ref component.Width, "Width");
+        EditorUIEngine.DrawInputFloatUIElement(ref component.Camera.Width, "Width");
         
         ImGui.Text("Height");
-        EditorUIEngine.DrawInputFloatUIElement(ref component.Height, "Height");
+        EditorUIEngine.DrawInputFloatUIElement(ref component.Camera.Height, "Height");
     }
 }
