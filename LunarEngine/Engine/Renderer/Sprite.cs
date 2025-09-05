@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
+using LunarEngine.Assets;
 using LunarEngine.GameObjects;
 using Silk.NET.OpenGL;
 
@@ -7,21 +8,23 @@ namespace LunarEngine.Engine.Graphics;
 
 public class Sprite : IDisposable
 {
-    public LGTexture Texture { get; private set; }
+    public TextureHandle Texture { get; private set; }
     public ShaderHandle Shader { get; private set; }
     public int PPU = 1000;
     private BufferObject<float> _instanceBuffer;
     private VertexArrayObject<float, uint> _vao;
-    public Sprite(LGTexture texture, ShaderHandle shader)
+    private GL _glApi;
+    public Sprite(TextureHandle texture, ShaderHandle shader, GL glApi)
     {
         Texture = texture;
         Shader = shader;
+        _glApi = glApi;
     }
     public void ChangeShader(ShaderHandle shaderHandle)
     {
         Shader = shaderHandle;
     }
-    public void ChangeTexture(LGTexture textureHandle)
+    public void ChangeTexture(TextureHandle textureHandle)
     {
         Texture = textureHandle;
     }
@@ -35,10 +38,10 @@ public class Sprite : IDisposable
     
     public void Initialize(Quad quad)
     {
-        _vao = new VertexArrayObject<float, uint>(_gl);
+        _vao = new VertexArrayObject<float, uint>(_glApi);
         quad.BindToVAO(ref _vao);
         _vao.Bind();
-        _instanceBuffer = new BufferObject<float>(_gl, BufferTargetARB.ArrayBuffer);
+        _instanceBuffer = new BufferObject<float>(_glApi, BufferTargetARB.ArrayBuffer);
         _instanceBuffer.Bind();
         _instanceBuffer.Layout.Push(1, BufferObject<float>.BufferLayout.ElementType.Mat4, true);    
         _instanceBuffer.Layout.Push(4, BufferObject<float>.BufferLayout.ElementType.Float, true);
@@ -51,7 +54,7 @@ public class Sprite : IDisposable
     public class Builder
     {
         private ShaderHandle _shader;
-        private LGTexture _texture;
+        private TextureHandle _texture;
         internal Builder()
         {
         }
@@ -60,7 +63,9 @@ public class Sprite : IDisposable
             _shader = shaderHandle;
             return this;
         }
-        public Builder WithTexture(LGTexture texture)
+
+
+        public Builder WithTexture(TextureHandle texture)
         {
             _texture = texture;
             return this;

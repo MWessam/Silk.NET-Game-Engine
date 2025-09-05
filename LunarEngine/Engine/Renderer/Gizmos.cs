@@ -1,5 +1,6 @@
 using System.Numerics;
 using LunarEngine.Assets;
+using LunarEngine.Engine.AssetHandleCache;
 using LunarEngine.GameEngine;
 using Silk.NET.OpenGL;
 
@@ -12,6 +13,7 @@ public class Gizmos : Singleton<Gizmos>, ISingletonObject, IDisposable
     private VertexArrayObject<float, uint> _wireframeVao;
     private ShaderHandle _gizmosShader;
     private GL _api;
+    private IAssetHandleCache _assetHandleCache;
 
     public void InitializeGizmos(GL api)
     {
@@ -38,7 +40,7 @@ public class Gizmos : Singleton<Gizmos>, ISingletonObject, IDisposable
 
     public void DrawLine(LineDrawCommand lineDrawCommand, Matrix4x4 viewProjectionMatrix)
     {
-        _gizmosShader = AssetManager.Instance.ShaderLibrary.GetAsset("wireframe_gizmo").Shader;
+        _gizmosShader = _assetHandleCache.GetShaderHandle("wireframe_gizmo");
         _wireframeVao.Bind();
         _wireframeGizmoVbo.Bind();
         _wireframeGizmoVbo.SetBufferData(lineDrawCommand.Vertices);
@@ -52,7 +54,7 @@ public class Gizmos : Singleton<Gizmos>, ISingletonObject, IDisposable
 
     public void DrawQuad(QuadDrawCommand quadDrawCommand, Matrix4x4 viewProjectionMatrix)
     {
-        _gizmosShader = AssetManager.Instance.ShaderLibrary.GetAsset("wireframe_gizmo").Shader;
+        _gizmosShader = _assetHandleCache.GetShaderHandle("wireframe_gizmo");
         _wireframeVao.Bind();
         _wireframeGizmoVbo.Bind();
         

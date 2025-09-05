@@ -17,9 +17,11 @@ public partial class SpriteRendererSystem : ScriptableSystem
 {
     Quad _quad;
     private GL _gl;
-    public SpriteRendererSystem(GL gl, World world) : base(world)
+    private AssetManager _assetManager;
+    public SpriteRendererSystem(GL gl, World world, AssetManager assetManager) : base(world)
     {
         _gl = gl;
+        _assetManager = assetManager;
         _quad = Quad.CreateQuad(_gl);
     }
     public override void Awake()
@@ -46,8 +48,8 @@ public partial class SpriteRendererSystem : ScriptableSystem
     {
         if (spriteRenderer.Sprite != null) return;
         var sprite = Sprite.GetSpriteBuilder()
-            .WithTexture(AssetManager.Instance.TextureLibrary.DefaultAsset.Texture)
-            .WithShader(AssetManager.Instance.ShaderLibrary.DefaultAsset.Shader)
+            .WithTexture(_assetManager.TextureLibrary.DefaultAsset)
+            .WithShader(_assetManager.ShaderLibrary.DefaultAsset)
             .Build();
         spriteRenderer.Color = Vector4.One;
         sprite.Initialize(_quad);

@@ -1,26 +1,31 @@
 using ImGuiNET;
 using LunarEngine.Assets;
+using LunarEngine.Engine.AssetHandleCache;
 using LunarEngine.GameObjects;
 using LunarEngine.UI;
+using Silk.NET.OpenGL;
 
 namespace LunarEngine.ECS.Systems;
 
 public class SpriteRendererInspector : IComponentInspector<SpriteRenderer>
 {
+    private AssetManager _assetManager;
+    private IAssetHandleCache _assetHandleCache;
     public void OnDrawInspector(ref SpriteRenderer component)
     {
         EditorUIEngine.DrawInputDragFloat4UIElement(ref component.Color, "Color");
         EditorUIEngine.DrawInputIntUIElement(ref component.Sprite.PPU, "PPU");
-        var textures = AssetManager.Instance.TextureLibrary.GetAllAssets();
-        var shaders = AssetManager.Instance.ShaderLibrary.GetAllAssets();
+        var textures = _assetManager.TextureLibrary.GetAllAssets();
+        var shaders = _assetManager.ShaderLibrary.GetAllAssets();
         if (ImGui.BeginListBox("Texture"))
         {
             for (var i = 0; i < textures.Count; i++)
             {
                 var texture = textures[i];
-                if (ImGui.Selectable($"{texture.TextureName}##{i}"))
+                var textureHandle = _assetHandleCache.GetTextureHandle(texture);
+                if (ImGui.Selectable($"{texture.Key}##{i}"))
                 {
-                    component.Sprite.ChangeTexture(texture.Texture);
+                    component.Sprite.ChangeTexture(textureHandle);
                 }
             }
             ImGui.EndListBox();
@@ -30,9 +35,10 @@ public class SpriteRendererInspector : IComponentInspector<SpriteRenderer>
             for (var i = 0; i < shaders.Count; i++)
             {
                 var shader = shaders[i];
-                if (ImGui.Selectable($"{shader.ShaderName}##{i}"))
+                var shaderHandle = _assetHandleCache.GetShaderHandle(shader);
+                if (ImGui.Selectable($"{shader.Key}##{i}"))
                 {
-                    component.Sprite.ChangeShader(shader.Shader);
+                    component.Sprite.ChangeShader(shaderHandle);
                 }
             }
             ImGui.EndListBox();

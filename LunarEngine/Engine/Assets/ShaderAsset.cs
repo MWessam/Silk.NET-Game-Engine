@@ -10,6 +10,9 @@ public class ShaderAsset : IAsset
     private ShaderHandle? _handle;
 
     private string _name;
+    public string Key => _name;
+    public string VertexPath => _vertexPath;
+    public string FragPath => _fragPath;
     
     public ShaderAsset(string vertexPath, string fragPath, string name)
     {
@@ -17,11 +20,4 @@ public class ShaderAsset : IAsset
         _fragPath = fragPath;
         _name = name;
     }
-    public ShaderHandle CreateHandle(GL api)
-    {
-        _handle ??= new ShaderHandle(api, _vertexPath, _fragPath);
-        return _handle.Value;
-    }
-
-    public string Key => _name;
 }

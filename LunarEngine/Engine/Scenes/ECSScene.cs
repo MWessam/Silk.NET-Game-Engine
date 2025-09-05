@@ -3,6 +3,7 @@ using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
+using LunarEngine.Assets;
 using LunarEngine.ECS.Systems;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
@@ -26,13 +27,17 @@ public class ECSScene
     private readonly ShaderSystem _shaderSystem;
     private readonly PhysicsSystem _physicsSystem;
     private readonly InputSystem _inputSystem;
+    private readonly Renderer _renderer;
+    private readonly AssetManager _assetManager;
     #endregion
     public CommandBuffer CommandBuffer = new CommandBuffer();
-    public ECSScene()
+    public ECSScene(Renderer renderer, AssetManager assetManager)
     {
         World = World.Create();
+        _renderer = renderer;
+        _assetManager = assetManager;
         _transformSystem = new TransformSystem(World);
-        _spriteRendererSystem = new SpriteRendererSystem(Renderer.Instance.Api, World);
+        _spriteRendererSystem = new SpriteRendererSystem(_renderer.Api, World, _assetManager);
         _cameraSystem = new CameraSystem(World);
         _initializationSystem = new InitializationSystem(World);
         _shaderSystem = new ShaderSystem(World);

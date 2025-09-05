@@ -13,6 +13,11 @@ public class TextureAsset : IAsset, IDisposable
     private readonly string _textureName;
     
     private TextureHandle? _handle;
+
+    public byte[] Pixels => _pixels;
+    public uint Width => _width;
+    public uint Height => _height;
+
     public TextureAsset(string path, string textureName)
     {
         if (File.Exists(path))
@@ -31,14 +36,8 @@ public class TextureAsset : IAsset, IDisposable
         
         _textureName = textureName;
     }
-    public TextureHandle CreateHandle(GL api)
-    {
-        _handle ??= new TextureHandle(api, _pixels, _width, _height);
-        return _handle.Value;
-    }
-
     public string Key => _textureName;
-
+    
     public void Dispose()
     {
         _handle?.Dispose();
