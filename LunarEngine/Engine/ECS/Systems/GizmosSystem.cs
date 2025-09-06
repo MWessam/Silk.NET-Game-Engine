@@ -11,8 +11,10 @@ namespace LunarEngine.Engine.ECS.Systems;
 
 public partial class GizmosSystem : ScriptableSystem
 {
-    public GizmosSystem(World world) : base(world)
+    private Renderer _renderer;
+    public GizmosSystem(World world, Renderer renderer) : base(world)
     {
+        _renderer = renderer;
     }
     public override void Update(in double data)
     {
@@ -24,6 +26,6 @@ public partial class GizmosSystem : ScriptableSystem
     [All<SpriteRenderer, Scale, Position>]
     public void RenderOutline(ref SpriteRenderer spriteRenderer, ref Scale scale, ref Position position)
     {
-        Renderer.Instance.SubmitRenderCommand(new QuadDrawCommand(position.Value, scale.ActualValue, Vector4.One));
+        _renderer.SubmitRenderCommand(new QuadDrawCommand(position.Value, scale.ActualValue, Vector4.One));
     }
 }

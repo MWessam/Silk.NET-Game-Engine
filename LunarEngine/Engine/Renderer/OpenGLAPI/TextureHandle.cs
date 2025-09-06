@@ -7,9 +7,11 @@ public struct TextureHandle : IDisposable
     {
         private uint _handle;
         private GL _gl;
-        
+        private uint _width;
+        private uint _height;
         public uint Handle => _handle;
-
+        public uint Width => _width;
+        public uint Height => _height;
 
         public unsafe TextureHandle(GL gl, ImageResult image)
         {
@@ -22,6 +24,8 @@ public struct TextureHandle : IDisposable
                 // Create our texture and upload the image data.
                 _gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba, (uint) image.Width, 
                     (uint) image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
+                _width = (uint) image.Width;
+                _height = (uint) image.Height;
             }
             SetParameters();
         }
@@ -42,6 +46,8 @@ public struct TextureHandle : IDisposable
                 _gl.TexImage2D(TextureTarget.Texture2D, 0, (int) InternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
             }
             SetParameters();
+            _width = width;
+            _height = height;
 
         }
 

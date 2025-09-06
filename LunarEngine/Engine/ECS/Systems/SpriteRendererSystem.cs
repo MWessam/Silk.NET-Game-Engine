@@ -6,6 +6,7 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Assets;
 using LunarEngine.Components;
+using LunarEngine.Engine.AssetHandleCache;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameObjects;
 using LunarEngine.Utilities;
@@ -18,10 +19,14 @@ public partial class SpriteRendererSystem : ScriptableSystem
     Quad _quad;
     private GL _gl;
     private AssetManager _assetManager;
-    public SpriteRendererSystem(GL gl, World world, AssetManager assetManager) : base(world)
+    private AssetHandleCache _assetHandleCache;
+    private Renderer _renderer;
+    public SpriteRendererSystem(GL gl, World world, AssetManager assetManager, AssetHandleCache assetHandleCache, Renderer renderer) : base(world)
     {
         _gl = gl;
         _assetManager = assetManager;
+        _assetHandleCache = assetHandleCache;
+        _renderer = renderer;
         _quad = Quad.CreateQuad(_gl);
     }
     public override void Awake()
@@ -48,9 +53,9 @@ public partial class SpriteRendererSystem : ScriptableSystem
     {
         if (spriteRenderer.Sprite != null) return;
         var sprite = Sprite.GetSpriteBuilder()
-            .WithTexture(_assetManager.TextureLibrary.DefaultAsset)
-            .WithShader(_assetManager.ShaderLibrary.DefaultAsset)
-            .Build();
+            .WithTexture(_assetHandleCache.GetTextureHandle(_assetManager.TextureLibrary.DefaultAsset))
+            .WithShader(_assetHandleCache.GetShaderHandle(_assetManager.ShaderLibrary.DefaultAsset))
+            .Build(_gl);
         spriteRenderer.Color = Vector4.One;
         sprite.Initialize(_quad);
         spriteRenderer.Sprite = sprite;
@@ -78,7 +83,7 @@ public partial class SpriteRendererSystem : ScriptableSystem
             Color = spriteRenderer.Color,
             TransformMatrix = transform.Value
         });
-        Renderer.Instance.SubmitRenderCommand(spriteDrawCommand);
+        _renderer.SubmitRenderCommand(spriteDrawCommand);
     }
 
 

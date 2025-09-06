@@ -9,8 +9,6 @@ namespace LunarEngine.Engine.Graphics;
 
 public class Renderer : IDisposable
 {
-    private static Renderer _instance;
-    public static Renderer Instance => _instance ??= new Renderer();
     private List<RenderCommand> _renderQueue = new();
     
     private Matrix4x4 _viewProjectionMatrix;

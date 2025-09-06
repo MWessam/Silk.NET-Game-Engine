@@ -70,10 +70,8 @@ public class Sprite : IDisposable
             _texture = texture;
             return this;
         }
-        public Sprite Build()
+        public Sprite Build(GL gl)
         {
-            var gl = Renderer.Instance.Api;
-            ArgumentNullException.ThrowIfNull(gl, nameof(gl));
             ArgumentNullException.ThrowIfNull(_shader, nameof(_shader));
             ArgumentNullException.ThrowIfNull(_texture, nameof(_texture));
             var sprite = new Sprite(_texture, _shader, gl);

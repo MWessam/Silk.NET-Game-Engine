@@ -20,9 +20,15 @@ public class SceneSystem
     private FrameBuffer _sceneFrameBuffer;
     public Vector2D<int> NewViewport;
     private bool _isFocused = false;
+    private Renderer _renderer;
+
+    public SceneSystem(Renderer renderer)
+    {
+        _renderer = renderer;
+    }
     public void Awake()
     {
-        _sceneFrameBuffer = new FrameBuffer(Renderer.Instance.Api, new Vector2D<int>(800, 600));
+        _sceneFrameBuffer = new FrameBuffer(_renderer.Api, new Vector2D<int>(800, 600));
         _uiElement = new DockableUiMenu()
         {
             Label = "Scene"

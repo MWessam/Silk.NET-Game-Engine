@@ -1,4 +1,5 @@
 using LunarEngine.Engine.ECS.Systems;
+using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
 using LunarEngine.Scenes;
 
@@ -8,15 +9,17 @@ public class GizmosLayer : BaseLayer
 {
     private SceneManager _sceneManager;
     private GizmosSystem _gizmosSystem;
-    public GizmosLayer(SceneManager sceneManager) : base("Gizmos")
+    private Renderer _renderer;
+    public GizmosLayer(SceneManager sceneManager, Renderer renderer) : base("Gizmos")
     {
         _sceneManager = sceneManager;
+        _renderer = renderer;
     }
 
     public override void OnAttach()
     {
         base.OnAttach();
-        _gizmosSystem = new GizmosSystem(_sceneManager.ActiveScenes.World);
+        _gizmosSystem = new GizmosSystem(_sceneManager.ActiveScenes.World, _renderer);
         _gizmosSystem.Awake();
     }
 

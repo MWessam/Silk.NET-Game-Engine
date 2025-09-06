@@ -1,8 +1,11 @@
 using System.Numerics;
 using ComponentFactories;
+using LunarEngine.Assets;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
+using LunarEngine.Engine.AssetHandleCache;
 using LunarEngine.Engine.ECS.Components;
+using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
@@ -12,7 +15,7 @@ namespace LunarEngine.Scenes;
 
 public class TestEcsScene : ECSScene
 {
-    public TestEcsScene()
+    public TestEcsScene(Renderer renderer, AssetManager assetManager, AssetHandleCache assetHandleCache) : base(renderer, assetManager, assetHandleCache)
     {
         // World.Create<Name, CameraComponent, Transform, Position, IsInstantiating>(new()
         // {

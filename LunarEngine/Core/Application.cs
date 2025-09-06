@@ -44,7 +44,7 @@ public class Application : IDisposable
         var options = WindowOptions.Default;
         options.Title = title;
         options.Size = new Vector2D<int>(width, height);
-        _window = Window.Create(options);
+        _window = Silk.NET.Windowing.Window.Create(options);
         _window.Load += OnWindowLoad;
     }
 

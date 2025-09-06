@@ -11,9 +11,6 @@ public class EngineHost
 {
     public void Run()
     {
-        // Ensure renderer is constructed and listening for GL init
-        _ = Renderer.Instance;
-
         var app = new Editor();
         app.CreateWindow();
         app.Run();

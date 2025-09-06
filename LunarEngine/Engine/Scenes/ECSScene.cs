@@ -5,6 +5,7 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Assets;
 using LunarEngine.ECS.Systems;
+using LunarEngine.Engine.AssetHandleCache;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
@@ -29,15 +30,17 @@ public class ECSScene
     private readonly InputSystem _inputSystem;
     private readonly Renderer _renderer;
     private readonly AssetManager _assetManager;
+    private readonly AssetHandleCache _assetHandleCache;
     #endregion
     public CommandBuffer CommandBuffer = new CommandBuffer();
-    public ECSScene(Renderer renderer, AssetManager assetManager)
+    public ECSScene(Renderer renderer, AssetManager assetManager, AssetHandleCache assetHandleCache)
     {
         World = World.Create();
         _renderer = renderer;
         _assetManager = assetManager;
+        _assetHandleCache = assetHandleCache;
         _transformSystem = new TransformSystem(World);
-        _spriteRendererSystem = new SpriteRendererSystem(_renderer.Api, World, _assetManager);
+        _spriteRendererSystem = new SpriteRendererSystem(_renderer.Api, World, _assetManager, _assetHandleCache, _renderer);
         _cameraSystem = new CameraSystem(World);
         _initializationSystem = new InitializationSystem(World);
         _shaderSystem = new ShaderSystem(World);
@@ -105,10 +108,10 @@ public class ECSScene
 
     public void RenderScenes(double dt, Camera camera)
     {
-        Renderer.Instance.BeginFrame(camera.ViewProjection);
+        _renderer.BeginFrame(camera.ViewProjection);
         _spriteRendererSystem.SetViewProjection(camera.ViewProjection);
         _spriteRendererSystem.Render(dt);
-        Renderer.Instance.EndFrame();
+        _renderer.EndFrame();
     }
     public void RenderScenes(double dt)
     {

@@ -40,12 +40,14 @@ public class EditorLayer : BaseLayer
     private EditorCamera _camera = new();
     private EditorCameraInputHandler _cameraInputHandler;
     private FrameBuffer _sceneFrameBuffer;
+    private Renderer _renderer;
     
     private SceneManager _sceneManager;
 
-    public EditorLayer(SceneManager sceneManager) : base("Editor")
+    public EditorLayer(SceneManager sceneManager, Renderer renderer) : base("Editor")
     {
         _sceneManager = sceneManager;
+        _renderer = renderer;
     }
 
     public override void OnAttach()
@@ -59,7 +61,7 @@ public class EditorLayer : BaseLayer
         _inspectorSystem.Awake();
         _sceneSystem.Awake();
         
-        _sceneFrameBuffer = new FrameBuffer(Renderer.Instance.Api, new Vector2D<int>(800, 600));
+        _sceneFrameBuffer = new FrameBuffer(_renderer.Api, new Vector2D<int>(800, 600));
         EventBus<ViewportResizedEvent>.Register(OnViewportResized);
         _cameraInputHandler = new (_camera, Input.Instance);
     }
@@ -97,7 +99,7 @@ public class EditorLayer : BaseLayer
 
     public override void OnImguiRender(TimeStep timeStep)
     {
-        Renderer.Instance.Clear();
+        _renderer.Clear();
         _sceneSystem.Draw(_scene, _camera, timeStep);
         _hierarchySystem.Update(timeStep);
         _inspectorSystem.Update(timeStep);
