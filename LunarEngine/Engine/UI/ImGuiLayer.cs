@@ -14,21 +14,32 @@ public class ImGuiLayer : BaseLayer
     public ImGuiController ImGUIController { get; private set; }
     private bool _blockEvents = true;
     private bool _isInitialized;
+    private IWindow _window;
+    private IInputContext _inputContext;
+    private GL _api;
     
     public uint ActiveWidgetId => ImGui.GetCurrentContext().ActiveId;
-    public ImGuiLayer(string name) : base(name)
+    public ImGuiLayer(string name, IWindow window, GL api, IInputContext inputContext, Application application) : base(name, application)
     {
+        _window = window;
+        _api = api;
+        _inputContext = inputContext;
     }
     public override void OnAttach()
     {
-        var window = Application.Instance.Window;
-        var api = Application.Instance.Api;
-        var inputContext = Application.Instance.InputContext;
+
+        // io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
+    }
+
+    public override void OnInitialize()
+    {
+        var window = _window;
+        var api = _api;
+        var inputContext = _inputContext;
         ImGUIController = new ImGuiController(api, window, inputContext);
         var io = ImGui.GetIO();
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
-        // io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
     }
 
     public void Begin()
@@ -50,7 +61,7 @@ public class ImGuiLayer : BaseLayer
     public void End()
     {
         var io = ImGui.GetIO();
-        io.DisplaySize = (Vector2)Application.Instance.WindowSize;
+        io.DisplaySize = (Vector2)_window.Size;
         ImGUIController.Render();
         // ImGui.EndFrame();
         // if (io.ConfigFlags & ImGuiConfigFlags.ViewportsEnable)

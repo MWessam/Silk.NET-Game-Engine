@@ -15,8 +15,8 @@ public class AssetHandleCache : IAssetHandleCache
 {
     private AssetManager _assetManager;
     private GL _glApi;
-    private Dictionary<string, TextureHandle> _textureHandles;
-    private Dictionary<string, ShaderHandle> _shaderHandles;
+    private Dictionary<string, TextureHandle> _textureHandles = new();
+    private Dictionary<string, ShaderHandle> _shaderHandles = new();
     private bool _shouldClearCache;
 
     public AssetHandleCache(AssetManager assetManager, GL glApi)
@@ -36,6 +36,7 @@ public class AssetHandleCache : IAssetHandleCache
             return handle;
         }
         handle = new TextureHandle(_glApi, asset.Pixels, asset.Width, asset.Height);
+        _textureHandles[asset.Key] = handle;
         return handle;
     }
 
@@ -46,6 +47,7 @@ public class AssetHandleCache : IAssetHandleCache
             return handle;
         }
         handle = new ShaderHandle(_glApi, asset.VertexPath, asset.FragPath);
+        _shaderHandles[asset.Key] = handle;
         return handle;
     }
     public TextureHandle GetTextureHandle(string textureName)

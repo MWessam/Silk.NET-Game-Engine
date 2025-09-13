@@ -20,23 +20,18 @@ public class Renderer : IDisposable
 
     #region INITIALIZATION
 
-    private Renderer()
+    public Renderer(GL api)
     {
-        EventBus<WindowInitializedEvent>.Register(OnApiLoaded);
+        Api = api;
     }
 
-    private void OnApiLoaded(WindowInitializedEvent windowInitializedEvent)
+    public void Initialize()
     {
-        var gl = windowInitializedEvent.Api;
-        
-        gl.ClearColor(Color.Black);
-        gl.Enable(GLEnum.Blend);
-        gl.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-        gl.LineWidth(4.0f);
-        
-        Gizmos.Instance.InitializeGizmos(gl);
-
-        Api = gl;
+        Api.ClearColor(Color.Black);
+        Api.Enable(GLEnum.Blend);
+        Api.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        Api.LineWidth(4.0f);
+        Gizmos.Instance.InitializeGizmos(Api);
     }
 
     #endregion

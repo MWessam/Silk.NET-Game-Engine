@@ -12,7 +12,7 @@ public class EngineHost
     public void Run()
     {
         var app = new Editor();
-        app.CreateWindow();
+        app.Initialize();
         app.Run();
     }
 }

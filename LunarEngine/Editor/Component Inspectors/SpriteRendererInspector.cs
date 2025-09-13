@@ -11,6 +11,13 @@ public class SpriteRendererInspector : IComponentInspector<SpriteRenderer>
 {
     private AssetManager _assetManager;
     private IAssetHandleCache _assetHandleCache;
+
+    public SpriteRendererInspector(AssetManager assetManager, IAssetHandleCache assetHandleCache)
+    {
+        _assetManager = assetManager;
+        _assetHandleCache = assetHandleCache;
+    }
+
     public void OnDrawInspector(ref SpriteRenderer component)
     {
         EditorUIEngine.DrawInputDragFloat4UIElement(ref component.Color, "Color");

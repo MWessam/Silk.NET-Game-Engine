@@ -5,7 +5,7 @@ using Silk.NET.Input;
 
 namespace LunarEngine.InputEngine;
 
-public class Input : Singleton<Input>, ISingletonObject, IDisposable
+public class Input : IDisposable
 {
     private Dictionary<Key, Action<Key>> _onKeyPressedMap = new();
     private Dictionary<Key, Action<Key>> _onKeyReleasedMap = new();
@@ -13,7 +13,6 @@ public class Input : Singleton<Input>, ISingletonObject, IDisposable
     private Dictionary<MouseButton, Action<MouseButton>> _onMousePressedMap = new();
     private Dictionary<MouseButton, Action<MouseButton>> _onMouseReleasedMap = new();
     private Dictionary<MouseButton, Action<MouseButton>> _onMouseHeldMap = new();
-    private static Input? s_instance;
     private HashSet<Key> _heldKeys = new();
     private HashSet<MouseButton> _heldMouseButtons = new();
     private Vector2 _keyboardAxis;
@@ -269,11 +268,6 @@ public class Input : Singleton<Input>, ISingletonObject, IDisposable
     }
 
     #endregion
-
-    public void InitSingleton()
-    {
-        
-    }
 
     public void Dispose()
     {

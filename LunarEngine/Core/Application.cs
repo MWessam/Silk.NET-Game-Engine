@@ -1,6 +1,8 @@
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using LunarEngine.Assets;
+using LunarEngine.Engine.AssetHandleCache;
+using LunarEngine.Engine.Graphics;
 using LunarEngine.Events;
 using LunarEngine.InputEngine;
 using LunarEngine.UI;
@@ -18,14 +20,18 @@ public static class Time
 public class Application : IDisposable
 {
     public static Vector2D<int> Viewport;
-    private static Application s_instance;
-    private GL _api;
     private LayerStack _layerStack = new();
     private ImGuiLayer _imGuiLayer;
     private Queue<Action> _mainThreadQueue = new();
     private object _mainThreadQueueLock = new();
+    
+    // Dependencies
     private IWindow _window;
-    private IInputContext _inputContext;
+    private Input _input;
+    private Renderer _renderer;
+    private AssetManager _assetManager;
+    private AssetHandleCache _assetHandleCache;
+    
     private bool _isRunning;
     public Vector2D<int> WindowSize
     {
@@ -35,10 +41,10 @@ public class Application : IDisposable
         }
     }
     public IWindow Window => _window;
-    public GL Api => _api;
-    public IInputContext InputContext => _inputContext;
-    public static Application Instance => s_instance;
-
+    public Renderer Renderer => _renderer;
+    public Input Input => _input;
+    public AssetManager AssetManager => _assetManager;
+    public AssetHandleCache AssetHandleCache => _assetHandleCache;
     public void CreateWindow(string title = "Lunar Editor", int width = 1280, int height = 720)
     {
         var options = WindowOptions.Default;
@@ -50,12 +56,10 @@ public class Application : IDisposable
 
     protected Application()
     {
-        s_instance ??= this;
     }
-    public virtual void InitSingleton()
+    public virtual void Initialize()
     {
-        _imGuiLayer = new ImGuiLayer("ImguiLayer");
-        PushOverlay(_imGuiLayer);
+
     }
 
     public void Dispose()
@@ -82,8 +86,8 @@ public class Application : IDisposable
     }
     public void Run()
     {
-
         _isRunning = true;
+        CreateWindow();
         _window.FramebufferResize += OnViewportResize;
         _window.Update += OnUpdate;
         _window.Closing += OnClose;
@@ -123,37 +127,43 @@ public class Application : IDisposable
     private void OnWindowLoad()
     {
         Viewport = _window.Size;
-        _api = GL.GetApi(_window);
-        _inputContext = _window.CreateInput();
-        
-        var input = Input.Instance;
-        var context = InputContext;
-        input.InputContext = context;
+        var api = GL.GetApi(_window);
+        var inputContext = _window.CreateInput();
+
+        _input = new Input();
+        _input.InputContext = inputContext;
         
         // Assign keyboard events
-        foreach (var keyboard in context.Keyboards)
+        foreach (var keyboard in inputContext.Keyboards)
         {
-            keyboard.KeyDown += input.OnKeyDown;
-            keyboard.KeyUp += input.OnKeyUp;
+            keyboard.KeyDown += _input.OnKeyDown;
+            keyboard.KeyUp += _input.OnKeyUp;
         }
         // Assign mouse events
-        foreach (var mouse in context.Mice)
+        foreach (var mouse in inputContext.Mice)
         {
-            mouse.MouseDown += input.OnMouseDown;
-            mouse.MouseUp += input.OnMouseUp;
-            mouse.MouseMove += input.OnMouseMove;
-            mouse.Scroll += input.OnMouseScroll;
+            mouse.MouseDown += _input.OnMouseDown;
+            mouse.MouseUp += _input.OnMouseUp;
+            mouse.MouseMove += _input.OnMouseMove;
+            mouse.Scroll += _input.OnMouseScroll;
         }
-        
-        // Notify systems that GL and window are initialized first
-        EventBus<WindowInitializedEvent>.Raise(new WindowInitializedEvent(_window, _api));
 
-        InitSingleton();
+        _renderer = new Renderer(api);
+        _imGuiLayer = new ImGuiLayer("ImguiLayer", _window, api, inputContext, this);
+        PushOverlay(_imGuiLayer);
+
+        _assetManager = new AssetManager();
+        _assetManager.Initialize();
+        _assetHandleCache = new AssetHandleCache(_assetManager, api);
+
+        foreach (var layer in _layerStack)
+        {
+            layer.OnInitialize();
+        }
     }
     private void OnViewportResize(Vector2D<int> viewport)
     {
         Viewport = viewport;
-        _api.Viewport(viewport);
         EventBus<ViewportResizedEvent>.Raise(new ViewportResizedEvent(viewport));
     }
 }

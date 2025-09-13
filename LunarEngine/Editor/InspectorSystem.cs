@@ -29,13 +29,17 @@ public partial class InspectorSystem : ScriptableSystem
     private MethodInfo _genericCommandBufferRemoveMethod;
     private List<Type> _defaultComponents = new();
 
-    public void AddComponentInspector<T>(IComponentInspector componentInspector) where T : struct
+    public void AddComponentInspector<T>(IComponentInspector<T> componentInspector) where T : struct, IComponent
     {
-        if (_componentInspectors.TryAdd(typeof(T), componentInspector))
+        AddComponentInspector(typeof(T), componentInspector);
+    }
+
+    public void AddComponentInspector(Type componentType, IComponentInspector componentInspector)
+    {
+        if (_componentInspectors.TryAdd(componentType, componentInspector))
         {
-            Log.Error($"Component inspector of type {nameof(T)} is already added.");
+            Log.Error($"Component inspector of type {componentType.Name} is already added.");
             return;
-            
         }
     }
     public InspectorSystem(World world) : base(world)
@@ -46,7 +50,10 @@ public partial class InspectorSystem : ScriptableSystem
             typeof(Name),
             typeof(TagComponent),
         ];
-        DiscoverAndAddComponentInspectors();
+        // DiscoverAndAddComponentInspectors();
+        DiscoverAllComponents();
+        _genericCommandBufferRemoveMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Remove");
+        _genericCommandBufferAddMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add");
         Hook();
     }
 
@@ -217,58 +224,62 @@ public partial class InspectorSystem : ScriptableSystem
         ImGui.Separator();
     }
 
-    /// <summary>
-    /// Looks through every assembly and finds every class that implement IComponentInspector.
-    /// Creates an instance of them and adds them to componentInspectors map.
-    /// </summary>
-    private void DiscoverAndAddComponentInspectors()
+    // /// <summary>
+    // /// Looks through every assembly and finds every class that implement IComponentInspector.
+    // /// Creates an instance of them and adds them to componentInspectors map.
+    // /// </summary>
+    // private void DiscoverAndAddComponentInspectors()
+    // {
+    //     // Find all types in the current AppDomain that implement IComponentInspector<>
+    //     var inspectorTypes = AppDomain.CurrentDomain.GetAssemblies()
+    //         .SelectMany(assembly => assembly.GetTypes())
+    //         .Where(type => !type.IsAbstract && !type.IsInterface)
+    //         .Where(type => type.GetInterfaces()
+    //             .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentInspector<>)))
+    //         .ToList();
+    //     
+    //     // Find all Component types in the current appdomain that implement IComponent.
+
+    //
+    //     foreach (var inspectorType in inspectorTypes)
+    //     {
+    //         // Find IComponentInspector generic interface.
+    //         var interfaceType = inspectorType.GetInterfaces()
+    //             .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentInspector<>));
+    //         
+    //         // Store the generic inspector component type.
+    //         var componentType = interfaceType.GetGenericArguments()[0];
+    //
+    //         // Create an instance of the inspector and add it
+    //         if (Activator.CreateInstance(inspectorType) is IComponentInspector inspectorInstance)
+    //         {
+    //             if (_componentInspectors.TryAdd(componentType, inspectorInstance))
+    //             {
+    //                 Log.Debug($"Added inspector for component type {componentType.Name}.");
+    //             }
+    //             else
+    //             {
+    //                 Log.Error($"Inspector for component type {componentType.Name} is already registered.");
+    //             }
+    //         }
+    //         else
+    //         {
+    //             Log.Error($"Failed to create an instance of {inspectorType.Name}.");
+    //         }
+    //     }
+    //
+    //     // Cache add and remove commands for components.
+    //     // _genericCommandBufferRemoveMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Remove");
+    //     // _genericCommandBufferAddMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add");
+    // }
+    private void DiscoverAllComponents()
     {
-        // Find all types in the current AppDomain that implement IComponentInspector<>
-        var inspectorTypes = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => !type.IsAbstract && !type.IsInterface)
-            .Where(type => type.GetInterfaces()
-                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentInspector<>)))
-            .ToList();
-        
-        // Find all Component types in the current appdomain that implement IComponent.
         var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => !type.IsAbstract && !type.IsInterface)
             .Where(type => typeof(IComponent).IsAssignableFrom(type))
             .ToList();
         _componentTypes = componentTypes;
-
-        foreach (var inspectorType in inspectorTypes)
-        {
-            // Find IComponentInspector generic interface.
-            var interfaceType = inspectorType.GetInterfaces()
-                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentInspector<>));
-            
-            // Store the generic inspector component type.
-            var componentType = interfaceType.GetGenericArguments()[0];
-
-            // Create an instance of the inspector and add it
-            if (Activator.CreateInstance(inspectorType) is IComponentInspector inspectorInstance)
-            {
-                if (_componentInspectors.TryAdd(componentType, inspectorInstance))
-                {
-                    Log.Debug($"Added inspector for component type {componentType.Name}.");
-                }
-                else
-                {
-                    Log.Error($"Inspector for component type {componentType.Name} is already registered.");
-                }
-            }
-            else
-            {
-                Log.Error($"Failed to create an instance of {inspectorType.Name}.");
-            }
-        }
-
-        // Cache add and remove commands for components.
-        _genericCommandBufferRemoveMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Remove");
-        _genericCommandBufferAddMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add");
     }
 }
 

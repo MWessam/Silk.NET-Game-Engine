@@ -5,13 +5,17 @@ namespace LunarEngine.GameEngine;
 public abstract class BaseLayer
 {
     public string Name { get; init; }
-    protected BaseLayer(string name)
+    protected Application Application { get; private set; }
+
+    protected BaseLayer(string name, Application application)
     {
         Name = name;
+        Application = application;
     }
 
     public virtual void OnAttach() {}
     public virtual void OnDetach() {}
+    public virtual void OnInitialize() {}
     public virtual void OnUpdate(TimeStep timeStep) {}
     public virtual void OnImguiRender(TimeStep timeStep) {}
 }

@@ -2,7 +2,9 @@ using System.Numerics;
 using Arch.Buffer;
 using Arch.Bus;
 using Hexa.NET.ImGui;
+using LunarEngine.Assets;
 using LunarEngine.Components;
+using LunarEngine.Engine.AssetHandleCache;
 using LunarEngine.Events;
 using LunarEngine.Engine.Gizmos;
 using LunarEngine.Engine.Graphics;
@@ -21,12 +23,11 @@ namespace LunarEngine.ECS.Systems;
 public class Editor : Application
 {
     private SceneManager _sceneManager;
-    public override void InitSingleton()
+    public override void Initialize()
     {
         _sceneManager = new();
-        base.InitSingleton();
-        PushLayer(new EditorLayer(_sceneManager));
-        PushLayer(new GizmosLayer(_sceneManager));
+        PushLayer(new EditorLayer(_sceneManager, this));
+        PushLayer(new GizmosLayer(_sceneManager, this));
     }
 }
 
@@ -40,36 +41,55 @@ public class EditorLayer : BaseLayer
     private EditorCamera _camera = new();
     private EditorCameraInputHandler _cameraInputHandler;
     private FrameBuffer _sceneFrameBuffer;
-    private Renderer _renderer;
     
     private SceneManager _sceneManager;
 
-    public EditorLayer(SceneManager sceneManager, Renderer renderer) : base("Editor")
+    public EditorLayer(SceneManager sceneManager, Application application) : base("Editor", application)
     {
         _sceneManager = sceneManager;
-        _renderer = renderer;
     }
 
     public override void OnAttach()
     {
-        _sceneManager.AddScene(new TestEcsScene());
-        _scene = _sceneManager.ActiveScenes;
-        _hierarchySystem = new HierarchySystem(_scene.World);
-        _inspectorSystem = new InspectorSystem(_scene.World);
-        _sceneSystem = new SceneSystem();
-        _hierarchySystem.Awake();
-        _inspectorSystem.Awake();
-        _sceneSystem.Awake();
-        
-        _sceneFrameBuffer = new FrameBuffer(_renderer.Api, new Vector2D<int>(800, 600));
-        EventBus<ViewportResizedEvent>.Register(OnViewportResized);
-        _cameraInputHandler = new (_camera, Input.Instance);
+
     }
 
     public override void OnDetach()
     {
-        EventBus<ViewportResizedEvent>.Deregister(OnViewportResized);
+        // EventBus<ViewportResizedEvent>.Deregister(OnViewportResized);
         _sceneFrameBuffer?.Dispose();
+    }
+
+    public override void OnInitialize()
+    {
+        _sceneManager.AddScene(new TestEcsScene(Application.Renderer, Application.AssetManager, Application.AssetHandleCache));
+        _scene = _sceneManager.ActiveScenes;
+        _hierarchySystem = new HierarchySystem(_scene.World);
+        _inspectorSystem = new InspectorSystem(_scene.World);
+        _sceneSystem = new SceneSystem(Application.Renderer);
+        _hierarchySystem.Awake();
+        _inspectorSystem.Awake();
+        _sceneSystem.Awake();
+        
+        _sceneFrameBuffer = new FrameBuffer(Application.Renderer.Api, new Vector2D<int>(800, 600));
+        // EventBus<ViewportResizedEvent>.Register(OnViewportResized);
+        _cameraInputHandler = new (_camera, Application.Input);
+        
+        List<IComponentInspector> componentInspectors = 
+            [
+                new CameraInspector(),
+                new NameInspector(),
+                new PositionInspector(),
+                new RigidBody2DInspector(),
+                new RotationInspector(),
+                new ScaleInspector(),
+                new SpriteRendererInspector(Application.AssetManager, Application.AssetHandleCache),
+                new BoxCollider2DInspector()
+            ];
+        foreach (var inspector in componentInspectors)
+        {
+            _inspectorSystem.AddComponentInspector(inspector.ComponentType, inspector);
+        }
     }
 
     public override void OnUpdate(TimeStep timeStep)
@@ -79,7 +99,7 @@ public class EditorLayer : BaseLayer
         _accumulatedTime += timeStep;
         
         // Input
-        Input.Instance.Update(timeStep);
+        Application.Input.Update(timeStep);
 
         
         // Physics
@@ -99,12 +119,12 @@ public class EditorLayer : BaseLayer
 
     public override void OnImguiRender(TimeStep timeStep)
     {
-        _renderer.Clear();
+        Application.Renderer.Clear();
         _sceneSystem.Draw(_scene, _camera, timeStep);
         _hierarchySystem.Update(timeStep);
         _inspectorSystem.Update(timeStep);
     }
-
+    
     private void HandleEditorCameraInput()
     {
     }
@@ -231,13 +251,5 @@ public partial class EditorCameraInputHandler
         {
             _camera.KeyboardMove(inputAxis);
         }
-    }
-
-    private void OnViewportResized(ViewportResizedEvent evt)
-    {
-        // Resize editor scene framebuffer to match window for now
-        _sceneFrameBuffer.Bind();
-        _sceneFrameBuffer.Resize(evt.Size);
-        _sceneFrameBuffer.Unbind();
     }
 }
