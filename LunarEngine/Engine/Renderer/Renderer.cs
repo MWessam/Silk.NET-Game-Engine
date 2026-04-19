@@ -10,14 +10,9 @@ namespace LunarEngine.Engine.Graphics;
 public class Renderer : IDisposable
 {
     private List<RenderCommand> _renderQueue = new();
-    
     private Matrix4x4 _viewProjectionMatrix;
-    
     public GL Api { get; private set; }
     public Matrix4x4 ViewProjectionMatrix => _viewProjectionMatrix;
-
-
-
     #region INITIALIZATION
 
     public Renderer(GL api)
