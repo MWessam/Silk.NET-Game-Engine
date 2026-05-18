@@ -15,7 +15,6 @@ public struct TimeStep
         _time = time;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator float(TimeStep timeStep)
     {
         return timeStep._time;

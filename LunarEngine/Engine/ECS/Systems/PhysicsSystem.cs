@@ -47,7 +47,7 @@ public partial class PhysicsSystem : ScriptableSystem
         if (rb.IsInitialized) return;
         rb.Mass = 1.0f;
         rb.GravityScale = 0.0f;
-        rb.CurrentPosition = position.Value.AsVector2();
+        rb.CurrentPosition = position.Value.ToVector2();
         rb.IsInitialized = true;
     }
     [Query]
@@ -82,14 +82,14 @@ public partial class PhysicsSystem : ScriptableSystem
             box.Width = scale.ActualValue.X;
             box.Height = scale.ActualValue.Y;
         }
-        box.Position = position.Value.AsVector2();
+        box.Position = position.Value.ToVector2();
     }
     [Query]
     [All<RigidBody2D, Position>]
     private void PhysicsTick([Data] in double deltaT, Entity entity, ref RigidBody2D rb, ref Position position)
     {
         if (rb.BodyType == EBodyType.Static) return;
-        rb.CurrentPosition = position.Value.AsVector2();
+        rb.CurrentPosition = position.Value.ToVector2();
         // // Update angular motion
         // float angularAcceleration = rb.NetTorque / rb.MomentOfInertia;
         // rb.AngularVelocityRadSec += angularAcceleration * (float)deltaT;
@@ -107,7 +107,7 @@ public partial class PhysicsSystem : ScriptableSystem
         rb.CurrentPosition += rb.Velocity * deltaTFloat;
         rb.Velocity += rb.Acceleration * (deltaTFloat / 2);
         rb.TransientForce = Vector2.Zero;
-        position.Value = rb.CurrentPosition.AsVector3(position.Value.Z);
+        position.Value = rb.CurrentPosition.ToVector3(position.Value.Z);
         position.IsDirty = true;
     }
     [Query]
@@ -116,7 +116,7 @@ public partial class PhysicsSystem : ScriptableSystem
     {
         if (rb.BodyType == EBodyType.Static) return;
         if (!rb.IsInterpolating) return;
-        pos.Value = Vector3.Lerp(rb.PreviousPosition.AsVector3(), rb.CurrentPosition.AsVector3(), PhysicsEngine.InterpolatedTime);
+        pos.Value = Vector3.Lerp(rb.PreviousPosition.ToVector3(), rb.CurrentPosition.ToVector3(), PhysicsEngine.InterpolatedTime);
         pos.IsDirty = true;
     }
 
@@ -145,7 +145,7 @@ public partial class PhysicsSystem : ScriptableSystem
         {
             rb1.CurrentPosition = box1Copy.Position;
             rb1.PreviousPosition = box1Copy.Position;
-            position.Value = box1Copy.Position.AsVector3();
+            position.Value = box1Copy.Position.ToVector3();
             rb1.Velocity = rb1Copy.Velocity;
         }
     }
