@@ -83,12 +83,12 @@
 - [x] Add simple spatial hash broadphase
 - [x] Remove `PhysicsLayer` and `PhysicsEngine` static class (already done in Phase 1)
 
-## Phase 10: Editor/runtime separation
-- [ ] Editor creates its own `IWorld`
-- [ ] Game scene uses separate `IWorld`
-- [ ] `EditorCamera` reads from `InputState` service
-- [ ] Remove Arch `[Event]` bus usage; replace with scoped `EventBus`
-- [ ] Inspector events use typed event structs
+## Phase 10: Editor/runtime separation (completed)
+- [x] Editor creates its own `IWorld`
+- [x] Game scene uses separate `IWorld`
+- [x] `EditorCamera` reads from `InputState` service
+- [x] Remove Arch `[Event]` bus usage; replace with scoped `EventBus`
+- [x] Inspector events use typed event structs
 
 ## Phase 11: Namespace consolidation
 - [ ] Rename all namespaces per the map

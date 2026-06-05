@@ -1,19 +1,15 @@
-using Arch.Bus;
-using Arch.Core;
-using Arch.System;
-using Arch.System.SourceGenerator;
+using Arch.Buffer;
 using Hexa.NET.ImGui;
 using LunarEngine.Components;
+using LunarEngine.ECS;
 using LunarEngine.ECS.Components;
+using LunarEngine.Events;
 using LunarEngine.GameObjects;
 using LunarEngine.UI;
 
 namespace LunarEngine.ECS.Systems;
 
-using EntityReference = Arch.Core.EntityReference;
-using World = Arch.Core.World;
-
-public partial class HierarchySystem : ScriptableSystem
+public class HierarchySystem
 {
     private IUiElement _hierarchyMenu;
     private string[] _options;
@@ -21,10 +17,15 @@ public partial class HierarchySystem : ScriptableSystem
     private int _option = -1;
     private int _hierarchyOption = -1;
     private Action _uiElementDrawCall;
-    
+    private readonly IWorld _world;
+    private readonly EventBus<InspectorTargetSelectedEvent> _eventBus;
+    private CommandBuffer _commandBuffer;
 
-    public HierarchySystem(World world) : base(world)
+    public HierarchySystem(IWorld world, EventBus<InspectorTargetSelectedEvent> eventBus)
     {
+        _world = world;
+        _eventBus = eventBus;
+        _commandBuffer = world.CreateCommandBuffer();
         _options =
         [
             "Delete"
@@ -36,37 +37,33 @@ public partial class HierarchySystem : ScriptableSystem
         _uiElementDrawCall = InnerUiElementDrawCall;
     }
 
-    public override void Awake()
+    public void Awake()
     {
         _hierarchyMenu = new DockableUiMenu()
         {
-            // MenuWidth = 240,
-            // Alignment = EAlignment.AlignTop,
-            // Justification = EJustification.JustifyLeft,
             Label = "Hierarchy",
             ImGuiDir = ImGuiDir.Left,
-            // StretchY = true,
         };
     }
-    public override void Update(in double d)
+
+    public void Update(in double d)
     {
         _hierarchyMenu.Draw(_uiElementDrawCall);
-        CommandBuffer.Playback(World);
+        _world.Playback(_commandBuffer);
     }
 
     private void InnerUiElementDrawCall()
     {
         if (ImGui.BeginPopupContextItem($"ContextMenu_Hierarchy"))
         {
-            // // Add a combo box for options
             if (ImGui.Combo("Actions##Hierarchy", ref _hierarchyOption, _hierarchyOptions, _hierarchyOptions.Length))
             {
                 switch (_hierarchyOption)
                 {
                     case 0:
                     {
-                        var entity = CommandBuffer.Create([typeof(Name), typeof(Transform), typeof(IsInstantiating)]);
-                        CommandBuffer.Set(in entity, new Name { Value = "Entity" });
+                        var entity = _commandBuffer.Create([typeof(Name), typeof(Transform), typeof(IsInstantiating)]);
+                        _commandBuffer.Set(in entity, new Name { Value = "Entity" });
                         break;
                     }
                 }
@@ -79,43 +76,28 @@ public partial class HierarchySystem : ScriptableSystem
 
         if (ImGui.BeginListBox("##HierarchyList"))
         {
-            UpdateHierarchyQuery(World); // Render the hierarchy content
+            _world.Query<Name>((EntityReference entity, ref Name name) =>
+            {
+                if (ImGui.Selectable($"{name.Value}##{entity.Id}"))
+                {
+                    _eventBus.Publish(new InspectorTargetSelectedEvent(entity, _world));
+                }
+                if (ImGui.BeginPopupContextItem($"ContextMenu_{name.Value}"))
+                {
+                    if (ImGui.Combo("Actions##Entity", ref _option, _options, _options.Length))
+                    {
+                        switch (_options[_option])
+                        {
+                            case "Delete":
+                                _commandBuffer.Destroy(entity.NativeEntity);
+                                break;
+                        }
+                        _option = -1;
+                    }
+                    ImGui.EndPopup();
+                }
+            });
             ImGui.EndListBox();
         }
     }
-
-    [Query]
-    [All<Name>]
-    private void UpdateHierarchy(Entity entity, ref Name name)
-    {
-        if (ImGui.Selectable($"{name.Value}##{entity.Id}"))
-        {
-            EventBus.Send(new InspectorTarget()
-            {
-                Entity = World.Reference(entity),
-                EntityWorld = World,
-            });
-        }
-        if (ImGui.BeginPopupContextItem($"ContextMenu_{name.Value}"))
-        {
-            // // Add a combo box for options
-            if (ImGui.Combo("Actions##Entity", ref _option, _options, _options.Length))
-            {
-                switch (_options[_option])
-                {
-                    case "Delete":
-                        CommandBuffer.Destroy(entity);
-                        break;
-                }
-                _option = -1;
-            }
-            ImGui.EndPopup();
-        }
-    }
-}
-
-public struct InspectorTarget
-{
-    public EntityReference Entity;
-    public World EntityWorld;
 }

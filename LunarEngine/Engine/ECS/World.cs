@@ -87,6 +87,11 @@ internal sealed class ECSWorld : IWorld
         NativeWorld.Set(entity.NativeEntity, component);
     }
 
+    public void Set(EntityReference entity, object component)
+    {
+        NativeWorld.Set(entity.NativeEntity, component);
+    }
+
     public bool Has<T>(EntityReference entity) where T : struct, IComponent
     {
         return NativeWorld.Has<T>(entity.NativeEntity);
@@ -110,5 +115,15 @@ internal sealed class ECSWorld : IWorld
     public bool IsAlive(EntityReference entity)
     {
         return NativeWorld.IsAlive(entity.NativeReference);
+    }
+
+    public void Query<T1>(QueryCallback<T1> callback) where T1 : struct, IComponent
+    {
+        var desc = new QueryDescription().WithAll<T1>();
+        NativeWorld.Query(desc, (Entity entity, ref T1 c1) =>
+        {
+            var er = new EntityReference(entity, NativeWorld.Reference(entity), this);
+            callback(er, ref c1);
+        });
     }
 }

@@ -1,11 +1,12 @@
-using Arch.Bus;
 using Hexa.NET.ImGui;
 using System.Numerics;
 using LunarEngine.Assets;
 using LunarEngine.Components;
 using LunarEngine.Core;
+using LunarEngine.ECS;
 using LunarEngine.Engine.Gizmos;
 using LunarEngine.Engine.Graphics;
+using LunarEngine.Events;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.Input;
@@ -15,9 +16,6 @@ using Silk.NET.Input;
 using Silk.NET.Maths;
 
 namespace LunarEngine.ECS.Systems;
-
-using EntityReference = Arch.Core.EntityReference;
-using World = Arch.Core.World;
 
 public class Editor : Application
 {
@@ -41,7 +39,8 @@ public class EditorLayer : BaseLayer
     private ECSScene _scene = null!;
     private EditorCamera _camera = new();
     private EditorCameraInputHandler _cameraInputHandler = null!;
-    
+    private ECSWorld _editorWorld = null!;
+
     private readonly SceneManager _sceneManager;
     private readonly IRenderer _renderer;
     private readonly InputManager _inputManager;
@@ -61,20 +60,27 @@ public class EditorLayer : BaseLayer
 
     public override void OnInitialize()
     {
+        _editorWorld = new ECSWorld();
+
         _sceneManager.AddScene(new TestEcsScene(_services));
         _scene = (ECSScene)_sceneManager.ActiveScene!;
         _scene.Awake();
         _scene.Start();
-        _hierarchySystem = new HierarchySystem(_scene.World);
-        _inspectorSystem = new InspectorSystem(_scene.World);
-        _sceneSystem = new SceneSystem(_renderer);
+
+        var inspectorEventBus = new EventBus<InspectorTargetSelectedEvent>();
+        var sceneFocusEventBus = new EventBus<SceneFocusEvent>();
+
+        var gameWorld = _sceneManager.ActiveScene!.World;
+        _hierarchySystem = new HierarchySystem(gameWorld, inspectorEventBus);
+        _inspectorSystem = new InspectorSystem(gameWorld, inspectorEventBus);
+        _sceneSystem = new SceneSystem(_renderer, sceneFocusEventBus);
+        _cameraInputHandler = new EditorCameraInputHandler(_camera, _inputManager, inspectorEventBus, sceneFocusEventBus);
+
         _hierarchySystem.Awake();
         _inspectorSystem.Awake();
         _sceneSystem.Awake();
-        
-        _cameraInputHandler = new(_camera, _inputManager);
-        
-        List<IComponentInspector> componentInspectors = 
+
+        List<IComponentInspector> componentInspectors =
             [
                 new CameraInspector(),
                 new NameInspector(),
@@ -94,7 +100,7 @@ public class EditorLayer : BaseLayer
     public override void OnUpdate(TimeStep timeStep)
     {
         _camera.Update();
-        _cameraInputHandler.Update(_inputManager.State);
+        _cameraInputHandler.Update(_inputManager.State, (float)timeStep);
         _scene.Update(timeStep);
         _scene.Tick(timeStep);
     }
@@ -107,80 +113,72 @@ public class EditorLayer : BaseLayer
     }
 }
 
-public partial class EditorCameraInputHandler
+public class EditorCameraInputHandler
 {
-    private InputManager _inputManager;
+    private readonly InputManager _inputManager;
     private bool _canPan;
     private bool _canRotate;
-    private EditorCamera _camera;
+    private readonly EditorCamera _camera;
     private (Position, Rotation, Transform) _focusedEntityComponents;
-    public EditorCameraInputHandler(EditorCamera camera, InputManager inputManager)
+
+    public EditorCameraInputHandler(EditorCamera camera, InputManager inputManager,
+                                   EventBus<InspectorTargetSelectedEvent> inspectorBus,
+                                   EventBus<SceneFocusEvent> focusBus)
     {
-        Hook();
         _camera = camera;
         _inputManager = inputManager;
+        inspectorBus.Subscribe(OnInspectorTargetSelected);
+        focusBus.Subscribe(OnSceneFocusChanged);
     }
 
-    [Event(order: 0)]
-    public void OnInspectorTargetSelected(InspectorTarget target)
+    private void OnInspectorTargetSelected(InspectorTargetSelectedEvent evt)
     {
-        var entityPos = target.EntityWorld.Get<Position, Transform>(target.Entity);
-        _focusedEntityComponents.Item1 = entityPos.t0;
-        _focusedEntityComponents.Item2 = new Rotation()
-        {
-            Value = Quaternion.Identity
-        };
-        _focusedEntityComponents.Item3 = entityPos.t1;
-        if (target.EntityWorld.Has<Rotation>(target.Entity))
-        {
-            var entityRot = target.EntityWorld.Get<Rotation>(target.Entity);
-            _focusedEntityComponents.Item2 = entityRot;
-        }
+        var components = evt.World.Get<Position, Transform>(evt.Entity);
+        _focusedEntityComponents.Item1 = components.t0;
+        _focusedEntityComponents.Item3 = components.t1;
+        _focusedEntityComponents.Item2 = evt.World.Has<Rotation>(evt.Entity)
+            ? evt.World.Get<Rotation>(evt.Entity)
+            : new Rotation { Value = Quaternion.Identity };
     }
-    [Event(order: 1)]
-    public void OnSceneFocusEvent(SceneFocusEvent evt)
+
+    private void OnSceneFocusChanged(SceneFocusEvent evt)
     {
         if (evt.IsFocused)
         {
-            OnSceneFocused();
+            _inputManager.MouseDown += OnMouseDown;
+            _inputManager.MouseUp += OnMouseUp;
         }
         else
         {
-            OnSceneLoseFocus();
+            OnMouseUp(MouseButton.Middle);
+            OnMouseUp(MouseButton.Right);
+            _inputManager.MouseDown -= OnMouseDown;
+            _inputManager.MouseUp -= OnMouseUp;
         }
     }
-    public void OnSceneFocused()
-    {
-        _inputManager.MouseDown += OnMouseDown;
-        _inputManager.MouseUp += OnMouseUp;
-        _inputManager.KeyDown += OnKeyDown;
-        _inputManager.MouseMoved += OnMouseMoved;
-        _inputManager.MouseScrolled += OnMouseScrolled;
-    }
 
-    private void OnKeyDown(Key key)
+    public void Update(InputState state, float deltaTime)
     {
-        if (key == Key.F)
+        if (state.IsKeyPressed(Key.F))
         {
             _camera.LookAt(_focusedEntityComponents.Item1.Value, _focusedEntityComponents.Item3, _focusedEntityComponents.Item2.Value);
         }
-    }
 
-    public void OnSceneLoseFocus()
-    {
-        OnMouseUp(MouseButton.Middle);
-        OnMouseUp(MouseButton.Right);
-        _inputManager.MouseDown -= OnMouseDown;
-        _inputManager.MouseUp -= OnMouseUp;
-        _inputManager.KeyDown -= OnKeyDown;
-        _inputManager.MouseMoved -= OnMouseMoved;
-        _inputManager.MouseScrolled -= OnMouseScrolled;
-    }
+        if (state.MouseDelta != Vector2.Zero)
+        {
+            if (_canPan) _camera.MousePan(state.MouseDelta, deltaTime);
+            if (_canRotate) _camera.MouseRotate(state.MouseDelta, deltaTime);
+        }
 
-    private void OnMouseScrolled(float delta)
-    {
-        if (!_canRotate) return;
-        _camera.MouseZoom(delta);
+        if (state.ScrollDelta != 0)
+        {
+            if (_canRotate) _camera.MouseZoom(state.ScrollDelta, deltaTime);
+        }
+
+        if (_canRotate)
+        {
+            _camera.KeyboardMove(state.GetAxis("Movement"), deltaTime);
+        }
     }
 
     private void OnMouseDown(MouseButton button)
@@ -206,27 +204,6 @@ public partial class EditorCameraInputHandler
         else if (button == MouseButton.Middle)
         {
             _canPan = false;
-        }
-    }
-
-    private void OnMouseMoved(Vector2 delta)
-    {
-        if (_canPan)
-        {
-            _camera.MousePan(delta);
-        }
-
-        if (_canRotate)
-        {
-            _camera.MouseRotate(delta);
-        }
-    }
-
-    public void Update(InputState state)
-    {
-        if (_canRotate)
-        {
-            _camera.KeyboardMove(state.GetAxis("Movement"));
         }
     }
 }

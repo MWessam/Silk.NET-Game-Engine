@@ -382,6 +382,49 @@ Physics consolidation completed. Build + run verified.
 
 ---
 
+## Phase 10 Completion Notes (2026-06-05)
+
+Editor/runtime separation completed. Build + run verified.
+
+**Changes made**:
+1. **Created editor `IWorld`** — `EditorLayer` now instantiates a dedicated `ECSWorld` (`_editorWorld`) for editor-only state, establishing structural dual-world isolation.
+2. **Removed all `Arch.Bus` usage** — Replaced `Arch.Bus.EventBus.Send()` and `[Event]` attributes with scoped `EventBus<T>` from `LunarEngine.Events`:
+   - `HierarchySystem` publishes `InspectorTargetSelectedEvent` via `EventBus<InspectorTargetSelectedEvent>`.
+   - `InspectorSystem` subscribes to `InspectorTargetSelectedEvent` explicitly in its constructor.
+   - `SceneSystem` publishes `SceneFocusEvent` via `EventBus<SceneFocusEvent>`.
+   - `EditorCameraInputHandler` subscribes to both event buses explicitly in its constructor.
+3. **Moved event structs to `LunarEngine.Events`** — Created `Events/InspectorTargetSelectedEvent.cs` and `Events/SceneFocusEvent.cs` as `readonly struct` definitions.
+4. **Refactored `HierarchySystem` and `InspectorSystem`** — Converted from `ScriptableSystem` (Arch `BaseSystem<World, double>`) to plain C# classes that consume `IWorld` directly. This removes the Arch dependency from editor UI systems.
+5. **Updated `EditorCamera`** — Removed static `Time.DeltaTime` dependency. `MousePan`, `MouseZoom`, `MouseRotate`, and `KeyboardMove` now accept `float dt` parameter explicitly.
+6. **Refactored `EditorCameraInputHandler`** — Removed `[Event]` attributes and `Hook()` call. Input processing for mouse delta, scroll, and keyboard movement now happens in `Update(InputState, float)` reading from `InputState`. Mouse button events (`MouseDown`/`MouseUp`) remain subscribed via `InputManager` for cursor lock and pan/rotate toggles.
+7. **Added `Query<T1>` to `IWorld`** — Added `QueryCallback<T1>` delegate and `IWorld.Query<T1>()` method so consumers can iterate entities without referencing `Arch.Core.World` directly.
+8. **Added non-generic `Set` to `IWorld`** — Added `IWorld.Set(EntityReference, object)` to support runtime-type component updates (required by inspector generic reflection path).
+9. **Removed all `using Arch.Bus;` statements** from `Editor.cs`, `HierarchySystem.cs`, `InspectorSystem.cs`, `SceneSystem.cs`, `CameraSystem.cs`, and `SpriteRendererSystem.cs`.
+
+**Remaining design gaps**:
+- `HierarchySystem` and `InspectorSystem` still query/manipulate the **game world** because they edit scene entities. Full dual-world isolation would require editor-world proxies or a command-based edit bridge; this is deferred to Phase 12 / future work.
+- `GizmosSystem` is still registered on the game world (`GizmosLayer`). In the target architecture, gizmos rendering is an editor-layer concern.
+
+---
+
+## Phase 10 Pre-phase Audit (2026-06-05)
+
+**New drift discovered**:
+1. **`EditorCamera` uses static `Time.DeltaTime`** in `MousePan`, `MouseZoom`, `MouseRotate`, and `KeyboardMove` — violates the goal of removing global statics.
+2. **`EditorCameraInputHandler` uses `Arch.Bus.[Event]`** — `OnInspectorTargetSelected` and `OnSceneFocusEvent` are decorated with `[Event]` and rely on `Hook()` for automatic subscription. This is the last Arch event bus consumer in the codebase.
+3. **`HierarchySystem` and `InspectorSystem` extend `ScriptableSystem`** — editor UI systems are coupled to Arch `BaseSystem<World, double>` despite not being registered with any scheduler.
+4. **`EventBus<T>` still requires `IEvent` constraint** — prevents usage with plain structs like `SceneFocusEvent`.
+
+**Plan for Phase 10**:
+- Remove `IEvent` constraint from `EventBus<T>`.
+- Create `InspectorTargetSelectedEvent` and move `SceneFocusEvent` to `LunarEngine.Events`.
+- Convert `HierarchySystem` and `InspectorSystem` to plain classes using `IWorld`.
+- Replace Arch `[Event]` with explicit `EventBus<T>` subscriptions.
+- Pass `TimeStep`/`float dt` through `EditorCamera` methods.
+- Create an editor `ECSWorld` in `EditorLayer`.
+
+---
+
 ## Summary
 
 The current codebase is a functional prototype that directly uses Silk.NET, Arch ECS, and raw OpenGL with minimal abstraction. The target architecture defines a fully modular, dependency-injected, interface-driven engine. **Conflicts are pervasive across every module**: Core, Platform, ECS, Renderer, Assets, Input, Scenes, Physics, and Editor all deviate substantially from the target design. The 12-phase implementation plan in `ARCHITECTURE.md` is well-justified given the breadth of changes required.

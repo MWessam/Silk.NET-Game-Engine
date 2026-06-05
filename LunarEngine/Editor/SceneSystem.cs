@@ -1,9 +1,8 @@
 using System.Drawing;
 using System.Numerics;
-using Arch.Bus;
-using Arch.Core;
 using Hexa.NET.ImGui;
 using LunarEngine.Engine.Graphics;
+using LunarEngine.Events;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
@@ -20,10 +19,12 @@ public class SceneSystem
     public Vector2D<int> NewViewport;
     private bool _isFocused = false;
     private IRenderer _renderer;
+    private readonly EventBus<SceneFocusEvent> _eventBus;
 
-    public SceneSystem(IRenderer renderer)
+    public SceneSystem(IRenderer renderer, EventBus<SceneFocusEvent> eventBus)
     {
         _renderer = renderer;
+        _eventBus = eventBus;
     }
     public void Awake()
     {
@@ -48,13 +49,13 @@ public class SceneSystem
             if (ImGui.IsWindowFocused() && !_isFocused)
             {
                 _isFocused = true;
-                EventBus.Send(new SceneFocusEvent(_isFocused));
+                _eventBus.Publish(new SceneFocusEvent(_isFocused));
 
             }
             else if (!ImGui.IsWindowFocused() && _isFocused)
             {
                 _isFocused = false;
-                EventBus.Send(new SceneFocusEvent(_isFocused));
+                _eventBus.Publish(new SceneFocusEvent(_isFocused));
             }
             NewViewport = new Vector2D<int>((int)contentRegionAvail.X, (int)contentRegionAvail.Y);
             _sceneFrameBuffer.Bind();
@@ -74,15 +75,5 @@ public struct OnViewportUpdated
 }
 public class GameSystem
 {
-    
-}
 
-public struct SceneFocusEvent
-{
-    public bool IsFocused;
-
-    public SceneFocusEvent(bool isFocused)
-    {
-        IsFocused = isFocused;
-    }
 }

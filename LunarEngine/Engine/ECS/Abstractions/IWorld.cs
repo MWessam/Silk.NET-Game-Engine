@@ -4,6 +4,8 @@ using LunarEngine.Engine.ECS.Components;
 
 namespace LunarEngine.ECS;
 
+public delegate void QueryCallback<T1>(EntityReference entity, ref T1 component) where T1 : struct, IComponent;
+
 public interface IWorld
 {
     EntityReference Create();
@@ -22,6 +24,7 @@ public interface IWorld
     Components<T1, T2> Get<T1, T2>(EntityReference entity) where T1 : struct, IComponent where T2 : struct, IComponent;
 
     void Set<T>(EntityReference entity, in T component) where T : struct, IComponent;
+    void Set(EntityReference entity, object component);
 
     bool Has<T>(EntityReference entity) where T : struct, IComponent;
 
@@ -31,6 +34,8 @@ public interface IWorld
     void Playback(CommandBuffer buffer);
 
     bool IsAlive(EntityReference entity);
+
+    void Query<T1>(QueryCallback<T1> callback) where T1 : struct, IComponent;
 
     World NativeWorld { get; }
 }

@@ -138,18 +138,18 @@ public class EditorCamera : Camera
         UpdateViewProjection();
     }
 
-    public void MousePan(Vector2 delta)
+    public void MousePan(Vector2 delta, float dt)
     {
         var panSpeed = PanSpeed;
         var right = new Vector3(_transform.Value.M11, _transform.Value.M12, _transform.Value.M13);
         var up = new Vector3(_transform.Value.M21, _transform.Value.M22, _transform.Value.M23);
-        _focalPoint += right * delta.X * panSpeed.X * Time.DeltaTime + -up * delta.Y * panSpeed.Y * Time.DeltaTime;
+        _focalPoint += right * delta.X * panSpeed.X * dt + -up * delta.Y * panSpeed.Y * dt;
         CalculatePosition();
     }
 
-    public void MouseZoom(float delta)
+    public void MouseZoom(float delta, float dt)
     {
-        var distance = _distance - delta * ZoomSpeed * Time.DeltaTime;
+        var distance = _distance - delta * ZoomSpeed * dt;
         if (distance < 1.0f)
         {
             return;
@@ -159,20 +159,20 @@ public class EditorCamera : Camera
         CalculatePosition();
     }
 
-    public void MouseRotate(Vector2 delta)
+    public void MouseRotate(Vector2 delta, float dt)
     {
         float yawSign = _transform.GetUp().Y < 0 ? -1.0f : 1.0f;
-        
-        _yaw += yawSign * delta.X * RotationSpeed * Time.DeltaTime;
-        _pitch += delta.Y * RotationSpeed * Time.DeltaTime;
+
+        _yaw += yawSign * delta.X * RotationSpeed * dt;
+        _pitch += delta.Y * RotationSpeed * dt;
         CalculateOrientation();
     }
 
-    public void KeyboardMove(Vector2 input)
+    public void KeyboardMove(Vector2 input, float dt)
     {
         var right = _transform.GetRight() * input.X;
         var forward = _transform.GetForward() * input.Y;
-        _position.Value += (right + forward) * Time.DeltaTime;
+        _position.Value += (right + forward) * dt;
     }
 
     public void Update()

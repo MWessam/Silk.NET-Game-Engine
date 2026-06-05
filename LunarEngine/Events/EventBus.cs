@@ -2,7 +2,7 @@ namespace LunarEngine.Events;
 
 public interface IEvent { }
 
-public sealed class EventBus<T> where T : struct, IEvent
+public sealed class EventBus<T> where T : struct
 {
     private readonly HashSet<Action<T>> _bindings = new();
     private readonly HashSet<Action> _noArgsBindings = new();

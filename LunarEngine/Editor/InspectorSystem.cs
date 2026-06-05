@@ -1,12 +1,12 @@
 using System.Numerics;
 using System.Reflection;
 using Arch.Buffer;
-using Arch.Bus;
-using Arch.Core;
-using ImGuiNET;
+using Hexa.NET.ImGui;
 using LunarEngine.Components;
+using LunarEngine.ECS;
 using LunarEngine.ECS.Components;
 using LunarEngine.Engine.ECS.Components;
+using LunarEngine.Events;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.UI;
@@ -15,11 +15,7 @@ using ImGuiDir = Hexa.NET.ImGui.ImGuiDir;
 
 namespace LunarEngine.ECS.Systems;
 
-using EntityReference = Arch.Core.EntityReference;
-using World = Arch.Core.World;
-
-
-public partial class InspectorSystem : ScriptableSystem
+public class InspectorSystem
 {
     private EntityReference _entity;
     private bool _isComponentDropdownOpen = false;
@@ -30,6 +26,8 @@ public partial class InspectorSystem : ScriptableSystem
     private MethodInfo _genericCommandBufferAddMethod;
     private MethodInfo _genericCommandBufferRemoveMethod;
     private List<Type> _defaultComponents = new();
+    private readonly IWorld _world;
+    private CommandBuffer _commandBuffer;
 
     public void AddComponentInspector<T>(IComponentInspector<T> componentInspector) where T : struct, IComponent
     {
@@ -44,48 +42,46 @@ public partial class InspectorSystem : ScriptableSystem
             return;
         }
     }
-    public InspectorSystem(World world) : base(world)
+
+    public InspectorSystem(IWorld world, EventBus<InspectorTargetSelectedEvent> eventBus)
     {
+        _world = world;
+        _commandBuffer = world.CreateCommandBuffer();
+        eventBus.Subscribe(OnInspectorTargetSelected);
+
         _defaultComponents =
         [
             typeof(Transform),
             typeof(Name),
         ];
-        // DiscoverAndAddComponentInspectors();
         DiscoverAllComponents();
         _genericCommandBufferRemoveMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Remove");
         _genericCommandBufferAddMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add");
-        Hook();
     }
 
-    public override void Awake()
+    public void Awake()
     {
         _inspectorMenu = new DockableUiMenu()
         {
-            // Alignment = EAlignment.AlignTop,
-            // Justification = EJustification.JustifyRight,
-            // StretchY = true,
             Label = "Inspector",
             ImGuiDir = ImGuiDir.Right,
-            // MenuWidth = 240,
-            // PositionX = 16,
         };
     }
-    public override void Update(in double t)
+
+    public void Update(in double t)
     {
-        
         UpdateInspector();
-        CommandBuffer.Playback(World);
+        _world.Playback(_commandBuffer);
     }
-    [Event(order: 0)]
-    public void OnInspectorTargetSelected(InspectorTarget entity)
+
+    private void OnInspectorTargetSelected(InspectorTargetSelectedEvent evt)
     {
-        _entity = entity.Entity;
-        // _inspectorMenu.UiState = EUiState.Open;
+        _entity = evt.Entity;
     }
+
     public void UpdateInspector()
     {
-        if (!World.IsAlive(_entity)) return;
+        if (!_entity.IsValid) return;
         _inspectorMenu.Draw(InnerUiElementDrawCall);
     }
 
@@ -107,36 +103,33 @@ public partial class InspectorSystem : ScriptableSystem
             if (ImGui.BeginCombo("Select Component Type: ",
                     _selectedComponent == -1 ? "None" : _componentTypes[_selectedComponent].Name))
             {
-                // Loop through component types and create an item for each one
                 for (int i = 0; i < _componentTypes.Count; i++)
                 {
                     bool isSelected = (_selectedComponent == i);
                     if (ImGui.Selectable(_componentTypes[i].Name, isSelected))
                     {
-                        _selectedComponent = i;  // Update the selected component index
+                        _selectedComponent = i;
                         var selectedComponentType = _componentTypes[_selectedComponent];
-                        if (World.GetAllComponents(_entity).Any(x => x!.GetType() == selectedComponentType))
+                        if (_world.GetAllComponents(_entity).Any(x => x!.GetType() == selectedComponentType))
                         {
                             break;
                         }
-                        _genericCommandBufferAddMethod.MakeGenericMethod(selectedComponentType).Invoke(CommandBuffer,
-                            [_entity.Entity, Activator.CreateInstance(selectedComponentType)!]);
-                        
+                        _genericCommandBufferAddMethod.MakeGenericMethod(selectedComponentType).Invoke(_commandBuffer,
+                            [_entity.NativeEntity, Activator.CreateInstance(selectedComponentType)!]);
+
                         _isComponentDropdownOpen = false;
                     }
                 }
 
-                ImGui.EndCombo();  // End the combo box
+                ImGui.EndCombo();
             }
         }
     }
 
     private void DrawComponentInspectors()
     {
-        // Get a copy of all components of entity
-        var components = World.GetAllComponents(_entity);
-        
-        // Store all draw actions such that I can prioritize name component.
+        var components = _world.GetAllComponents(_entity);
+
         List<Action> inspectorDrawCommandQueue = new();
 
         for (var i = 0; i < components.Length; i++)
@@ -144,17 +137,14 @@ public partial class InspectorSystem : ScriptableSystem
             object component = components[i];
             if (component is null)
             {
-                Log.Error($"Null component found in entity{_entity.Entity.Id}");
+                Log.Error($"Null component found in entity{_entity.Id}");
                 continue;
             }
 
-            // Get component type and its corresponding inspector.
             var componentType = component.GetType();
             Action drawAction = null;
             if (_componentInspectors.TryGetValue(componentType, out var componentInspector))
             {
-                
-                // Check if component inspector is the valid generic one.
                 var inspectorType = componentInspector.GetType();
                 var expectedInspectorType = typeof(IComponentInspector<>).MakeGenericType(componentType);
 
@@ -165,7 +155,6 @@ public partial class InspectorSystem : ScriptableSystem
                     continue;
                 }
 
-                // Get draw inspector method.
                 var methodName = "OnDrawInspector";
                 var drawMethod = expectedInspectorType.GetMethod(methodName);
                 if (drawMethod is null)
@@ -175,30 +164,26 @@ public partial class InspectorSystem : ScriptableSystem
                     return;
                 }
 
-                // Store draw action as an action
                 drawAction = () =>
                 {
                     DrawComponentName(componentType);
                     object?[] parameters = [component];
                     drawMethod.Invoke(componentInspector, parameters);
                     component = parameters[0];
-                    World.Set(_entity, component);
+                    _world.Set(_entity, component);
                     ImGui.Separator();
                 };
             }
             else
-            { 
-                // Just draw default inspector for component.
+            {
                 drawAction = () => DrawComponentName(componentType);
             }
-            // Prioritize name component above all else.
             if (component is Name)
             {
                 inspectorDrawCommandQueue.Insert(0, drawAction);
             }
             else
             {
-                // Add rest of components to the end.
                 inspectorDrawCommandQueue.Add(drawAction);
             }
         }
@@ -219,60 +204,12 @@ public partial class InspectorSystem : ScriptableSystem
             ImGui.SameLine();
             if (ImGui.Button($"Remove##{componentType.Name}"))
             {
-                _genericCommandBufferRemoveMethod.MakeGenericMethod(componentType).Invoke(CommandBuffer, [_entity.Entity]);
+                _genericCommandBufferRemoveMethod.MakeGenericMethod(componentType).Invoke(_commandBuffer, [_entity.NativeEntity]);
             }
         }
         ImGui.Separator();
     }
 
-    // /// <summary>
-    // /// Looks through every assembly and finds every class that implement IComponentInspector.
-    // /// Creates an instance of them and adds them to componentInspectors map.
-    // /// </summary>
-    // private void DiscoverAndAddComponentInspectors()
-    // {
-    //     // Find all types in the current AppDomain that implement IComponentInspector<>
-    //     var inspectorTypes = AppDomain.CurrentDomain.GetAssemblies()
-    //         .SelectMany(assembly => assembly.GetTypes())
-    //         .Where(type => !type.IsAbstract && !type.IsInterface)
-    //         .Where(type => type.GetInterfaces()
-    //             .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentInspector<>)))
-    //         .ToList();
-    //     
-    //     // Find all Component types in the current appdomain that implement IComponent.
-
-    //
-    //     foreach (var inspectorType in inspectorTypes)
-    //     {
-    //         // Find IComponentInspector generic interface.
-    //         var interfaceType = inspectorType.GetInterfaces()
-    //             .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentInspector<>));
-    //         
-    //         // Store the generic inspector component type.
-    //         var componentType = interfaceType.GetGenericArguments()[0];
-    //
-    //         // Create an instance of the inspector and add it
-    //         if (Activator.CreateInstance(inspectorType) is IComponentInspector inspectorInstance)
-    //         {
-    //             if (_componentInspectors.TryAdd(componentType, inspectorInstance))
-    //             {
-    //                 Log.Debug($"Added inspector for component type {componentType.Name}.");
-    //             }
-    //             else
-    //             {
-    //                 Log.Error($"Inspector for component type {componentType.Name} is already registered.");
-    //             }
-    //         }
-    //         else
-    //         {
-    //             Log.Error($"Failed to create an instance of {inspectorType.Name}.");
-    //         }
-    //     }
-    //
-    //     // Cache add and remove commands for components.
-    //     // _genericCommandBufferRemoveMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Remove");
-    //     // _genericCommandBufferAddMethod = typeof(CommandBuffer).GetMethods().First(x => x.Name == "Add");
-    // }
     private void DiscoverAllComponents()
     {
         var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -283,4 +220,3 @@ public partial class InspectorSystem : ScriptableSystem
         _componentTypes = componentTypes;
     }
 }
-
