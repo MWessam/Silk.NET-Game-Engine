@@ -5,8 +5,7 @@ using Silk.NET.OpenGL;
 
 namespace LunarEngine.Engine.Graphics;
 
-
-public struct ShaderHandle : IDisposable, IBindable
+public struct ShaderHandle : IDisposable, IBindable, IShader
 {
     private uint _handle;
     private GL _gl;
@@ -85,10 +84,11 @@ public struct ShaderHandle : IDisposable, IBindable
         ShaderUniformLibrary? library = _uniforms;
         _dirtyUniformQueue.Enqueue(() => {gl.Uniform4(library.GetUniform(name), vec4);});
     }
-    public unsafe void SetUniform(string name, Matrix4x4 mat4)
+    public unsafe void SetUniform(string name, in Matrix4x4 mat4)
     {
         ShaderHandle handle = this;
-        _dirtyUniformQueue.Enqueue(() => { handle._SetUniform(name, mat4); });
+        Matrix4x4 local = mat4;
+        _dirtyUniformQueue.Enqueue(() => { handle._SetUniform(name, local); });
     }
 
     private unsafe void _SetUniform(string name, Matrix4x4 mat4)
@@ -166,4 +166,3 @@ public struct ShaderHandle : IDisposable, IBindable
         private class UniformNotFoundException(string message) : Exception(message);
     }
 }
-

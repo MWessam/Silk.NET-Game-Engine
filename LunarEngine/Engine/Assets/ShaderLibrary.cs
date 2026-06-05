@@ -1,7 +1,6 @@
 using LunarEngine.Engine.Graphics;
 using LunarEngine.Graphics;
 using Serilog;
-using Silk.NET.OpenGL;
 
 namespace LunarEngine.Assets;
 

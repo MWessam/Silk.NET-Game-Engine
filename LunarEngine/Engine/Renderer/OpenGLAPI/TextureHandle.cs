@@ -3,76 +3,82 @@ using StbImageSharp;
 
 namespace LunarEngine.Engine.Graphics;
 
-public struct TextureHandle : IDisposable
+public struct TextureHandle : IDisposable, ITexture2D
+{
+    private uint _handle;
+    private GL _gl;
+    private uint _width;
+    private uint _height;
+    public uint Handle => _handle;
+    public uint Width => _width;
+    public uint Height => _height;
+    public uint NativeHandle => _handle;
+
+    public unsafe TextureHandle(GL gl, ImageResult image)
     {
-        private uint _handle;
-        private GL _gl;
-        private uint _width;
-        private uint _height;
-        public uint Handle => _handle;
-        public uint Width => _width;
-        public uint Height => _height;
-
-        public unsafe TextureHandle(GL gl, ImageResult image)
+        _gl = gl;
+        _handle = _gl.GenTexture();
+        Bind();
+        
+        fixed (byte* ptr = image.Data)
         {
-            _gl = gl;
-            _handle = _gl.GenTexture();
-            Bind();
-            
-            fixed (byte* ptr = image.Data)
-            {
-                // Create our texture and upload the image data.
-                _gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba, (uint) image.Width, 
-                    (uint) image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
-                _width = (uint) image.Width;
-                _height = (uint) image.Height;
-            }
-            SetParameters();
+            // Create our texture and upload the image data.
+            _gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba, (uint) image.Width, 
+                (uint) image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
+            _width = (uint) image.Width;
+            _height = (uint) image.Height;
         }
+        SetParameters();
+    }
 
-        public unsafe TextureHandle(GL gl, Span<byte> data, uint width, uint height)
+    public unsafe TextureHandle(GL gl, Span<byte> data, uint width, uint height)
+    {
+        //Saving the gl instance.
+        _gl = gl;
+
+        //Generating the opengl handle;
+        _handle = _gl.GenTexture();
+        Bind();
+
+        //We want the ability to create a texture using data generated from code aswell.
+        fixed (void* d = &data[0])
         {
-            //Saving the gl instance.
-            _gl = gl;
-
-            //Generating the opengl handle;
-            _handle = _gl.GenTexture();
-            Bind();
-
-            //We want the ability to create a texture using data generated from code aswell.
-            fixed (void* d = &data[0])
-            {
-                //Setting the data of a texture.
-                _gl.TexImage2D(TextureTarget.Texture2D, 0, (int) InternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
-            }
-            SetParameters();
-            _width = width;
-            _height = height;
-
+            //Setting the data of a texture.
+            _gl.TexImage2D(TextureTarget.Texture2D, 0, (int) InternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, d);
         }
-
-
-        private void SetParameters()
-        {
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int) GLEnum.ClampToEdge);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int) GLEnum.ClampToEdge);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.LinearMipmapLinear);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
-            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, 8);
-            
-            _gl.GenerateMipmap(TextureTarget.Texture2D);
-        }
-
-        public void Bind(TextureUnit textureSlot = TextureUnit.Texture0)
-        {
-            _gl.ActiveTexture(textureSlot);
-            _gl.BindTexture(TextureTarget.Texture2D, _handle);
-        }
-
-        public void Dispose()
-        {
-            _gl.DeleteTexture(_handle);
-        }
+        SetParameters();
+        _width = width;
+        _height = height;
 
     }
+
+
+    private void SetParameters()
+    {
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int) GLEnum.ClampToEdge);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int) GLEnum.ClampToEdge);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) GLEnum.LinearMipmapLinear);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) GLEnum.Linear);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, 8);
+        
+        _gl.GenerateMipmap(TextureTarget.Texture2D);
+    }
+
+    public void Bind(TextureUnit textureSlot = TextureUnit.Texture0)
+    {
+        _gl.ActiveTexture(textureSlot);
+        _gl.BindTexture(TextureTarget.Texture2D, _handle);
+    }
+
+    void ITexture2D.Bind(int unit)
+    {
+        Bind((TextureUnit)unit);
+    }
+
+    public void Dispose()
+    {
+        _gl.DeleteTexture(_handle);
+    }
+
+}

@@ -1,18 +1,17 @@
 using LunarEngine.Assets;
 using LunarEngine.Engine.Graphics;
-using Silk.NET.OpenGL;
 
 namespace LunarEngine.Engine.AssetHandleCache;
 
 public class AssetHandleCache
 {
-    private GL _glApi;
-    private Dictionary<string, TextureHandle> _textureHandles = new();
-    private Dictionary<string, ShaderHandle> _shaderHandles = new();
+    private IRenderDevice _device;
+    private Dictionary<string, ITexture2D> _textureHandles = new();
+    private Dictionary<string, IShader> _shaderHandles = new();
 
-    public AssetHandleCache(GL glApi)
+    public AssetHandleCache(IRenderDevice device)
     {
-        _glApi = glApi;
+        _device = device;
     }
 
     public void ClearCache()
@@ -28,24 +27,24 @@ public class AssetHandleCache
         _textureHandles.Clear();
         _shaderHandles.Clear();
     }
-    public TextureHandle GetTextureHandle(TextureAsset asset)
+    public ITexture2D GetTextureHandle(TextureAsset asset)
     {
         if (_textureHandles.TryGetValue(asset.Key, out var handle))
         {
             return handle;
         }
-        handle = new TextureHandle(_glApi, asset.Pixels, asset.Width, asset.Height);
+        handle = _device.CreateTexture2D(asset.Pixels, asset.Width, asset.Height);
         _textureHandles[asset.Key] = handle;
         return handle;
     }
 
-    public ShaderHandle GetShaderHandle(ShaderAsset asset)
+    public IShader GetShaderHandle(ShaderAsset asset)
     {
         if (_shaderHandles.TryGetValue(asset.Key, out var handle))
         {
             return handle;
         }
-        handle = new ShaderHandle(_glApi, asset.VertexPath, asset.FragPath);
+        handle = _device.CreateShader(asset.VertexPath, asset.FragPath);
         _shaderHandles[asset.Key] = handle;
         return handle;
     }

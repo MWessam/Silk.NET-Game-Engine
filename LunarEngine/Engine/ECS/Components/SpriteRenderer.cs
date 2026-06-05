@@ -4,7 +4,6 @@ using LunarEngine.Engine.ECS.Components;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.Graphics;
 using Serilog;
-using Silk.NET.OpenGL;
 using StbImageSharp;
 
 namespace LunarEngine.GameObjects;

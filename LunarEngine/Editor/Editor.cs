@@ -19,7 +19,8 @@ public class Editor : Application
 {
     public override void Initialize()
     {
-        var imguiLayer = new ImGuiLayer("ImguiLayer", Window, GL, InputContext);
+        var device = Services.Get<IRenderDevice>();
+        var imguiLayer = new ImGuiLayer("ImguiLayer", Window, device, InputContext);
         PushOverlay(imguiLayer);
         RegisterImGuiLayer(imguiLayer);
 
@@ -38,11 +39,11 @@ public class EditorLayer : BaseLayer
     private EditorCameraInputHandler _cameraInputHandler = null!;
     
     private readonly SceneManager _sceneManager;
-    private readonly Renderer _renderer;
+    private readonly IRenderer _renderer;
     private readonly Input _input;
     private readonly AssetManager _assetManager;
 
-    public EditorLayer(SceneManager sceneManager, Renderer renderer, Input input,
+    public EditorLayer(SceneManager sceneManager, IRenderer renderer, Input input,
                        AssetManager assetManager)
         : base("Editor")
     {

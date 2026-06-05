@@ -8,30 +8,34 @@ using Silk.NET.OpenGL;
 
 namespace LunarEngine.Engine.Graphics;
 
-public class Renderer : IDisposable
+public class Renderer : IDisposable, IRenderer
 {
     private List<RenderCommand> _renderQueue = new();
     
     private Matrix4x4 _viewProjectionMatrix;
     private readonly Gizmos _gizmos;
+    private readonly IRenderDevice _device;
+    private readonly Quad _quad;
     
-    public GL Api { get; private set; }
+    public IRenderDevice Device => _device;
     public Matrix4x4 ViewProjectionMatrix => _viewProjectionMatrix;
+    public Quad Quad => _quad;
 
     #region INITIALIZATION
 
-    public Renderer(GL api, Gizmos gizmos)
+    public Renderer(IRenderDevice device, Gizmos gizmos)
     {
-        Api = api;
+        _device = device;
         _gizmos = gizmos;
+        _quad = Quad.CreateQuad(device);
     }
 
     public void Initialize()
     {
-        Api.ClearColor(Color.Black);
-        Api.Enable(GLEnum.Blend);
-        Api.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-        Api.LineWidth(4.0f);
+        _device.SetClearColor(0, 0, 0, 1);
+        _device.EnableBlend();
+        _device.BlendFunc(BlendFactor.SrcAlpha, BlendFactor.OneMinusSrcAlpha);
+        _device.LineWidth(4.0f);
     }
 
     #endregion
@@ -41,8 +45,8 @@ public class Renderer : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        Api.ClearColor(Color.Black);
-        Api.Clear((uint)(GLEnum.DepthBufferBit | GLEnum.ColorBufferBit));
+        _device.SetClearColor(0, 0, 0, 1);
+        _device.Clear((uint)(GLEnum.DepthBufferBit | GLEnum.ColorBufferBit));
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SubmitRenderCommand(RenderCommand renderCommand)
@@ -61,15 +65,30 @@ public class Renderer : IDisposable
     {
         Render();
     }
-    public FrameBuffer CreateFrameBuffer(Vector2D<int> size)
+    public IFrameBuffer CreateFrameBuffer(Vector2D<int> size)
     {
-        return new FrameBuffer(Api, size);
+        return _device.CreateFrameBuffer(size);
     }
 
-    public void SetRenderTarget(FrameBuffer sceneFrameBuffer)
+    public void SetRenderTarget(IFrameBuffer? target)
     {
-        sceneFrameBuffer.Bind();
+        if (target != null)
+        {
+            target.Bind();
+        }
+        else
+        {
+            _device.BindDefaultFramebuffer();
+        }
     }
+
+    public Sprite CreateSprite(ITexture2D texture, IShader shader)
+    {
+        var sprite = new Sprite(texture, shader, _device);
+        sprite.Initialize(_quad);
+        return sprite;
+    }
+
     #endregion
     
     #region INTERNAL
@@ -104,7 +123,7 @@ public class Renderer : IDisposable
     private unsafe void RenderSprite(SpriteDrawCommand spriteDrawCommand)
     {
         spriteDrawCommand.Sprite.Bind(spriteDrawCommand.SpriteData);
-        Api.DrawElements(GLEnum.Triangles, 6, GLEnum.UnsignedInt, (void*) 0);
+        _device.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
     }
 
     #endregion

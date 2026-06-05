@@ -2,7 +2,6 @@ using ImGuiNET;
 using LunarEngine.Assets;
 using LunarEngine.GameObjects;
 using LunarEngine.UI;
-using Silk.NET.OpenGL;
 
 namespace LunarEngine.ECS.Systems;
 

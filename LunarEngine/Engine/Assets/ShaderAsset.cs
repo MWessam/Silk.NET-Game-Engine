@@ -1,5 +1,4 @@
 using LunarEngine.Engine.Graphics;
-using Silk.NET.OpenGL;
 
 namespace LunarEngine.Assets;
 

@@ -9,22 +9,19 @@ using LunarEngine.Components;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameObjects;
 using LunarEngine.Utilities;
-using Silk.NET.OpenGL;
 
 namespace LunarEngine.GameEngine;
 
 public partial class SpriteRendererSystem : ScriptableSystem
 {
     Quad _quad;
-    private GL _gl;
     private AssetManager _assetManager;
-    private Renderer _renderer;
-    public SpriteRendererSystem(GL gl, World world, AssetManager assetManager, Renderer renderer) : base(world)
+    private IRenderer _renderer;
+    public SpriteRendererSystem(World world, AssetManager assetManager, IRenderer renderer) : base(world)
     {
-        _gl = gl;
         _assetManager = assetManager;
         _renderer = renderer;
-        _quad = Quad.CreateQuad(_gl);
+        _quad = renderer.Quad;
     }
     public override void Awake()
     {
@@ -47,14 +44,11 @@ public partial class SpriteRendererSystem : ScriptableSystem
     public void InitSprites(Entity entity, ref SpriteRenderer spriteRenderer)
     {
         if (spriteRenderer.Sprite != null) return;
-        var sprite = new Sprite(
+        var sprite = _renderer.CreateSprite(
             _assetManager.GetTextureHandle(_assetManager.TextureLibrary.DefaultAsset),
-            _assetManager.GetShaderHandle(_assetManager.ShaderLibrary.DefaultAsset),
-            _gl
+            _assetManager.GetShaderHandle(_assetManager.ShaderLibrary.DefaultAsset)
         );
-        sprite.Initialize(_quad);
         spriteRenderer.Color = Vector4.One;
-        sprite.Initialize(_quad);
         spriteRenderer.Sprite = sprite;
     }
     

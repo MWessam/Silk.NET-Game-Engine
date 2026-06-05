@@ -13,7 +13,7 @@ namespace LunarEngine.Scenes;
 
 public class TestEcsScene : ECSScene
 {
-    public TestEcsScene(Renderer renderer, AssetManager assetManager) : base(renderer, assetManager)
+    public TestEcsScene(IRenderer renderer, AssetManager assetManager) : base(renderer, assetManager)
     {
         // World.Create<Name, CameraComponent, Transform, Position, IsInstantiating>(new()
         // {

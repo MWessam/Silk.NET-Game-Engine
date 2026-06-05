@@ -11,8 +11,8 @@ namespace LunarEngine.Engine.ECS.Systems;
 
 public partial class GizmosSystem : ScriptableSystem
 {
-    private Renderer _renderer;
-    public GizmosSystem(World world, Renderer renderer) : base(world)
+    private IRenderer _renderer;
+    public GizmosSystem(World world, IRenderer renderer) : base(world)
     {
         _renderer = renderer;
     }

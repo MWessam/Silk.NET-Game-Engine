@@ -8,43 +8,44 @@ namespace LunarEngine.Engine.Graphics;
 
 public class Sprite : IDisposable
 {
-    public TextureHandle Texture { get; private set; }
-    public ShaderHandle Shader { get; private set; }
+    public ITexture2D Texture { get; private set; }
+    public IShader Shader { get; private set; }
     public int PPU = 1000;
-    private BufferObject<float> _instanceBuffer;
-    private VertexArrayObject<float, uint> _vao;
-    private GL _glApi;
-    public Sprite(TextureHandle texture, ShaderHandle shader, GL glApi)
+    private IBuffer _instanceBuffer;
+    private IVertexArray _vao;
+    private IRenderDevice _device;
+    public Sprite(ITexture2D texture, IShader shader, IRenderDevice device)
     {
         Texture = texture;
         Shader = shader;
-        _glApi = glApi;
+        _device = device;
     }
-    public void ChangeShader(ShaderHandle shaderHandle)
+    public void ChangeShader(IShader shaderHandle)
     {
         Shader = shaderHandle;
     }
-    public void ChangeTexture(TextureHandle textureHandle)
+    public void ChangeTexture(ITexture2D textureHandle)
     {
         Texture = textureHandle;
     }
     public void Bind(SpriteData spriteData)
     {
         _vao.Bind();
-        _instanceBuffer.SetBufferData(spriteData);
+        _instanceBuffer.SetData(spriteData);
         Texture.Bind();
         Shader.Bind();
     }
     public void Initialize(Quad quad)
     {
-        _vao = new VertexArrayObject<float, uint>(_glApi);
-        quad.BindToVAO(ref _vao);
+        _vao = _device.CreateVertexArray();
+        quad.BindToVAO(_vao);
         _vao.Bind();
-        _instanceBuffer = new BufferObject<float>(_glApi, BufferTargetARB.ArrayBuffer);
+        _instanceBuffer = _device.CreateBuffer<float>(Span<float>.Empty, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
         _instanceBuffer.Bind();
-        _instanceBuffer.Layout.Push(1, BufferObject<float>.BufferLayout.ElementType.Mat4, true);    
-        _instanceBuffer.Layout.Push(4, BufferObject<float>.BufferLayout.ElementType.Float, true);
-        _vao.AddVertexBuffer(ref _instanceBuffer);
+        var layout = new BufferLayout();
+        layout.Push(1, ElementType.Mat4, true);    
+        layout.Push(4, ElementType.Float, true);
+        _vao.AddVertexBuffer(_instanceBuffer, layout);
     }
     public void Dispose()
     {

@@ -10,19 +10,18 @@ using LunarEngine.Graphics;
 using LunarEngine.Scenes;
 using LunarEngine.UI;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
 
 namespace LunarEngine.ECS.Systems;
 
 public class SceneSystem
 {
     private IUiElement _uiElement;
-    private FrameBuffer _sceneFrameBuffer;
+    private IFrameBuffer _sceneFrameBuffer;
     public Vector2D<int> NewViewport;
     private bool _isFocused = false;
-    private Renderer _renderer;
+    private IRenderer _renderer;
 
-    public SceneSystem(Renderer renderer)
+    public SceneSystem(IRenderer renderer)
     {
         _renderer = renderer;
     }
@@ -63,7 +62,7 @@ public class SceneSystem
             scene.SetSceneCameraViewport(NewViewport);
             camera.UpdateViewportCamera(NewViewport);
             scene.RenderScenes(dt, camera);
-            ImGui.Image(_sceneFrameBuffer.ColorTexture, new Vector2(_sceneFrameBuffer.Size.X, _sceneFrameBuffer.Size.Y), Vector2.UnitY, Vector2.UnitX);
+            ImGui.Image(_sceneFrameBuffer.ColorAttachment.NativeHandle, new Vector2(_sceneFrameBuffer.Size.X, _sceneFrameBuffer.Size.Y), Vector2.UnitY, Vector2.UnitX);
             _sceneFrameBuffer.Unbind();
         });
     }

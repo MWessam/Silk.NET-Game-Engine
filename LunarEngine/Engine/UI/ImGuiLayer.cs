@@ -1,9 +1,9 @@
 using System.Numerics;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
+using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
 using LunarEngine.Platform;
-using Silk.NET.OpenGL;
 
 namespace LunarEngine.UI;
 
@@ -15,13 +15,13 @@ public class ImGuiLayer : BaseLayer
     private bool _isInitialized;
     private IWindow _window;
     private IInputContext _inputContext;
-    private GL _api;
+    private IRenderDevice _device;
     
     public uint ActiveWidgetId => ImGui.GetCurrentContext().ActiveId;
-    public ImGuiLayer(string name, IWindow window, GL api, IInputContext inputContext) : base(name)
+    public ImGuiLayer(string name, IWindow window, IRenderDevice device, IInputContext inputContext) : base(name)
     {
         _window = window;
-        _api = api;
+        _device = device;
         _inputContext = inputContext;
     }
     public override void OnAttach()
@@ -32,7 +32,8 @@ public class ImGuiLayer : BaseLayer
 
     public override void OnInitialize()
     {
-        var api = _api;
+        var glDevice = (GLRenderDevice)_device;
+        var api = glDevice.GL;
         var silkWindow = (SilkWindow)_window;
         var silkInput = (SilkInputContext)_inputContext;
         ImGUIController = new ImGuiController(api, silkWindow.NativeWindow, silkInput.NativeContext);

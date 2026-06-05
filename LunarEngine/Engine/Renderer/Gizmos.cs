@@ -6,32 +6,34 @@ namespace LunarEngine.Engine.Graphics;
 
 public class Gizmos : IDisposable
 {
-    private BufferObject<float> _wireframeGizmoVbo;
-    private BufferObject<float> _wireframeGizmoInstanceVbo;
-    private VertexArrayObject<float, uint> _wireframeVao;
-    private ShaderHandle _gizmosShader;
-    private GL _api;
+    private IBuffer _wireframeGizmoVbo;
+    private IBuffer _wireframeGizmoInstanceVbo;
+    private IVertexArray _wireframeVao;
+    private IShader _gizmosShader;
+    private IRenderDevice _device;
     private readonly AssetManager _assetManager;
 
-    public Gizmos(GL api, AssetManager assetManager)
+    public Gizmos(IRenderDevice device, AssetManager assetManager)
     {
-        _api = api;
+        _device = device;
         _assetManager = assetManager;
-        InitializeGizmos(api);
+        InitializeGizmos();
     }
 
-    public void InitializeGizmos(GL api)
+    public void InitializeGizmos()
     {
-        _wireframeGizmoVbo = new BufferObject<float>(api, BufferTargetARB.ArrayBuffer);
-        _wireframeGizmoVbo.Layout.Push(2, BufferObject<float>.BufferLayout.ElementType.Float);
-        _wireframeGizmoInstanceVbo = new BufferObject<float>(api, BufferTargetARB.ArrayBuffer);
-        _wireframeGizmoInstanceVbo.Layout.Push(4, BufferObject<float>.BufferLayout.ElementType.Float, true);
-        _wireframeVao = new VertexArrayObject<float, uint>(api);
+        _wireframeGizmoVbo = _device.CreateBuffer<float>(Span<float>.Empty, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
+        var vboLayout = new BufferLayout();
+        vboLayout.Push(2, ElementType.Float);
+        _wireframeGizmoInstanceVbo = _device.CreateBuffer<float>(Span<float>.Empty, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
+        var instanceLayout = new BufferLayout();
+        instanceLayout.Push(4, ElementType.Float, true);
+        _wireframeVao = _device.CreateVertexArray();
         _wireframeVao.Bind();
         _wireframeGizmoVbo.Bind();
-        _wireframeVao.AddVertexBuffer(ref _wireframeGizmoVbo);
+        _wireframeVao.AddVertexBuffer(_wireframeGizmoVbo, vboLayout);
         _wireframeGizmoInstanceVbo.Bind();
-        _wireframeVao.AddVertexBuffer(ref _wireframeGizmoInstanceVbo);
+        _wireframeVao.AddVertexBuffer(_wireframeGizmoInstanceVbo, instanceLayout);
         _wireframeVao.Unbind();
     }
 
@@ -44,13 +46,13 @@ public class Gizmos : IDisposable
         _gizmosShader = _assetManager.GetShaderHandle("wireframe_gizmo");
         _wireframeVao.Bind();
         _wireframeGizmoVbo.Bind();
-        _wireframeGizmoVbo.SetBufferData(lineDrawCommand.Vertices);
+        _wireframeGizmoVbo.SetData(lineDrawCommand.Vertices.AsSpan());
         _wireframeGizmoInstanceVbo.Bind();
-        _wireframeGizmoInstanceVbo.SetBufferData(lineDrawCommand.LineInstanceData);
+        _wireframeGizmoInstanceVbo.SetData(lineDrawCommand.LineInstanceData);
         _gizmosShader.Bind();
         _gizmosShader.SetUniform("vp", viewProjectionMatrix);
         _gizmosShader.UpdateDirtyUniforms();
-        _api.DrawArrays(PrimitiveType.LineStrip, 0, (uint)lineDrawCommand.Points.Length);
+        _device.DrawArrays(PrimitiveType.LineStrip, 0, (uint)lineDrawCommand.Points.Length);
     }
 
     public void DrawQuad(QuadDrawCommand quadDrawCommand, Matrix4x4 viewProjectionMatrix)
@@ -59,12 +61,12 @@ public class Gizmos : IDisposable
         _wireframeVao.Bind();
         _wireframeGizmoVbo.Bind();
         
-        _wireframeGizmoVbo.SetBufferData(quadDrawCommand.Vertices);
+        _wireframeGizmoVbo.SetData(quadDrawCommand.Vertices.AsSpan());
         _wireframeGizmoInstanceVbo.Bind();
-        _wireframeGizmoInstanceVbo.SetBufferData(quadDrawCommand.QuadInstanceData);
+        _wireframeGizmoInstanceVbo.SetData(quadDrawCommand.QuadInstanceData);
         _gizmosShader.Bind();
         _gizmosShader.SetUniform("vp", viewProjectionMatrix);
         _gizmosShader.UpdateDirtyUniforms();
-        _api.DrawArrays(PrimitiveType.LineLoop, 0, 4);
+        _device.DrawArrays(PrimitiveType.LineLoop, 0, 4);
     }
 }

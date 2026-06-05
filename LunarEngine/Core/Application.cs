@@ -35,6 +35,7 @@ public class Application : IDisposable
     private AssetManager _assetManager = null!;
     private SceneManager _sceneManager = null!;
     private Gizmos _gizmos = null!;
+    private GLRenderDevice _renderDevice = null!;
 
     public Renderer Renderer => _renderer;
     public Input Input => _input;
@@ -129,16 +130,19 @@ public class Application : IDisposable
             mouse.Scroll += _input.OnMouseScroll;
         }
 
+        _renderDevice = new GLRenderDevice(GL);
+        Services.Register<IRenderDevice>(_renderDevice);
+
         _assetManager = new AssetManager();
-        _assetManager.Initialize(GL);
+        _assetManager.Initialize(_renderDevice);
         Services.Register(_assetManager);
 
-        _gizmos = new Gizmos(GL, _assetManager);
+        _gizmos = new Gizmos(_renderDevice, _assetManager);
         Services.Register(_gizmos);
 
-        _renderer = new Renderer(GL, _gizmos);
+        _renderer = new Renderer(_renderDevice, _gizmos);
         _renderer.Initialize();
-        Services.Register(_renderer);
+        Services.Register<IRenderer>(_renderer);
 
         Services.Register(_input);
 

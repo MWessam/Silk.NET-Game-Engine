@@ -282,6 +282,40 @@ Platform abstraction completed. Build + run verified.
 
 ---
 
+## Phase 4 Completion Notes (2026-06-05)
+
+Renderer abstraction completed. Build + run verified.
+
+**Changes made**:
+1. **Created renderer abstraction interfaces** in `Renderer/Abstractions/`:
+   - `IBuffer`, `IVertexArray`, `ITexture2D`, `IShader`, `IFrameBuffer`, `IRenderDevice`, `IRenderer`
+   - `BufferLayout` and `ElementType` extracted to top-level types
+2. **Created `GLRenderDevice`** in `Renderer/OpenGL/` — wraps raw `GL` and implements `IRenderDevice`. Exposes `.GL` property for `ImGuiController` which still needs raw GL.
+3. **Made OpenGL types implement interfaces**:
+   - `BufferObject<T>` → `IBuffer`
+   - `VertexArrayObject<TVertex, TIndex>` → `IVertexArray`
+   - `TextureHandle` → `ITexture2D` (added `NativeHandle` for ImGui)
+   - `ShaderHandle` → `IShader`
+   - `FrameBuffer` → `IFrameBuffer` (added `ColorTextureAttachment` inner class)
+4. **Refactored `Sprite`, `Quad`, `Gizmos`** to use `IRenderDevice` and abstraction types instead of raw `GL`.
+5. **Refactored `Renderer`** to implement `IRenderer`, use `IRenderDevice`, and expose `Quad` and `CreateSprite()` factory.
+6. **Refactored `AssetHandleCache` and `AssetManager`** to use `IRenderDevice` instead of raw `GL`. Return `ITexture2D`/`IShader` from getters.
+7. **Removed direct `GL` from ECS systems**:
+   - `SpriteRendererSystem` no longer takes `GL` in constructor; uses `IRenderer` and `AssetManager`
+   - `GizmosSystem` uses `IRenderer` instead of concrete `Renderer`
+   - `ECSScene` uses `IRenderer`
+8. **Refactored Editor code** to use `IRenderer` and `IRenderDevice`:
+   - `Editor`, `EditorLayer`, `SceneSystem`, `GizmosLayer` all use `IRenderer`
+   - `ImGuiLayer` takes `IRenderDevice` and casts to `GLRenderDevice` for `ImGuiController`
+9. **Removed unused `using Silk.NET.OpenGL;`** from `ShaderLibrary`, `TextureLibrary`, `BaseAssetLibrary`, `UIEngine`, `SpriteRenderer` component, `ShaderAsset`, `TextureAsset`, `SpriteRendererInspector`.
+
+**Remaining GL references** (expected, to be addressed in later phases):
+- `ImGuiController` and `ImGuiTexture`/`ImGuiShader` in `Engine/UI/` — deeply tied to raw GL; will be abstracted when `IRenderDevice` is extended or replaced in Phase 6/9.
+- `Application.GL` field — still acquired for `GLRenderDevice` creation; only internal to `Application`.
+- OpenGL implementation details (`BufferObject`, `VertexArrayObject`, `ShaderHandle`, `TextureHandle`, `FrameBuffer`) still use `GL` internally, which is correct as they are OpenGL-specific implementations.
+
+---
+
 ## Summary
 
 The current codebase is a functional prototype that directly uses Silk.NET, Arch ECS, and raw OpenGL with minimal abstraction. The target architecture defines a fully modular, dependency-injected, interface-driven engine. **Conflicts are pervasive across every module**: Core, Platform, ECS, Renderer, Assets, Input, Scenes, Physics, and Editor all deviate substantially from the target design. The 12-phase implementation plan in `ARCHITECTURE.md` is well-justified given the breadth of changes required.

@@ -5,7 +5,7 @@ using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
 namespace LunarEngine.Engine.Graphics;
-public unsafe struct FrameBuffer : IDisposable
+public unsafe struct FrameBuffer : IDisposable, IFrameBuffer
 {
     private GL _api;
 
@@ -17,6 +17,9 @@ public unsafe struct FrameBuffer : IDisposable
     public Vector2D<int> Size => _size;
     private uint _depthTexture;
     private bool _defaultRenderTarget;
+    private ColorTextureAttachment _colorAttachment;
+
+    public ITexture2D ColorAttachment => _colorAttachment;
 
     public static FrameBuffer CreateDefaultRenderFrameBuffer(GL api)
     {
@@ -52,6 +55,8 @@ public unsafe struct FrameBuffer : IDisposable
         Debug.Assert(status == GLEnum.FramebufferComplete, $"Framebuffer is not complete! Status: {status}");
         if (status != GLEnum.FramebufferComplete) throw new Exception("Framebuffer is not complete!");
         _api.BindFramebuffer(GLEnum.Framebuffer, 0);
+
+        _colorAttachment = new ColorTextureAttachment(_api, _colorTexture, (uint)_size.X, (uint)_size.Y);
     }
 
     public void Clear()
@@ -83,6 +88,7 @@ public unsafe struct FrameBuffer : IDisposable
         _api.TexImage2D(GLEnum.Texture2D, 0, (int)GLEnum.Rgba, (uint)_size.X, (uint)_size.Y, 0, GLEnum.Rgba, GLEnum.UnsignedByte, null);
         _api.BindTexture(GLEnum.Texture2D, _depthTexture);
         _api.TexImage2D(GLEnum.Texture2D, 0, (int)GLEnum.DepthComponent, (uint)_size.X, (uint)_size.Y, 0, GLEnum.DepthComponent, GLEnum.Float, null);
+        _colorAttachment = new ColorTextureAttachment(_api, _colorTexture, (uint)_size.X, (uint)_size.Y);
     }
 
     public void Dispose()
@@ -90,5 +96,33 @@ public unsafe struct FrameBuffer : IDisposable
         _api.DeleteFramebuffer(_handle);
         _api.DeleteTexture(_colorTexture);
         _api.DeleteTexture(_depthTexture);
+    }
+
+    private class ColorTextureAttachment : ITexture2D
+    {
+        private GL _api;
+        private uint _handle;
+        private uint _width;
+        private uint _height;
+
+        public ColorTextureAttachment(GL api, uint handle, uint width, uint height)
+        {
+            _api = api;
+            _handle = handle;
+            _width = width;
+            _height = height;
+        }
+
+        public uint Width => _width;
+        public uint Height => _height;
+        public uint NativeHandle => _handle;
+
+        public void Bind(int unit = 0)
+        {
+            _api.ActiveTexture((TextureUnit)unit);
+            _api.BindTexture(GLEnum.Texture2D, _handle);
+        }
+
+        public void Dispose() { }
     }
 }

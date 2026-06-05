@@ -42,12 +42,12 @@
 - [x] Refactor `Application` to depend on `IWindow`/`IInputContext`
 - [x] Wire `Application` constructor to register platform services
 
-## Phase 4: Renderer abstraction (pending)
-- [ ] Create `IRenderDevice`, `IRenderer`, `IBuffer`, `ITexture2D`, `IShader`, `IFrameBuffer`, `IVertexArray` interfaces
-- [ ] Create OpenGL implementations in `Renderer/OpenGL/`
-- [ ] Port `Sprite`, `Quad`, and `Renderer` internals behind interfaces
-- [ ] Remove direct `GL` references from ECS systems
-- [ ] Remove `Gizmos` singleton; make it a render service
+## Phase 4: Renderer abstraction (completed)
+- [x] Create `IRenderDevice`, `IRenderer`, `IBuffer`, `ITexture2D`, `IShader`, `IFrameBuffer`, `IVertexArray` interfaces
+- [x] Create OpenGL implementations in `Renderer/OpenGL/`
+- [x] Port `Sprite`, `Quad`, and `Renderer` internals behind interfaces
+- [x] Remove direct `GL` references from ECS systems
+- [x] Remove `Gizmos` singleton; make it a render service
 
 ## Phase 5: ECS abstraction layer
 - [ ] Create `IEntity`, `IWorld`, `ISystem`, `SystemStage` interfaces

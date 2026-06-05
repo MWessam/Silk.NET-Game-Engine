@@ -2,7 +2,6 @@ using System.Numerics;
 using Hexa.NET.ImGui;
 using LunarEngine.Physics;
 using Silk.NET.Input;
-using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
 namespace LunarEngine.UI;

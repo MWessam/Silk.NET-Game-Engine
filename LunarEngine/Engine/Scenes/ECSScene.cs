@@ -25,17 +25,17 @@ public class ECSScene
     private readonly CameraSystem _cameraSystem;
     private readonly InitializationSystem _initializationSystem;
     private readonly PhysicsSystem _physicsSystem;
-    private readonly Renderer _renderer;
+    private readonly IRenderer _renderer;
     private readonly AssetManager _assetManager;
     #endregion
     public CommandBuffer CommandBuffer = new CommandBuffer();
-    public ECSScene(Renderer renderer, AssetManager assetManager)
+    public ECSScene(IRenderer renderer, AssetManager assetManager)
     {
         World = World.Create();
         _renderer = renderer;
         _assetManager = assetManager;
         _transformSystem = new TransformSystem(World);
-        _spriteRendererSystem = new SpriteRendererSystem(_renderer.Api, World, _assetManager, _renderer);
+        _spriteRendererSystem = new SpriteRendererSystem(World, _assetManager, _renderer);
         _cameraSystem = new CameraSystem(World);
         _initializationSystem = new InitializationSystem(World);
         _physicsSystem = new PhysicsSystem(World);

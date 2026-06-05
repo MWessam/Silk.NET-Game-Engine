@@ -8,10 +8,10 @@ namespace LunarEngine.Engine.Gizmos;
 public class GizmosLayer : BaseLayer
 {
     private readonly SceneManager _sceneManager;
-    private readonly Renderer _renderer;
+    private readonly IRenderer _renderer;
     private GizmosSystem _gizmosSystem;
 
-    public GizmosLayer(SceneManager sceneManager, Renderer renderer) : base("Gizmos")
+    public GizmosLayer(SceneManager sceneManager, IRenderer renderer) : base("Gizmos")
     {
         _sceneManager = sceneManager;
         _renderer = renderer;
