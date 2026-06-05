@@ -15,6 +15,9 @@ using ImGuiDir = Hexa.NET.ImGui.ImGuiDir;
 
 namespace LunarEngine.ECS.Systems;
 
+using EntityReference = Arch.Core.EntityReference;
+using World = Arch.Core.World;
+
 
 public partial class InspectorSystem : ScriptableSystem
 {

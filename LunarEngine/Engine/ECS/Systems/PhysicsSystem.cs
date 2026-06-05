@@ -3,6 +3,7 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Components;
+using LunarEngine.ECS;
 using LunarEngine.Engine.ECS.Components;
 using LunarEngine.GameObjects;
 using LunarEngine.Utilities;
@@ -11,6 +12,9 @@ namespace LunarEngine.Physics;
 
 public partial class PhysicsSystem : ScriptableSystem
 {
+    public override SystemStage Stage => SystemStage.Update;
+    public override int Order => 0;
+
     public static readonly Vector2 GRAVITY = new Vector2(0.0f, -9.89665f);
     public PhysicsSystem(World world) : base(world)
     {

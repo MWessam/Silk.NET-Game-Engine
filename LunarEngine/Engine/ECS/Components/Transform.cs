@@ -1,4 +1,5 @@
 using System.Numerics;
+using LunarEngine.ECS;
 using LunarEngine.Engine.ECS.Components;
 namespace LunarEngine.Components;
 public struct Position : IComponent
@@ -78,7 +79,7 @@ public struct Transform : IComponent
 }
 public struct Parent : IComponent
 {
-    public Transform ParentEntity;
+    public EntityReference Entity;
 }
 public struct DirtyTransform : IComponent
 {

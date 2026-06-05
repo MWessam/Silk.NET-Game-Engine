@@ -10,6 +10,9 @@ using LunarEngine.UI;
 
 namespace LunarEngine.ECS.Systems;
 
+using EntityReference = Arch.Core.EntityReference;
+using World = Arch.Core.World;
+
 public partial class HierarchySystem : ScriptableSystem
 {
     private IUiElement _hierarchyMenu;

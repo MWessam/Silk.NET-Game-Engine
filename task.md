@@ -49,13 +49,15 @@
 - [x] Remove direct `GL` references from ECS systems
 - [x] Remove `Gizmos` singleton; make it a render service
 
-## Phase 5: ECS abstraction layer
-- [ ] Create `IEntity`, `IWorld`, `ISystem`, `SystemStage` interfaces
-- [ ] Create `ECSWorld` wrapper
-- [ ] Create `SystemScheduler`
-- [ ] Convert all systems to implement `ISystem`
-- [ ] Move `ECSScene` to use `SystemScheduler`
-- [ ] Fix `Parent` component to use `EntityReference`
+## Phase 5: ECS abstraction layer (completed)
+- [x] Create `IEntity`, `IWorld`, `ISystem`, `SystemStage` interfaces
+- [x] Create `ECSWorld` wrapper
+- [x] Create `SystemScheduler`
+- [x] Convert all systems to implement `ISystem`
+- [x] Move `ECSScene` to use `SystemScheduler`
+- [x] Fix `Parent` component to use `EntityReference`
+
+## Phase 6: Input state resource (in_progress)
 
 ## Phase 6: Input state resource
 - [ ] Create `InputState` struct and `InputManager` class in `Input/`

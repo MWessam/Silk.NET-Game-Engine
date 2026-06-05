@@ -1,11 +1,16 @@
 using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
+using LunarEngine.Core;
+using LunarEngine.ECS;
 
 namespace LunarEngine.GameObjects;
 
-public partial class ScriptableSystem : BaseSystem<World, double>
+public partial class ScriptableSystem : BaseSystem<World, double>, ISystem
 {
+    public virtual int Order => 0;
+    public virtual SystemStage Stage => SystemStage.Update;
+
     protected CommandBuffer CommandBuffer;
     public ScriptableSystem(World world) : base(world)
     {
@@ -38,6 +43,14 @@ public partial class ScriptableSystem : BaseSystem<World, double>
     public sealed override void Initialize()
     {
     }
-    
+
+    public virtual void Initialize(IWorld world, ServiceContainer services)
+    {
+    }
+
+    public void Update(double deltaTime)
+    {
+        Update(in deltaTime);
+    }
 }
 

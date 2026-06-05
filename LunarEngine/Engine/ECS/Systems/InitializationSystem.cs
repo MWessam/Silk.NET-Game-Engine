@@ -2,6 +2,7 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Components;
+using LunarEngine.ECS;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
 
@@ -9,6 +10,9 @@ namespace LunarEngine.GameEngine;
 
 public partial class InitializationSystem : ScriptableSystem
 {
+    public override SystemStage Stage => SystemStage.Update;
+    public override int Order => 100;
+
     public InitializationSystem(World world) : base(world)
     {
     }

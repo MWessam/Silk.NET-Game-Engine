@@ -4,6 +4,7 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Components;
+using LunarEngine.ECS;
 using LunarEngine.ECS.Systems;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
@@ -13,6 +14,9 @@ namespace LunarEngine.GameEngine;
 
 public partial class CameraSystem : ScriptableSystem
 {
+    public override SystemStage Stage => SystemStage.Update;
+    public override int Order => 30;
+
     public CameraSystem(World world) : base(world)
     {
     }

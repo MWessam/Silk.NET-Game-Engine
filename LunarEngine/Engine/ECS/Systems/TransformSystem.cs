@@ -4,6 +4,7 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Components;
+using LunarEngine.ECS;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
 
@@ -11,6 +12,9 @@ namespace LunarEngine.GameEngine;
 
 public partial class TransformSystem : ScriptableSystem
 {
+    public override SystemStage Stage => SystemStage.Update;
+    public override int Order => 20;
+
     private static Random _rng = new Random();
 
     public TransformSystem(World world) : base(world)

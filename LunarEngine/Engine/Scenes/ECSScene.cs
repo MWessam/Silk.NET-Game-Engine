@@ -1,9 +1,7 @@
-using System.Runtime.InteropServices;
-using Arch.Buffer;
 using Arch.Core;
-using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Assets;
+using LunarEngine.ECS;
 using LunarEngine.ECS.Systems;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
@@ -17,81 +15,57 @@ namespace LunarEngine.Scenes;
 
 public class ECSScene
 {
-    #region SYSTEMS
     public readonly World World;
-    private readonly List<ScriptableSystem> _systems = new();
-    private readonly TransformSystem _transformSystem;
+    public IWorld ECSWorld => _ecsWorld;
+
+    private readonly ECSWorld _ecsWorld;
+    private readonly SystemScheduler _scheduler = new();
     private readonly SpriteRendererSystem _spriteRendererSystem;
-    private readonly CameraSystem _cameraSystem;
-    private readonly InitializationSystem _initializationSystem;
-    private readonly PhysicsSystem _physicsSystem;
     private readonly IRenderer _renderer;
     private readonly AssetManager _assetManager;
-    #endregion
-    public CommandBuffer CommandBuffer = new CommandBuffer();
+
     public ECSScene(IRenderer renderer, AssetManager assetManager)
     {
-        World = World.Create();
+        _ecsWorld = new ECSWorld();
+        World = _ecsWorld.NativeWorld;
         _renderer = renderer;
         _assetManager = assetManager;
-        _transformSystem = new TransformSystem(World);
-        _spriteRendererSystem = new SpriteRendererSystem(World, _assetManager, _renderer);
-        _cameraSystem = new CameraSystem(World);
-        _initializationSystem = new InitializationSystem(World);
-        _physicsSystem = new PhysicsSystem(World);
-    }
-    public bool IsActive = true;
 
+        _spriteRendererSystem = new SpriteRendererSystem(World, _assetManager, _renderer);
+
+        _scheduler.Register(new PhysicsSystem(World));
+        _scheduler.Register(_spriteRendererSystem);
+        _scheduler.Register(new TransformSystem(World));
+        _scheduler.Register(new CameraSystem(World));
+        _scheduler.Register(new InitializationSystem(World));
+    }
+
+    public bool IsActive = true;
     public int SceneId { get; set; }
+
+    public void AddSystem(ScriptableSystem system)
+    {
+        _scheduler.Register(system);
+    }
+
     public void Awake()
     {
-        _transformSystem.Awake();
-        _spriteRendererSystem.Awake();
-        _cameraSystem.Awake();
-        _physicsSystem.Awake();
-        foreach (var system in CollectionsMarshal.AsSpan(_systems))
-        {
-            system.Awake();
-        }
+        _scheduler.RunAwake();
     }
 
     public void Start()
     {
-        _transformSystem.Start();
-        _spriteRendererSystem.Start();
-        _cameraSystem.Start();
-        _physicsSystem.Start();
-        foreach (var system in CollectionsMarshal.AsSpan(_systems))
-        {
-            system.Start();
-        }
-        _initializationSystem.Update(0);
+        _scheduler.RunStart();
     }
 
     public void Update(double dt)
     {
-        _physicsSystem.Update(dt);
-        _spriteRendererSystem.Update(dt);
-        _transformSystem.Update(dt);
-        _cameraSystem.Update(dt);
-        foreach (var system in CollectionsMarshal.AsSpan(_systems))
-        {
-            system.Update(dt);
-        }
-        _initializationSystem.Update(dt);
-    }
-    public void Tick(double dt)
-    {
-        _physicsSystem.Tick(dt);
-        foreach (var system in CollectionsMarshal.AsSpan(_systems))
-        {
-            system.Tick(dt);
-        }
+        _scheduler.RunStage(SystemStage.Update, dt);
     }
 
-    public void AfterUpdate()
+    public void Tick(double dt)
     {
-        CommandBuffer.Playback(World);
+        _scheduler.RunFixedUpdate(dt);
     }
 
     public void RenderScenes(double dt, Camera camera)
@@ -101,6 +75,7 @@ public class ECSScene
         _spriteRendererSystem.Render(dt);
         _renderer.EndFrame();
     }
+
     public void RenderScenes(double dt)
     {
         var cameraQuery = new QueryDescription().WithAll<CameraComponent>();
@@ -125,6 +100,10 @@ public class ECSScene
 
     public void SetSceneCameraViewport(Vector2D<int> newViewport)
     {
-        _cameraSystem.UpdateViewportCamera(newViewport);
+        var cameraQuery = new QueryDescription().WithAll<CameraComponent>();
+        World.Query(cameraQuery, (ref CameraComponent camera) =>
+        {
+            camera.Camera.Width = camera.Camera.Height * ((float)newViewport.X / newViewport.Y);
+        });
     }
 }

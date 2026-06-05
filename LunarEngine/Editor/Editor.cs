@@ -15,6 +15,9 @@ using Silk.NET.Maths;
 
 namespace LunarEngine.ECS.Systems;
 
+using EntityReference = Arch.Core.EntityReference;
+using World = Arch.Core.World;
+
 public class Editor : Application
 {
     public override void Initialize()

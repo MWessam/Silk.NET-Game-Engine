@@ -4,6 +4,7 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Components;
+using LunarEngine.ECS;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameObjects;
 
@@ -11,6 +12,9 @@ namespace LunarEngine.Engine.ECS.Systems;
 
 public partial class GizmosSystem : ScriptableSystem
 {
+    public override SystemStage Stage => SystemStage.Update;
+    public override int Order => 200;
+
     private IRenderer _renderer;
     public GizmosSystem(World world, IRenderer renderer) : base(world)
     {

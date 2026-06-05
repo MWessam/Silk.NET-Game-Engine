@@ -6,14 +6,18 @@ using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Assets;
 using LunarEngine.Components;
+using LunarEngine.ECS;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameObjects;
 using LunarEngine.Utilities;
 
 namespace LunarEngine.GameEngine;
 
-public partial class SpriteRendererSystem : ScriptableSystem
+public partial class SpriteRendererSystem : ScriptableSystem, IRenderSystem
 {
+    public override SystemStage Stage => SystemStage.Update;
+    public override int Order => 10;
+
     Quad _quad;
     private AssetManager _assetManager;
     private IRenderer _renderer;
@@ -39,6 +43,9 @@ public partial class SpriteRendererSystem : ScriptableSystem
         RenderQuery(World, in data);
         CommandBuffer.Playback(World);
     }
+
+    public void Render(double deltaTime) => Render(in deltaTime);
+
     [Query]
     [All<SpriteRenderer>]
     public void InitSprites(Entity entity, ref SpriteRenderer spriteRenderer)
