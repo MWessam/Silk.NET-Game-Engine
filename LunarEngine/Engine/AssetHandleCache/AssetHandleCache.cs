@@ -4,24 +4,14 @@ using Silk.NET.OpenGL;
 
 namespace LunarEngine.Engine.AssetHandleCache;
 
-public interface IAssetHandleCache
+public class AssetHandleCache
 {
-    public TextureHandle GetTextureHandle(TextureAsset asset);
-    public TextureHandle GetTextureHandle(string textureName);
-    public ShaderHandle GetShaderHandle(ShaderAsset asset);
-    public ShaderHandle GetShaderHandle(string shaderName);
-}
-public class AssetHandleCache : IAssetHandleCache
-{
-    private AssetManager _assetManager;
     private GL _glApi;
     private Dictionary<string, TextureHandle> _textureHandles = new();
     private Dictionary<string, ShaderHandle> _shaderHandles = new();
-    private bool _shouldClearCache;
 
-    public AssetHandleCache(AssetManager assetManager, GL glApi)
+    public AssetHandleCache(GL glApi)
     {
-        _assetManager = assetManager;
         _glApi = glApi;
     }
 
@@ -49,16 +39,5 @@ public class AssetHandleCache : IAssetHandleCache
         handle = new ShaderHandle(_glApi, asset.VertexPath, asset.FragPath);
         _shaderHandles[asset.Key] = handle;
         return handle;
-    }
-    public TextureHandle GetTextureHandle(string textureName)
-    {
-        var asset = _assetManager.TextureLibrary.GetAsset(textureName);
-        return GetTextureHandle(asset);
-    }
-
-    public ShaderHandle GetShaderHandle(string shaderName)
-    {
-        var shader = _assetManager.ShaderLibrary.GetAsset(shaderName);
-        return GetShaderHandle(shader);
     }
 }

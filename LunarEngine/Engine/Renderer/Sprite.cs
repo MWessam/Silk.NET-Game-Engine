@@ -35,7 +35,6 @@ public class Sprite : IDisposable
         Texture.Bind();
         Shader.Bind();
     }
-    
     public void Initialize(Quad quad)
     {
         _vao = new VertexArrayObject<float, uint>(_glApi);
@@ -47,38 +46,6 @@ public class Sprite : IDisposable
         _instanceBuffer.Layout.Push(4, BufferObject<float>.BufferLayout.ElementType.Float, true);
         _vao.AddVertexBuffer(ref _instanceBuffer);
     }
-    public static Builder GetSpriteBuilder()
-    {
-        return new Builder();
-    }
-    public class Builder
-    {
-        private ShaderHandle _shader;
-        private TextureHandle _texture;
-        internal Builder()
-        {
-        }
-        public Builder WithShader(ShaderHandle shaderHandle)
-        {
-            _shader = shaderHandle;
-            return this;
-        }
-
-
-        public Builder WithTexture(TextureHandle texture)
-        {
-            _texture = texture;
-            return this;
-        }
-        public Sprite Build(GL gl)
-        {
-            ArgumentNullException.ThrowIfNull(_shader, nameof(_shader));
-            ArgumentNullException.ThrowIfNull(_texture, nameof(_texture));
-            var sprite = new Sprite(_texture, _shader, gl);
-            return sprite;
-        }
-    }
-
     public void Dispose()
     {
         Texture.Dispose();

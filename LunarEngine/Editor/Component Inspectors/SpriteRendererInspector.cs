@@ -1,6 +1,5 @@
 using ImGuiNET;
 using LunarEngine.Assets;
-using LunarEngine.Engine.AssetHandleCache;
 using LunarEngine.GameObjects;
 using LunarEngine.UI;
 using Silk.NET.OpenGL;
@@ -10,12 +9,10 @@ namespace LunarEngine.ECS.Systems;
 public class SpriteRendererInspector : IComponentInspector<SpriteRenderer>
 {
     private AssetManager _assetManager;
-    private IAssetHandleCache _assetHandleCache;
 
-    public SpriteRendererInspector(AssetManager assetManager, IAssetHandleCache assetHandleCache)
+    public SpriteRendererInspector(AssetManager assetManager)
     {
         _assetManager = assetManager;
-        _assetHandleCache = assetHandleCache;
     }
 
     public void OnDrawInspector(ref SpriteRenderer component)
@@ -29,7 +26,7 @@ public class SpriteRendererInspector : IComponentInspector<SpriteRenderer>
             for (var i = 0; i < textures.Count; i++)
             {
                 var texture = textures[i];
-                var textureHandle = _assetHandleCache.GetTextureHandle(texture);
+                var textureHandle = _assetManager.GetTextureHandle(texture);
                 if (ImGui.Selectable($"{texture.Key}##{i}"))
                 {
                     component.Sprite.ChangeTexture(textureHandle);
@@ -42,7 +39,7 @@ public class SpriteRendererInspector : IComponentInspector<SpriteRenderer>
             for (var i = 0; i < shaders.Count; i++)
             {
                 var shader = shaders[i];
-                var shaderHandle = _assetHandleCache.GetShaderHandle(shader);
+                var shaderHandle = _assetManager.GetShaderHandle(shader);
                 if (ImGui.Selectable($"{shader.Key}##{i}"))
                 {
                     component.Sprite.ChangeShader(shaderHandle);

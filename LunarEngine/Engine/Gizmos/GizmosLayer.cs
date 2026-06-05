@@ -7,22 +7,18 @@ namespace LunarEngine.Engine.Gizmos;
 
 public class GizmosLayer : BaseLayer
 {
-    private SceneManager _sceneManager;
+    private readonly SceneManager _sceneManager;
+    private readonly Renderer _renderer;
     private GizmosSystem _gizmosSystem;
-    private Renderer _renderer;
-    public GizmosLayer(SceneManager sceneManager, Application application) : base("Gizmos", application)
+
+    public GizmosLayer(SceneManager sceneManager, Renderer renderer) : base("Gizmos")
     {
         _sceneManager = sceneManager;
-    }
-
-    public override void OnAttach()
-    {
-        base.OnAttach();
+        _renderer = renderer;
     }
 
     public override void OnInitialize()
     {
-        _renderer = Application.Renderer;
         _gizmosSystem = new GizmosSystem(_sceneManager.ActiveScenes.World, _renderer);
         _gizmosSystem.Awake();
     }

@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using LunarEngine.Events;
 using LunarEngine.GameEngine;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
 namespace LunarEngine.Engine.Graphics;
@@ -61,6 +62,11 @@ public class Renderer : IDisposable
     {
         Render();
     }
+    public FrameBuffer CreateFrameBuffer(Vector2D<int> size)
+    {
+        return new FrameBuffer(Api, size);
+    }
+
     public void SetRenderTarget(FrameBuffer sceneFrameBuffer)
     {
         sceneFrameBuffer.Bind();

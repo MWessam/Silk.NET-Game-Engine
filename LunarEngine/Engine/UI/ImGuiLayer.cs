@@ -19,7 +19,7 @@ public class ImGuiLayer : BaseLayer
     private GL _api;
     
     public uint ActiveWidgetId => ImGui.GetCurrentContext().ActiveId;
-    public ImGuiLayer(string name, IWindow window, GL api, IInputContext inputContext, Application application) : base(name, application)
+    public ImGuiLayer(string name, IWindow window, GL api, IInputContext inputContext) : base(name)
     {
         _window = window;
         _api = api;

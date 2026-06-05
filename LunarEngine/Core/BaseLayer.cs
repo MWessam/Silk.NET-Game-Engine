@@ -1,16 +1,12 @@
-using Serilog;
-
 namespace LunarEngine.GameEngine;
 
 public abstract class BaseLayer
 {
     public string Name { get; init; }
-    protected Application Application { get; private set; }
 
-    protected BaseLayer(string name, Application application)
+    protected BaseLayer(string name)
     {
         Name = name;
-        Application = application;
     }
 
     public virtual void OnAttach() {}

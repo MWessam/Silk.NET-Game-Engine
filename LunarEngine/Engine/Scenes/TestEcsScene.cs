@@ -3,7 +3,6 @@ using ComponentFactories;
 using LunarEngine.Assets;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
-using LunarEngine.Engine.AssetHandleCache;
 using LunarEngine.Engine.ECS.Components;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
@@ -15,7 +14,7 @@ namespace LunarEngine.Scenes;
 
 public class TestEcsScene : ECSScene
 {
-    public TestEcsScene(Renderer renderer, AssetManager assetManager, AssetHandleCache assetHandleCache) : base(renderer, assetManager, assetHandleCache)
+    public TestEcsScene(Renderer renderer, AssetManager assetManager) : base(renderer, assetManager)
     {
         // World.Create<Name, CameraComponent, Transform, Position, IsInstantiating>(new()
         // {

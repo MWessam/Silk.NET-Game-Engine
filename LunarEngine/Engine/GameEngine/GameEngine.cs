@@ -12,7 +12,6 @@ public class EngineHost
     public void Run()
     {
         var app = new Editor();
-        app.Initialize();
         app.Run();
     }
 }

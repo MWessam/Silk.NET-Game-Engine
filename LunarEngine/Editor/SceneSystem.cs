@@ -28,7 +28,7 @@ public class SceneSystem
     }
     public void Awake()
     {
-        _sceneFrameBuffer = new FrameBuffer(_renderer.Api, new Vector2D<int>(800, 600));
+        _sceneFrameBuffer = _renderer.CreateFrameBuffer(new Vector2D<int>(800, 600));
         _uiElement = new DockableUiMenu()
         {
             Label = "Scene"

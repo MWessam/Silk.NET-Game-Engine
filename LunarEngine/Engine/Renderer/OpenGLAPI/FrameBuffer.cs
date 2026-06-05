@@ -1,18 +1,19 @@
+using System.Diagnostics;
 using System.Drawing;
 using LunarEngine.GameEngine;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
 namespace LunarEngine.Engine.Graphics;
-public unsafe class FrameBuffer : IDisposable
+public unsafe struct FrameBuffer : IDisposable
 {
     private GL _api;
 
     public Vector2D<int> _size;
-    public uint _handle;
+    private uint _handle;
     public uint _colorTexture;
-    public uint _depthTexture;
-    public bool DefaultRenderTarget;
+    private uint _depthTexture;
+    private bool _defaultRenderTarget;
 
     public static FrameBuffer CreateDefaultRenderFrameBuffer(GL api)
     {
@@ -20,7 +21,7 @@ public unsafe class FrameBuffer : IDisposable
         frameBuffer._api = api;
         frameBuffer._handle = 0;
         frameBuffer._api.BindFramebuffer(GLEnum.Framebuffer, 0);
-        frameBuffer.DefaultRenderTarget = true;
+        frameBuffer._defaultRenderTarget = true;
         return frameBuffer;
     }
     public FrameBuffer(GL api, Vector2D<int> size)
@@ -45,14 +46,11 @@ public unsafe class FrameBuffer : IDisposable
         _api.FramebufferTexture2D(GLEnum.Framebuffer, GLEnum.DepthAttachment, GLEnum.Texture2D, _depthTexture, 0);
 
         var status = _api.CheckFramebufferStatus(GLEnum.Framebuffer);
+        Debug.Assert(status == GLEnum.FramebufferComplete, $"Framebuffer is not complete! Status: {status}");
         if (status != GLEnum.FramebufferComplete) throw new Exception("Framebuffer is not complete!");
         _api.BindFramebuffer(GLEnum.Framebuffer, 0);
     }
 
-    private FrameBuffer()
-    {
-        
-    }
     public void Clear()
     {
         // _api.ClearColor(color);
@@ -68,7 +66,7 @@ public unsafe class FrameBuffer : IDisposable
     public void Unbind()
     {
         _api.BindFramebuffer(GLEnum.Framebuffer, 0);
-        _api.Viewport(Application.Viewport);
+        // _api.Viewport();
     }
 
     /// <summary>

@@ -1,20 +1,15 @@
-using System.Numerics;
-using Arch.Buffer;
 using Arch.Bus;
 using Hexa.NET.ImGui;
+using System.Numerics;
 using LunarEngine.Assets;
 using LunarEngine.Components;
-using LunarEngine.Engine.AssetHandleCache;
-using LunarEngine.Events;
 using LunarEngine.Engine.Gizmos;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.InputEngine;
-using LunarEngine.Physics;
 using LunarEngine.Scenes;
 using LunarEngine.UI;
-using Serilog;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 
@@ -22,58 +17,52 @@ namespace LunarEngine.ECS.Systems;
 
 public class Editor : Application
 {
-    private SceneManager _sceneManager;
     public override void Initialize()
     {
-        _sceneManager = new();
-        PushLayer(new EditorLayer(_sceneManager, this));
-        PushLayer(new GizmosLayer(_sceneManager, this));
+        var imguiLayer = new ImGuiLayer("ImguiLayer", Window, GL, InputContext);
+        PushOverlay(imguiLayer);
+        RegisterImGuiLayer(imguiLayer);
+
+        PushLayer(new EditorLayer(SceneManager, Renderer, Input, AssetManager));
+        PushLayer(new GizmosLayer(SceneManager, Renderer));
     }
 }
 
 public class EditorLayer : BaseLayer
 {
-    private SceneSystem _sceneSystem;
-    private HierarchySystem _hierarchySystem;
-    private InspectorSystem _inspectorSystem;
-    private ECSScene _scene;
-    private float _accumulatedTime;
+    private SceneSystem _sceneSystem = null!;
+    private HierarchySystem _hierarchySystem = null!;
+    private InspectorSystem _inspectorSystem = null!;
+    private ECSScene _scene = null!;
     private EditorCamera _camera = new();
-    private EditorCameraInputHandler _cameraInputHandler;
-    private FrameBuffer _sceneFrameBuffer;
+    private EditorCameraInputHandler _cameraInputHandler = null!;
     
-    private SceneManager _sceneManager;
+    private readonly SceneManager _sceneManager;
+    private readonly Renderer _renderer;
+    private readonly Input _input;
+    private readonly AssetManager _assetManager;
 
-    public EditorLayer(SceneManager sceneManager, Application application) : base("Editor", application)
+    public EditorLayer(SceneManager sceneManager, Renderer renderer, Input input,
+                       AssetManager assetManager)
+        : base("Editor")
     {
         _sceneManager = sceneManager;
-    }
-
-    public override void OnAttach()
-    {
-
-    }
-
-    public override void OnDetach()
-    {
-        // EventBus<ViewportResizedEvent>.Deregister(OnViewportResized);
-        _sceneFrameBuffer?.Dispose();
+        _renderer = renderer;
+        _input = input;
+        _assetManager = assetManager;
     }
 
     public override void OnInitialize()
     {
-        _sceneManager.AddScene(new TestEcsScene(Application.Renderer, Application.AssetManager, Application.AssetHandleCache));
         _scene = _sceneManager.ActiveScenes;
         _hierarchySystem = new HierarchySystem(_scene.World);
         _inspectorSystem = new InspectorSystem(_scene.World);
-        _sceneSystem = new SceneSystem(Application.Renderer);
+        _sceneSystem = new SceneSystem(_renderer);
         _hierarchySystem.Awake();
         _inspectorSystem.Awake();
         _sceneSystem.Awake();
         
-        _sceneFrameBuffer = new FrameBuffer(Application.Renderer.Api, new Vector2D<int>(800, 600));
-        // EventBus<ViewportResizedEvent>.Register(OnViewportResized);
-        _cameraInputHandler = new (_camera, Application.Input);
+        _cameraInputHandler = new(_camera, _input);
         
         List<IComponentInspector> componentInspectors = 
             [
@@ -83,7 +72,7 @@ public class EditorLayer : BaseLayer
                 new RigidBody2DInspector(),
                 new RotationInspector(),
                 new ScaleInspector(),
-                new SpriteRendererInspector(Application.AssetManager, Application.AssetHandleCache),
+                new SpriteRendererInspector(_assetManager),
                 new BoxCollider2DInspector()
             ];
         foreach (var inspector in componentInspectors)
@@ -94,39 +83,14 @@ public class EditorLayer : BaseLayer
 
     public override void OnUpdate(TimeStep timeStep)
     {
-        
-        Time.DeltaTime = timeStep;
-        _accumulatedTime += timeStep;
-        
-        // Input
-        Application.Input.Update(timeStep);
-
-        
-        // Physics
-        while (_accumulatedTime >= PhysicsEngine.FIXED_TIMESTAMP)
-        {
-            PhysicsEngine.TickPhysics(PhysicsEngine.FIXED_TIMESTAMP);
-            _scene.Tick(PhysicsEngine.FIXED_TIMESTAMP);
-            _accumulatedTime -= PhysicsEngine.FIXED_TIMESTAMP;
-        }
-        PhysicsEngine.InterpolatedTime = (_accumulatedTime / PhysicsEngine.FIXED_TIMESTAMP);
-        
-        // Scene dispatcher
-        _scene.Update(timeStep);
         _camera.Update();
-
     }
 
     public override void OnImguiRender(TimeStep timeStep)
     {
-        Application.Renderer.Clear();
         _sceneSystem.Draw(_scene, _camera, timeStep);
         _hierarchySystem.Update(timeStep);
         _inspectorSystem.Update(timeStep);
-    }
-    
-    private void HandleEditorCameraInput()
-    {
     }
 }
 
