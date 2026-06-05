@@ -1,4 +1,5 @@
 using LunarEngine.Assets;
+using LunarEngine.Core;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.Events;
 using LunarEngine.InputEngine;
@@ -26,6 +27,7 @@ public class Application : IDisposable
     private bool _isRunning;
 
     // Services
+    protected ServiceContainer Services { get; }
     protected IWindow Window = null!;
     protected IInputContext InputContext = null!;
     protected GL GL;
@@ -33,6 +35,7 @@ public class Application : IDisposable
     private Input _input = null!;
     private AssetManager _assetManager = null!;
     private SceneManager _sceneManager = null!;
+    private Gizmos _gizmos = null!;
 
     public Renderer Renderer => _renderer;
     public Input Input => _input;
@@ -41,7 +44,10 @@ public class Application : IDisposable
 
     public Vector2D<int> WindowSize => Window.Size;
 
-    protected Application() { }
+    protected Application()
+    {
+        Services = new ServiceContainer();
+    }
 
     public virtual void Initialize() { }
 
@@ -105,6 +111,8 @@ public class Application : IDisposable
 
     private void OnWindowLoad()
     {
+        Logger.Initialize();
+
         GL = Silk.NET.OpenGL.GL.GetApi(Window);
         InputContext = Window.CreateInput();
 
@@ -123,14 +131,24 @@ public class Application : IDisposable
             mouse.Scroll += _input.OnMouseScroll;
         }
 
-        _renderer = new Renderer(GL);
-        _renderer.Initialize();
-
         _assetManager = new AssetManager();
         _assetManager.Initialize(GL);
-        Gizmos.Instance.AssetManager = _assetManager;
+        Services.Register(_assetManager);
+
+        _gizmos = new Gizmos(GL, _assetManager);
+        Services.Register(_gizmos);
+
+        _renderer = new Renderer(GL, _gizmos);
+        _renderer.Initialize();
+        Services.Register(_renderer);
+
+        Services.Register(_input);
 
         _sceneManager = new SceneManager();
+        Services.Register(_sceneManager);
+
+        Services.Register(Window);
+        Services.Register(InputContext);
 
         Initialize();
 

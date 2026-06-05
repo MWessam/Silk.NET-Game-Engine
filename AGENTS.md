@@ -11,10 +11,10 @@ dotnet run -c Debug
 Build from repo root (where `LunarEngine.sln` sits). Run from `LunarEngine/` so `Resources/` paths resolve correctly. There is also a `LunarEngine/LunarEngine.sln` inside the project — use the root one.
 
 ## Project structure
-Single `.csproj` at `LunarEngine/LunarEngine.csproj`. .NET 10.0 prerelease SDK (per `global.json`, `rollForward: latestMajor`, `allowPrerelease: true`). No test project.
+Single `.csproj` at `LunarEngine/LunarEngine.csproj`. Targets `net9.0` (fallback from .NET 10.0 prerelease SDK — `global.json` temporarily rolled to `9.0.0` due to environment constraints). No test project.
 
 Top-level dirs under `LunarEngine/`:
-- `Core/` — `Application`, `BaseLayer`, `LayerStack`, `Singleton<T>`, `TimeStep`
+- `Core/` — `Application`, `BaseLayer`, `LayerStack`, `TimeStep`, `ServiceContainer`, `Logger`
 - `Editor/` — `Editor` (app entry), `EditorLayer`, `GizmosLayer`, editor systems, plus `Component Inspectors/`
 - `Engine/` — Assets, ECS, GameEngine, Gizmos, InputEngine, Physics, Renderer, Scenes, UI, AssetHandleCache, Debugging, Core
 - `Events/` — Global `EventBus<T>`, events
@@ -59,7 +59,7 @@ Empty placeholder dirs indicating planned but unimplemented features:
 
 ## Known design gaps (see `LunarEngine/ENGINE_DESIGN_REVIEW.md` for full detail)
 - Renderer has no abstraction; ECS systems receive `GL` directly
-- Heavy use of global singletons (`Singleton<T>`, `Gizmos.Instance`, `EventBus<T>`)
+- Heavy use of global singletons (`EventBus<T>` still static; `Singleton<T>` and `Gizmos.Instance` removed in Phase 2)
 - Fixed-size scene array (max 16), incomplete remove logic in `SceneManager`
 - `Parent` component stores a `Transform` instead of an `Entity` reference
 - `Scene.cs`, `CustomBehaviour.cs`, `WindowManager.cs`, `TestScene.cs`, `PhysicsEngine.cs`, `ShaderSystem.cs`, `InputSystem.cs`, `ComponentFactoryManager.cs`, `PhysicsLayer.cs`, `RenderLayer.cs`, `SceneLayer.cs` removed in Phase 1 hygiene pass

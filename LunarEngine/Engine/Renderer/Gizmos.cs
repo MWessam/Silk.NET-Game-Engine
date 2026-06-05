@@ -1,18 +1,24 @@
 using System.Numerics;
 using LunarEngine.Assets;
-using LunarEngine.GameEngine;
 using Silk.NET.OpenGL;
 
 namespace LunarEngine.Engine.Graphics;
 
-public class Gizmos : Singleton<Gizmos>, ISingletonObject, IDisposable
+public class Gizmos : IDisposable
 {
     private BufferObject<float> _wireframeGizmoVbo;
     private BufferObject<float> _wireframeGizmoInstanceVbo;
     private VertexArrayObject<float, uint> _wireframeVao;
     private ShaderHandle _gizmosShader;
     private GL _api;
-    public LunarEngine.Assets.AssetManager AssetManager { private get; set; } = null!;
+    private readonly AssetManager _assetManager;
+
+    public Gizmos(GL api, AssetManager assetManager)
+    {
+        _api = api;
+        _assetManager = assetManager;
+        InitializeGizmos(api);
+    }
 
     public void InitializeGizmos(GL api)
     {
@@ -27,19 +33,15 @@ public class Gizmos : Singleton<Gizmos>, ISingletonObject, IDisposable
         _wireframeGizmoInstanceVbo.Bind();
         _wireframeVao.AddVertexBuffer(ref _wireframeGizmoInstanceVbo);
         _wireframeVao.Unbind();
+    }
 
-        _api = api;
-    }
-    public void InitSingleton()
-    {
-    }
     public void Dispose()
     {
     }
 
     public void DrawLine(LineDrawCommand lineDrawCommand, Matrix4x4 viewProjectionMatrix)
     {
-        _gizmosShader = AssetManager.GetShaderHandle("wireframe_gizmo");
+        _gizmosShader = _assetManager.GetShaderHandle("wireframe_gizmo");
         _wireframeVao.Bind();
         _wireframeGizmoVbo.Bind();
         _wireframeGizmoVbo.SetBufferData(lineDrawCommand.Vertices);
@@ -53,7 +55,7 @@ public class Gizmos : Singleton<Gizmos>, ISingletonObject, IDisposable
 
     public void DrawQuad(QuadDrawCommand quadDrawCommand, Matrix4x4 viewProjectionMatrix)
     {
-        _gizmosShader = AssetManager.GetShaderHandle("wireframe_gizmo");
+        _gizmosShader = _assetManager.GetShaderHandle("wireframe_gizmo");
         _wireframeVao.Bind();
         _wireframeGizmoVbo.Bind();
         
@@ -64,6 +66,5 @@ public class Gizmos : Singleton<Gizmos>, ISingletonObject, IDisposable
         _gizmosShader.SetUniform("vp", viewProjectionMatrix);
         _gizmosShader.UpdateDirtyUniforms();
         _api.DrawArrays(PrimitiveType.LineLoop, 0, 4);
-        
     }
 }

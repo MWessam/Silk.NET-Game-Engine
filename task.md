@@ -30,19 +30,13 @@
 - [x] Verify `dotnet build -c Debug` and `dotnet run -c Debug`
   - Note: `dotnet run -c Debug` must be executed from `LunarEngine/` directory so resource paths resolve correctly.
 
-## Phase 2: Core module extraction
-- [ ] Create `ServiceContainer` and `ServiceDescriptor` in `Core/`
-- [ ] Replace `Singleton<T>` usage with service registration
-- [ ] Make `EventBus<T>` instance-based instead of static
-- [ ] Move `TimeStep` and `Logger` to `Core/`
+## Phase 2: Core module extraction (completed)
+- [x] Create `ServiceContainer` and `ServiceDescriptor` in `Core/`
+- [x] Replace `Singleton<T>` usage with service registration
+- [x] Make `EventBus<T>` instance-based instead of static
+- [x] Move `TimeStep` and `Logger` to `Core/`
 
-## Phase 2: Core module extraction
-- [ ] Create `ServiceContainer` and `ServiceDescriptor` in `Core/`
-- [ ] Replace `Singleton<T>` usage with service registration
-- [ ] Make `EventBus<T>` instance-based instead of static
-- [ ] Move `TimeStep` and `Logger` to `Core/`
-
-## Phase 3: Platform abstraction
+## Phase 3: Platform abstraction (pending)
 - [ ] Create `IWindow` and `IInputContext` interfaces in `Platform/`
 - [ ] Create `SilkWindow` and `SilkInputContext` wrappers
 - [ ] Refactor `Application` to depend on `IWindow`/`IInputContext`

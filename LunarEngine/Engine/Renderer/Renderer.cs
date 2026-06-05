@@ -13,17 +13,17 @@ public class Renderer : IDisposable
     private List<RenderCommand> _renderQueue = new();
     
     private Matrix4x4 _viewProjectionMatrix;
+    private readonly Gizmos _gizmos;
     
     public GL Api { get; private set; }
     public Matrix4x4 ViewProjectionMatrix => _viewProjectionMatrix;
 
-
-
     #region INITIALIZATION
 
-    public Renderer(GL api)
+    public Renderer(GL api, Gizmos gizmos)
     {
         Api = api;
+        _gizmos = gizmos;
     }
 
     public void Initialize()
@@ -32,7 +32,6 @@ public class Renderer : IDisposable
         Api.Enable(GLEnum.Blend);
         Api.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         Api.LineWidth(4.0f);
-        Gizmos.Instance.InitializeGizmos(Api);
     }
 
     #endregion
@@ -93,10 +92,10 @@ public class Renderer : IDisposable
                     RenderSprite(spriteDrawCommand);
                     break;
                 case RenderCommand.CommandType.Line:
-                    Gizmos.Instance.DrawLine((LineDrawCommand) renderCommand, _viewProjectionMatrix);
+                    _gizmos.DrawLine((LineDrawCommand) renderCommand, _viewProjectionMatrix);
                     break;
                 case RenderCommand.CommandType.Quad:
-                    Gizmos.Instance.DrawQuad((QuadDrawCommand) renderCommand, _viewProjectionMatrix);
+                    _gizmos.DrawQuad((QuadDrawCommand) renderCommand, _viewProjectionMatrix);
                     break;
             }
         }
@@ -112,6 +111,4 @@ public class Renderer : IDisposable
     public void Dispose()
     {
     }
-    
-
 }

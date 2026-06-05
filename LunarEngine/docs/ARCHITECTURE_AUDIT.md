@@ -250,6 +250,21 @@ All 10 bugs fixed, dead code removed, usings normalized, build + run verified.
 
 ---
 
+## Phase 2 Completion Notes (2026-06-05)
+
+Core module extraction completed. Build + run verified.
+
+**Changes made**:
+1. **Created `ServiceContainer` and `ServiceDescriptor`** in `Core/` with `Register<T>`, `RegisterLazy<T>`, `Get<T>`, `TryGet<T>`, and `Reset()` APIs.
+2. **Removed `Singleton<T>` and `ISingletonObject`** — `Core/Singleton.cs` deleted. `Gizmos` was the only consumer; refactored to a regular class with constructor injection.
+3. **Refactored `Gizmos`** — Now accepts `GL` and `AssetManager` in constructor. `Renderer` receives `Gizmos` via constructor instead of calling `Gizmos.Instance`.
+4. **Updated `Application`** — Initializes `ServiceContainer` in constructor, registers `AssetManager`, `Gizmos`, `Renderer`, `Input`, `SceneManager`, `Window`, and `InputContext` in `OnWindowLoad()`.
+5. **Made `EventBus<T>` instance-based** — Converted from `static class` to `sealed class` with instance-level `Subscribe`/`Unsubscribe`/`Publish`/`Clear` methods. (Note: no current code consumes this yet; Arch.EventBus is still used by editor systems and will be replaced in Phase 10.)
+6. **Moved `Logger` to `Core/`** — `Engine/Debugging/Logger.cs` moved to `Core/Logger.cs` under `LunarEngine.Core` namespace. `Logger.Initialize()` is now called in `Application.OnWindowLoad()`. `DebugUtils` remains in `Engine/Debugging/` and continues using `Serilog.Log` directly.
+7. **Temporary SDK downgrade** — `global.json` and `LunarEngine.csproj` rolled from `10.0.0`/`net10.0` to `9.0.0`/`net9.0` because the .NET 10 prerelease SDK is not installed in the current environment. `AGENTS.md` updated to reflect this.
+
+---
+
 ## Summary
 
 The current codebase is a functional prototype that directly uses Silk.NET, Arch ECS, and raw OpenGL with minimal abstraction. The target architecture defines a fully modular, dependency-injected, interface-driven engine. **Conflicts are pervasive across every module**: Core, Platform, ECS, Renderer, Assets, Input, Scenes, Physics, and Editor all deviate substantially from the target design. The 12-phase implementation plan in `ARCHITECTURE.md` is well-justified given the breadth of changes required.
