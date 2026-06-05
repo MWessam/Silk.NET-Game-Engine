@@ -1,19 +1,20 @@
 using System.Numerics;
 using LunarEngine.Assets;
 using LunarEngine.Components;
+using LunarEngine.Core;
 using LunarEngine.ECS.Components;
 using LunarEngine.Engine.ECS.Components;
-using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
 using LunarEngine.Graphics;
 using LunarEngine.Physics;
+using World = Arch.Core.World;
 
 namespace LunarEngine.Scenes;
 
 public class TestEcsScene : ECSScene
 {
-    public TestEcsScene(IRenderer renderer, AssetManager assetManager) : base(renderer, assetManager)
+    public TestEcsScene(ServiceContainer services) : base(services)
     {
         // World.Create<Name, CameraComponent, Transform, Position, IsInstantiating>(new()
         // {

@@ -1,6 +1,7 @@
 using Arch.Core;
 using Arch.System.SourceGenerator;
 using LunarEngine.Assets;
+using LunarEngine.Core;
 using LunarEngine.ECS;
 using LunarEngine.ECS.Systems;
 using LunarEngine.Engine.Graphics;
@@ -13,10 +14,10 @@ using World = Arch.Core.World;
 
 namespace LunarEngine.Scenes;
 
-public class ECSScene
+public class ECSScene : IScene
 {
-    public readonly World World;
-    public IWorld ECSWorld => _ecsWorld;
+    public World World { get; }
+    IWorld IScene.World => _ecsWorld;
 
     private readonly ECSWorld _ecsWorld;
     private readonly SystemScheduler _scheduler = new();
@@ -24,12 +25,17 @@ public class ECSScene
     private readonly IRenderer _renderer;
     private readonly AssetManager _assetManager;
 
-    public ECSScene(IRenderer renderer, AssetManager assetManager)
+    public string Name { get; set; } = string.Empty;
+    public SystemScheduler Scheduler => _scheduler;
+    public bool IsActive { get; set; } = true;
+    public int SceneId { get; set; }
+
+    public ECSScene(ServiceContainer services)
     {
         _ecsWorld = new ECSWorld();
         World = _ecsWorld.NativeWorld;
-        _renderer = renderer;
-        _assetManager = assetManager;
+        _renderer = services.Get<IRenderer>();
+        _assetManager = services.Get<AssetManager>();
 
         _spriteRendererSystem = new SpriteRendererSystem(World, _assetManager, _renderer);
 
@@ -39,9 +45,6 @@ public class ECSScene
         _scheduler.Register(new CameraSystem(World));
         _scheduler.Register(new InitializationSystem(World));
     }
-
-    public bool IsActive = true;
-    public int SceneId { get; set; }
 
     public void AddSystem(ScriptableSystem system)
     {
@@ -66,6 +69,11 @@ public class ECSScene
     public void Tick(double dt)
     {
         _scheduler.RunFixedUpdate(dt);
+    }
+
+    public void FixedUpdate(double fixedDeltaTime)
+    {
+        Tick(fixedDeltaTime);
     }
 
     public void RenderScenes(double dt, Camera camera)
@@ -98,6 +106,12 @@ public class ECSScene
         RenderScenes(dt, primaryCamera.Value.Camera);
     }
 
+    public void Render(IRenderer renderer)
+    {
+        // TODO: Delegate sprite rendering to passed renderer when ECSScene no longer owns renderer internally
+        RenderScenes(0);
+    }
+
     public void SetSceneCameraViewport(Vector2D<int> newViewport)
     {
         var cameraQuery = new QueryDescription().WithAll<CameraComponent>();
@@ -105,5 +119,10 @@ public class ECSScene
         {
             camera.Camera.Width = camera.Camera.Height * ((float)newViewport.X / newViewport.Y);
         });
+    }
+
+    public void Dispose()
+    {
+        // TODO: Implement proper disposal in Phase 12
     }
 }

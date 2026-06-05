@@ -32,8 +32,8 @@ Empty placeholder dirs indicating planned but unimplemented features:
 
 ## Architecture & key types
 - **Layer stack**: `Application` owns a `LayerStack`. Layers iterate in order for `OnUpdate` then `OnImguiRender`. `ImGuiLayer` wraps layer rendering in `Begin`/`End`.
-- **ECS**: [Arch](https://github.com/genemake/Arch) v1.2.8. Systems extend `ScriptableSystem` (partial class extending `BaseSystem<World, double>`). Source-generated queries via `[Query]` attributes (`Arch.System.SourceGenerator`). Each `ECSScene` owns a `World` and manually orders systems in `Awake()`, `Start()`, `Update()`, `Tick()` — no scheduler.
-- **Renderer**: OpenGL-only. `Renderer` holds a `GL` instance. Systems call `_renderer.SubmitRenderCommand()`. ECS systems receive `GL` directly in constructors (e.g., `SpriteRendererSystem(GL, World, AssetManager, Renderer)`).
+- **ECS**: [Arch](https://github.com/genemake/Arch) v1.2.8. Systems extend `ScriptableSystem` (partial class extending `BaseSystem<World, double>`). Source-generated queries via `[Query]` attributes (`Arch.System.SourceGenerator`). Each `ECSScene` owns a `World` and delegates lifecycle to `SystemScheduler` (`Awake`, `Start`, `Update`, `FixedUpdate`, `RenderPrepare`).
+- **Renderer**: OpenGL-only via `GLRenderDevice`. `IRenderer` exposes `SubmitRenderCommand()`. ECS systems use `IRenderer` for command submission; no direct `GL` references in systems.
 - **ImGui**: `Hexa.NET.ImGui` (not Silk.NET's ImGui extension).
 - **Rendering flow**: `ECSScene.RenderScenes()` called by editor systems; finds primary `CameraComponent`, calls `renderer.BeginFrame(camera.ViewProjection)`, then `SpriteRendererSystem.Render()`, then `renderer.EndFrame()`.
 - **Assets**: `ShaderLibrary` and `TextureLibrary` load from `Resources\` relative to the working directory. Resources are copied to the build output directory via the csproj. Default assets are created in `#region TEST` blocks.
@@ -41,9 +41,9 @@ Empty placeholder dirs indicating planned but unimplemented features:
 ## Conventions
 - Components are **structs** implementing the empty `IComponent` marker interface (no base class). They are Arch-style value types, NOT the old `GameObject`-based `Component` class (that system is fully commented out in `Scene.cs` and `CustomBehaviour.cs`).
 - ECS systems **must** be `partial class` — required by Arch source generators for `[Query]` methods.
-- ECS system lifecycle on `ECSScene`: `Awake()` → `Start()` → `Update(dt)` / `Tick(dt)` → `AfterUpdate()` (plays back `CommandBuffer`). `RenderScenes()` is separate, called explicitly by editor systems.
-- New scenes extend `ECSScene` and add entities via `World.Create<T1, T2, ...>(...)` in the constructor.
-- Active scene: `SceneManager.ActiveScenes` (singular property, despite the name).
+- ECS system lifecycle on `ECSScene`: `Awake()` → `Start()` → `Update(dt)` / `FixedUpdate(dt)` → `AfterUpdate()` (plays back `CommandBuffer`). `RenderScenes()` is separate, called explicitly by editor systems.
+- New scenes extend `ECSScene` and add entities via `World.Create<T1, T2, ...>(...)` in the constructor. `ECSScene` receives its dependencies through `ServiceContainer`.
+- Active scene: `SceneManager.ActiveScene` (returns `IScene?`).
 - Namespaces are inconsistent across the codebase:
   - Components: `LunarEngine.Components`, `LunarEngine.GameObjects`, `LunarEngine.Engine.ECS.Components`, `LunarEngine.ECS.Components`
   - Systems: `LunarEngine.GameEngine`, `LunarEngine.ECS.Systems`, `LunarEngine.Physics`, `LunarEngine.Engine.ECS.Systems`
@@ -59,9 +59,6 @@ Empty placeholder dirs indicating planned but unimplemented features:
 - Two `.sln` files exist — use the root `LunarEngine.sln`.
 
 ## Known design gaps (see `LunarEngine/ENGINE_DESIGN_REVIEW.md` for full detail)
-- Renderer has no abstraction; ECS systems receive `GL` directly
-- Heavy use of global singletons (`EventBus<T>` still static; `Singleton<T>` and `Gizmos.Instance` removed in Phase 2)
-- Fixed-size scene array (max 16), incomplete remove logic in `SceneManager`
 - `Parent` component stores a `Transform` instead of an `Entity` reference
 - `Scene.cs`, `CustomBehaviour.cs`, `WindowManager.cs`, `TestScene.cs`, `PhysicsEngine.cs`, `ShaderSystem.cs`, `InputSystem.cs`, `ComponentFactoryManager.cs`, `PhysicsLayer.cs`, `RenderLayer.cs`, `SceneLayer.cs` removed in Phase 1 hygiene pass
 - Editor and runtime share the same `World` — no isolation

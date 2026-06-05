@@ -71,17 +71,11 @@
 - [x] Make `AssetManager` use `IAssetProvider` and `IRenderDevice`
 - [x] Implement `AssetManager.Dispose()` properly
 
-## Phase 8: Scene manager (pending)
-- [ ] Convert `SceneManager` to use `List<IScene>`
-- [ ] Rename `ActiveScenes` to `ActiveScene`
-- [ ] Implement proper `RemoveScene` with cleanup
-- [ ] Create `IScene` interface and refactor `ECSScene`
-
-## Phase 8: Scene manager
-- [ ] Convert `SceneManager` to use `List<IScene>`
-- [ ] Rename `ActiveScenes` to `ActiveScene`
-- [ ] Implement proper `RemoveScene` with cleanup
-- [ ] Create `IScene` interface and refactor `ECSScene`
+## Phase 8: Scene manager (completed)
+- [x] Convert `SceneManager` to use `List<IScene>`
+- [x] Rename `ActiveScenes` to `ActiveScene`
+- [x] Implement proper `RemoveScene` with cleanup
+- [x] Create `IScene` interface and refactor `ECSScene`
 
 ## Phase 9: Physics consolidation
 - [ ] Create `PhysicsWorld` class (no longer static)

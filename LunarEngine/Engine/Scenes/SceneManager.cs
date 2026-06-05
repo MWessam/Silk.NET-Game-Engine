@@ -1,37 +1,48 @@
-using System.Collections;
 using Serilog;
+using LunarEngine.Core;
 
 namespace LunarEngine.Scenes;
 
 public class SceneManager
 {
-    // Max scene count 16.
-    private const int MAX_SCENE_COUNT = 16;
-    private ECSScene?[] _scenes = new ECSScene[MAX_SCENE_COUNT];
-    private int _lastSceneIndex = -1;
-    private int _activeSceneIndex = -1;
-    public ECSScene ActiveScenes => _scenes[_activeSceneIndex];
-    public void AddScene(ECSScene scene)
+    private readonly List<IScene> _scenes = new();
+    private readonly ServiceContainer _services;
+
+    public SceneManager(ServiceContainer services)
     {
-        if (_lastSceneIndex >= 15)
-        {
-            Log.Error($"Scenes are already full! Can't add more scenes.");
-            return;
-        }
-        _scenes[++_lastSceneIndex] = scene;
-        scene.SceneId = _lastSceneIndex;
-        _activeSceneIndex = _lastSceneIndex;
+        _services = services;
     }
-    public ECSScene? RemoveScene(int sceneId)
+
+    public IScene? ActiveScene { get; private set; }
+    public IReadOnlyList<IScene> Scenes => _scenes;
+
+    public void AddScene(IScene scene)
     {
-        if (sceneId < 0 || sceneId > _lastSceneIndex)
+        _scenes.Add(scene);
+        ActiveScene = scene;
+    }
+
+    public IScene CreateScene(string name)
+    {
+        var scene = new TestEcsScene(_services) { Name = name };
+        AddScene(scene);
+        return scene;
+    }
+
+    public bool RemoveScene(IScene scene)
+    {
+        if (!_scenes.Remove(scene))
         {
-            Log.Error($"Scene Id is invalid. Make sure that you specified the correct id for removal.");
-            return null;
+            Log.Error("Scene not found in manager. Cannot remove.");
+            return false;
         }
 
-        _scenes[sceneId] = null;
-        // TODO: Shift array to remove scenes and update their ids.
-        return null;
+        if (ActiveScene == scene)
+        {
+            ActiveScene = _scenes.Count > 0 ? _scenes[_scenes.Count - 1] : null;
+        }
+
+        scene.Dispose();
+        return true;
     }
 }

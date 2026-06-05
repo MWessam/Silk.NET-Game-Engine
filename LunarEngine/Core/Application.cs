@@ -143,7 +143,7 @@ public class Application : IDisposable
 
         Services.Register(_inputManager);
 
-        _sceneManager = new SceneManager();
+        _sceneManager = new SceneManager(Services);
         Services.Register(_sceneManager);
 
         Initialize();

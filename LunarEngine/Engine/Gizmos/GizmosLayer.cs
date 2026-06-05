@@ -19,7 +19,7 @@ public class GizmosLayer : BaseLayer
 
     public override void OnInitialize()
     {
-        _gizmosSystem = new GizmosSystem(_sceneManager.ActiveScenes.World, _renderer);
+        _gizmosSystem = new GizmosSystem(((ECSScene)_sceneManager.ActiveScene!).World, _renderer);
         _gizmosSystem.Awake();
     }
 

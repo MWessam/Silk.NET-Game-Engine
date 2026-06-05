@@ -3,6 +3,7 @@ using Hexa.NET.ImGui;
 using System.Numerics;
 using LunarEngine.Assets;
 using LunarEngine.Components;
+using LunarEngine.Core;
 using LunarEngine.Engine.Gizmos;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
@@ -27,7 +28,7 @@ public class Editor : Application
         PushOverlay(imguiLayer);
         RegisterImGuiLayer(imguiLayer);
 
-        PushLayer(new EditorLayer(SceneManager, Renderer, InputManager, AssetManager));
+        PushLayer(new EditorLayer(SceneManager, Renderer, InputManager, AssetManager, Services));
         PushLayer(new GizmosLayer(SceneManager, Renderer));
     }
 }
@@ -45,21 +46,23 @@ public class EditorLayer : BaseLayer
     private readonly IRenderer _renderer;
     private readonly InputManager _inputManager;
     private readonly AssetManager _assetManager;
+    private readonly ServiceContainer _services;
 
     public EditorLayer(SceneManager sceneManager, IRenderer renderer, InputManager inputManager,
-                       AssetManager assetManager)
+                       AssetManager assetManager, ServiceContainer services)
         : base("Editor")
     {
         _sceneManager = sceneManager;
         _renderer = renderer;
         _inputManager = inputManager;
         _assetManager = assetManager;
+        _services = services;
     }
 
     public override void OnInitialize()
     {
-        _sceneManager.AddScene(new TestEcsScene(_renderer, _assetManager));
-        _scene = _sceneManager.ActiveScenes;
+        _sceneManager.AddScene(new TestEcsScene(_services));
+        _scene = (ECSScene)_sceneManager.ActiveScene!;
         _scene.Awake();
         _scene.Start();
         _hierarchySystem = new HierarchySystem(_scene.World);
