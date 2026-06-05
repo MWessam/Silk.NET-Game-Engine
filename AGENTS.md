@@ -4,15 +4,17 @@
 ```powershell
 dotnet restore
 dotnet build -c Debug
+# Run from the project directory so resource paths resolve:
+cd LunarEngine
 dotnet run -c Debug
 ```
-Run commands from repo root (where `LunarEngine.sln` sits). There is also a `LunarEngine/LunarEngine.sln` inside the project — use the root one.
+Build from repo root (where `LunarEngine.sln` sits). Run from `LunarEngine/` so `Resources/` paths resolve correctly. There is also a `LunarEngine/LunarEngine.sln` inside the project — use the root one.
 
 ## Project structure
 Single `.csproj` at `LunarEngine/LunarEngine.csproj`. .NET 10.0 prerelease SDK (per `global.json`, `rollForward: latestMajor`, `allowPrerelease: true`). No test project.
 
 Top-level dirs under `LunarEngine/`:
-- `Core/` — `Application`, `BaseLayer`, `LayerStack`, `Singleton<T>`, `TimeStep`, plus unused `PhysicsLayer`/`RenderLayer`/`SceneLayer` and fully-commented `WindowManager`
+- `Core/` — `Application`, `BaseLayer`, `LayerStack`, `Singleton<T>`, `TimeStep`
 - `Editor/` — `Editor` (app entry), `EditorLayer`, `GizmosLayer`, editor systems, plus `Component Inspectors/`
 - `Engine/` — Assets, ECS, GameEngine, Gizmos, InputEngine, Physics, Renderer, Scenes, UI, AssetHandleCache, Debugging, Core
 - `Events/` — Global `EventBus<T>`, events
@@ -33,8 +35,7 @@ Empty placeholder dirs indicating planned but unimplemented features:
 - **Renderer**: OpenGL-only. `Renderer` holds a `GL` instance. Systems call `_renderer.SubmitRenderCommand()`. ECS systems receive `GL` directly in constructors (e.g., `SpriteRendererSystem(GL, World, AssetManager, Renderer)`).
 - **ImGui**: `Hexa.NET.ImGui` (not Silk.NET's ImGui extension).
 - **Rendering flow**: `ECSScene.RenderScenes()` called by editor systems; finds primary `CameraComponent`, calls `renderer.BeginFrame(camera.ViewProjection)`, then `SpriteRendererSystem.Render()`, then `renderer.EndFrame()`.
-- **Physics**: `PhysicsEngine.TickPhysics` is a no-op shell. `PhysicsLayer` (in Core/) does fixed-step accumulation at 1/60s but is **never pushed by the Editor**.
-- **Assets**: `ShaderLibrary` and `TextureLibrary` load from hardcoded relative paths (`..\..\..\Resources\`) — assets must be found relative to build output. Default assets are created in `#region TEST` blocks.
+- **Assets**: `ShaderLibrary` and `TextureLibrary` load from `Resources\` relative to the working directory. Resources are copied to the build output directory via the csproj. Default assets are created in `#region TEST` blocks.
 
 ## Conventions
 - Components are **structs** implementing the empty `IComponent` marker interface (no base class). They are Arch-style value types, NOT the old `GameObject`-based `Component` class (that system is fully commented out in `Scene.cs` and `CustomBehaviour.cs`).
@@ -51,7 +52,7 @@ Empty placeholder dirs indicating planned but unimplemented features:
 ## Toolchain quirks
 - `AllowUnsafeBlocks` enabled (required by Silk.NET interop — pointer usage in rendering).
 - `ImplicitUsings` on; `Nullable` enabled.
-- Shaders/textures use relative paths from build output dir (`..\..\..\Resources\`) — must run from project context or files won't be found.
+- Shaders/textures use relative paths (`Resources\`) — must run from `LunarEngine/` directory or ensure `Resources/` is in the working directory.
 - `Serilog` referenced but minimally used (mostly `Log.Error` in asset libraries).
 - Arch source generators require `partial` class on query-bearing systems.
 - Two `.sln` files exist — use the root `LunarEngine.sln`.
@@ -61,8 +62,7 @@ Empty placeholder dirs indicating planned but unimplemented features:
 - Heavy use of global singletons (`Singleton<T>`, `Gizmos.Instance`, `EventBus<T>`)
 - Fixed-size scene array (max 16), incomplete remove logic in `SceneManager`
 - `Parent` component stores a `Transform` instead of an `Entity` reference
-- `Scene.cs` is fully commented out (old pre-Arch scene model)
-- `WindowManager.cs` is fully commented out; `Application` creates window directly
+- `Scene.cs`, `CustomBehaviour.cs`, `WindowManager.cs`, `TestScene.cs`, `PhysicsEngine.cs`, `ShaderSystem.cs`, `InputSystem.cs`, `ComponentFactoryManager.cs`, `PhysicsLayer.cs`, `RenderLayer.cs`, `SceneLayer.cs` removed in Phase 1 hygiene pass
 - Editor and runtime share the same `World` — no isolation
 
 ## Commands cheat sheet

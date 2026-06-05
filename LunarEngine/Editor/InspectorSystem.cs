@@ -3,7 +3,6 @@ using System.Reflection;
 using Arch.Buffer;
 using Arch.Bus;
 using Arch.Core;
-using ComponentFactories;
 using ImGuiNET;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
@@ -36,7 +35,7 @@ public partial class InspectorSystem : ScriptableSystem
 
     public void AddComponentInspector(Type componentType, IComponentInspector componentInspector)
     {
-        if (_componentInspectors.TryAdd(componentType, componentInspector))
+        if (!_componentInspectors.TryAdd(componentType, componentInspector))
         {
             Log.Error($"Component inspector of type {componentType.Name} is already added.");
             return;
@@ -48,7 +47,6 @@ public partial class InspectorSystem : ScriptableSystem
         [
             typeof(Transform),
             typeof(Name),
-            typeof(TagComponent),
         ];
         // DiscoverAndAddComponentInspectors();
         DiscoverAllComponents();
@@ -119,7 +117,7 @@ public partial class InspectorSystem : ScriptableSystem
                             break;
                         }
                         _genericCommandBufferAddMethod.MakeGenericMethod(selectedComponentType).Invoke(CommandBuffer,
-                            [_entity.Entity, ComponentFactoryManager.Instance.GetDefaultComponent(selectedComponentType)]);
+                            [_entity.Entity, Activator.CreateInstance(selectedComponentType)!]);
                         
                         _isComponentDropdownOpen = false;
                     }

@@ -41,7 +41,7 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
     #region TEST
     public TextureAsset BirbTexture() =>
         new(
-            @"..\..\..\Resources\birb.jpg",
+            @"Resources\birb.jpg",
             "birb"
         );
     #endregion

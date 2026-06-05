@@ -23,15 +23,14 @@ public partial class PhysicsSystem : ScriptableSystem
 
     public override void Update(in double dt)
     {
-        CommandBuffer = new();
         InitializePhysicsQuery(World);
-        PhysicsInterpolationQuery(World);
         CommandBuffer.Playback(World);
     }
 
+    // PhysicsInterpolation removed with PhysicsEngine dead code
+
     public override void Tick(double dt)
     {
-        CommandBuffer = new();
         InitializePhysicsQuery(World);
         InitializeAABBQuery(World);
         InitializeRigidbodyAABBQuery(World);
@@ -110,16 +109,6 @@ public partial class PhysicsSystem : ScriptableSystem
         position.Value = rb.CurrentPosition.ToVector3(position.Value.Z);
         position.IsDirty = true;
     }
-    [Query]
-    [All<RigidBody2D, Position, Transform>]
-    private void PhysicsInterpolation(Entity entity, ref RigidBody2D rb, ref Position pos, ref Transform transform)
-    {
-        if (rb.BodyType == EBodyType.Static) return;
-        if (!rb.IsInterpolating) return;
-        pos.Value = Vector3.Lerp(rb.PreviousPosition.ToVector3(), rb.CurrentPosition.ToVector3(), PhysicsEngine.InterpolatedTime);
-        pos.IsDirty = true;
-    }
-
     [Query]
     [All<BoxCollider2D, RigidBody2D, Position>]
     private void CheckCollisions(Entity entity, ref BoxCollider2D box1, ref RigidBody2D rb1, ref Position position)

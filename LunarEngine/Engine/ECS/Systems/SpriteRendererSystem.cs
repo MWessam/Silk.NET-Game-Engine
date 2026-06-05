@@ -33,14 +33,12 @@ public partial class SpriteRendererSystem : ScriptableSystem
     }
     public override void Update(in double data)
     {
-        CommandBuffer = new CommandBuffer();
         InitSpritesQuery(World);
         AdjustScaleQuery(World);
         CommandBuffer.Playback(World);
     }
     public void Render(in double data)
     {
-        CommandBuffer = new CommandBuffer();
         RenderQuery(World, in data);
         CommandBuffer.Playback(World);
     }
@@ -66,7 +64,6 @@ public partial class SpriteRendererSystem : ScriptableSystem
     [All<SpriteRenderer, Scale>]
     public void AdjustScale(Entity entity, ref SpriteRenderer spriteRenderer, ref Scale scale)
     {
-        spriteRenderer.Sprite.Shader.SetUniform("rng", rng.NextSingle());
         float worldWidth = ((float)spriteRenderer.Sprite.Texture.Width / spriteRenderer.Sprite.PPU);
         float worldHeight = ((float)spriteRenderer.Sprite.Texture.Height / spriteRenderer.Sprite.PPU);
         scale.BaseValue = new Vector3(worldWidth, worldHeight, 0.0f);

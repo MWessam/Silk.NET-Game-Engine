@@ -24,9 +24,7 @@ public class ECSScene
     private readonly SpriteRendererSystem _spriteRendererSystem;
     private readonly CameraSystem _cameraSystem;
     private readonly InitializationSystem _initializationSystem;
-    private readonly ShaderSystem _shaderSystem;
     private readonly PhysicsSystem _physicsSystem;
-    private readonly InputSystem _inputSystem;
     private readonly Renderer _renderer;
     private readonly AssetManager _assetManager;
     #endregion
@@ -40,21 +38,17 @@ public class ECSScene
         _spriteRendererSystem = new SpriteRendererSystem(_renderer.Api, World, _assetManager, _renderer);
         _cameraSystem = new CameraSystem(World);
         _initializationSystem = new InitializationSystem(World);
-        _shaderSystem = new ShaderSystem(World);
         _physicsSystem = new PhysicsSystem(World);
-        _inputSystem = new InputSystem(World);
     }
     public bool IsActive = true;
 
     public int SceneId { get; set; }
     public void Awake()
     {
-        _shaderSystem.Awake();
         _transformSystem.Awake();
         _spriteRendererSystem.Awake();
         _cameraSystem.Awake();
         _physicsSystem.Awake();
-        _inputSystem.Awake();
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {
             system.Awake();
@@ -67,7 +61,6 @@ public class ECSScene
         _spriteRendererSystem.Start();
         _cameraSystem.Start();
         _physicsSystem.Start();
-        _inputSystem.Start();
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {
             system.Start();
@@ -81,8 +74,6 @@ public class ECSScene
         _spriteRendererSystem.Update(dt);
         _transformSystem.Update(dt);
         _cameraSystem.Update(dt);
-        _shaderSystem.Update(dt);
-        _inputSystem.Update(dt);
         foreach (var system in CollectionsMarshal.AsSpan(_systems))
         {
             system.Update(dt);

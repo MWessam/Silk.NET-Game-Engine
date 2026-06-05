@@ -18,7 +18,6 @@ public partial class GizmosSystem : ScriptableSystem
     }
     public override void Update(in double data)
     {
-        CommandBuffer = new CommandBuffer();
         RenderOutlineQuery(World);
         CommandBuffer.Playback(World);
     }

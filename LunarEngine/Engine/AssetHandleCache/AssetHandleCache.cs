@@ -17,7 +17,16 @@ public class AssetHandleCache
 
     public void ClearCache()
     {
-
+        foreach (var handle in _textureHandles.Values)
+        {
+            handle.Dispose();
+        }
+        foreach (var handle in _shaderHandles.Values)
+        {
+            handle.Dispose();
+        }
+        _textureHandles.Clear();
+        _shaderHandles.Clear();
     }
     public TextureHandle GetTextureHandle(TextureAsset asset)
     {

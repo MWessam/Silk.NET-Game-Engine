@@ -9,9 +9,12 @@ public unsafe struct FrameBuffer : IDisposable
 {
     private GL _api;
 
-    public Vector2D<int> _size;
+    private Vector2D<int> _size;
     private uint _handle;
-    public uint _colorTexture;
+    private uint _colorTexture;
+
+    public uint ColorTexture => _colorTexture;
+    public Vector2D<int> Size => _size;
     private uint _depthTexture;
     private bool _defaultRenderTarget;
 

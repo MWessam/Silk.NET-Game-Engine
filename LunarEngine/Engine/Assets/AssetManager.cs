@@ -30,6 +30,6 @@ public class AssetManager : IDisposable
 
     public void Dispose()
     {
-        // TODO release managed resources here
+        _handleCache?.ClearCache();
     }
 }

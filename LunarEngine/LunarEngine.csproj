@@ -25,4 +25,10 @@
       <PackageReference Include="StbImageSharp" Version="2.27.14" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="Resources\**\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>

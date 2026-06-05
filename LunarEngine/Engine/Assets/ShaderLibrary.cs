@@ -41,8 +41,8 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
     #region TEST
 
     public ShaderAsset BasicShader() => new(
-        @"..\..\..\Resources\shader.vert", 
-        @"..\..\..\Resources\shader.frag",
+        @"Resources\shader.vert", 
+        @"Resources\shader.frag",
         "default");
 
     #endregion

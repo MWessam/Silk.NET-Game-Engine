@@ -26,9 +26,9 @@ public class Application : IDisposable
     private bool _isRunning;
 
     // Services
-    private IWindow _window = null!;
-    private IInputContext _inputContext = null!;
-    private GL _gl;
+    protected IWindow Window = null!;
+    protected IInputContext InputContext = null!;
+    protected GL GL;
     private Renderer _renderer = null!;
     private Input _input = null!;
     private AssetManager _assetManager = null!;
@@ -39,7 +39,7 @@ public class Application : IDisposable
     public AssetManager AssetManager => _assetManager;
     public SceneManager SceneManager => _sceneManager;
 
-    public Vector2D<int> WindowSize => _window.Size;
+    public Vector2D<int> WindowSize => Window.Size;
 
     protected Application() { }
 
@@ -49,10 +49,10 @@ public class Application : IDisposable
     {
         _isRunning = true;
         CreateWindow();
-        _window.FramebufferResize += OnViewportResize;
-        _window.Update += OnUpdate;
-        _window.Closing += OnClose;
-        _window.Run();
+        Window.FramebufferResize += OnViewportResize;
+        Window.Update += OnUpdate;
+        Window.Closing += OnClose;
+        Window.Run();
     }
 
     public void PushLayer(BaseLayer layer)
@@ -99,23 +99,23 @@ public class Application : IDisposable
         var options = WindowOptions.Default;
         options.Title = title;
         options.Size = new Vector2D<int>(width, height);
-        _window = Window.Create(options);
-        _window.Load += OnWindowLoad;
+        Window = Silk.NET.Windowing.Window.Create(options);
+        Window.Load += OnWindowLoad;
     }
 
     private void OnWindowLoad()
     {
-        var gl = GL.GetApi(_window);
-        _inputContext = _window.CreateInput();
+        GL = Silk.NET.OpenGL.GL.GetApi(Window);
+        InputContext = Window.CreateInput();
 
         _input = new Input();
-        _input.InputContext = _inputContext;
-        foreach (var keyboard in _inputContext.Keyboards)
+        _input.InputContext = InputContext;
+        foreach (var keyboard in InputContext.Keyboards)
         {
             keyboard.KeyDown += _input.OnKeyDown;
             keyboard.KeyUp += _input.OnKeyUp;
         }
-        foreach (var mouse in _inputContext.Mice)
+        foreach (var mouse in InputContext.Mice)
         {
             mouse.MouseDown += _input.OnMouseDown;
             mouse.MouseUp += _input.OnMouseUp;
@@ -123,11 +123,11 @@ public class Application : IDisposable
             mouse.Scroll += _input.OnMouseScroll;
         }
 
-        _renderer = new Renderer(gl);
+        _renderer = new Renderer(GL);
         _renderer.Initialize();
 
         _assetManager = new AssetManager();
-        _assetManager.Initialize(gl);
+        _assetManager.Initialize(GL);
         Gizmos.Instance.AssetManager = _assetManager;
 
         _sceneManager = new SceneManager();
@@ -168,6 +168,6 @@ public class Application : IDisposable
 
     private void OnViewportResize(Vector2D<int> viewport)
     {
-        _layerStack.InvokeEvent();
+        // TODO: Notify layers of viewport resize
     }
 }

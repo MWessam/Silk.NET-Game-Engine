@@ -54,7 +54,10 @@ public class EditorLayer : BaseLayer
 
     public override void OnInitialize()
     {
+        _sceneManager.AddScene(new TestEcsScene(_renderer, _assetManager));
         _scene = _sceneManager.ActiveScenes;
+        _scene.Awake();
+        _scene.Start();
         _hierarchySystem = new HierarchySystem(_scene.World);
         _inspectorSystem = new InspectorSystem(_scene.World);
         _sceneSystem = new SceneSystem(_renderer);
@@ -84,6 +87,7 @@ public class EditorLayer : BaseLayer
     public override void OnUpdate(TimeStep timeStep)
     {
         _camera.Update();
+        _scene.Update(timeStep);
     }
 
     public override void OnImguiRender(TimeStep timeStep)
@@ -99,7 +103,6 @@ public partial class EditorCameraInputHandler
     private Input _inputManager;
     private bool _canPan;
     private bool _canRotate;
-    private bool _canZoom;
     private EditorCamera _camera;
     private (Position, Rotation, Transform) _focusedEntityComponents;
     public EditorCameraInputHandler(EditorCamera camera, Input inputManager)
@@ -152,7 +155,6 @@ public partial class EditorCameraInputHandler
     private void OnFKeyPressed(Key obj)
     {
         _camera.LookAt(_focusedEntityComponents.Item1.Value, _focusedEntityComponents.Item3, _focusedEntityComponents.Item2.Value);
-        _camera.LookAt(_focusedEntityComponents.Item1.Value, _focusedEntityComponents.Item3, _focusedEntityComponents.Item2.Value);
     }
 
     public void OnSceneLoseFocus()
@@ -164,8 +166,8 @@ public partial class EditorCameraInputHandler
         _inputManager.RemoveMouseUpListener(MouseButton.Right, OnRightMouseUp);
         _inputManager.RemoveMouseUpListener(MouseButton.Middle, OnMiddleMouseUp);
         _inputManager.RemoveKeyDownListener(Key.F, OnFKeyPressed);
-        _inputManager.OnMouseMoved += OnMouseMoved;
-        _inputManager.OnMouseScrolled += OnMouseScrolled;
+        _inputManager.OnMouseMoved -= OnMouseMoved;
+        _inputManager.OnMouseScrolled -= OnMouseScrolled;
     }
 
     private void OnMouseScrolled(float obj)

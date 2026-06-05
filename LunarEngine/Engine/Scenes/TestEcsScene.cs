@@ -1,5 +1,4 @@
 using System.Numerics;
-using ComponentFactories;
 using LunarEngine.Assets;
 using LunarEngine.Components;
 using LunarEngine.ECS.Components;
