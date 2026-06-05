@@ -18,6 +18,7 @@ Top-level dirs under `LunarEngine/`:
 - `Editor/` — `Editor` (app entry), `EditorLayer`, `GizmosLayer`, editor systems, plus `Component Inspectors/`
 - `Engine/` — Assets, ECS, GameEngine, Gizmos, InputEngine, Physics, Renderer, Scenes, UI, AssetHandleCache, Debugging, Core
 - `Events/` — Global `EventBus<T>`, events
+- `Platform/` — `IWindow`, `IInputContext`, `SilkWindow`, `SilkInputContext`
 - `Utilities/` — `VectorExtensions`
 
 Empty placeholder dirs indicating planned but unimplemented features:
@@ -27,7 +28,7 @@ Empty placeholder dirs indicating planned but unimplemented features:
 ## Entry point
 `LunarEngine/Engine/GameEngine/Program.cs` → `new EngineHost().Run()` → `new Editor()` → `app.Run()`
 
-`Application.Run()` calls `CreateWindow()` which creates a Silk.NET `IWindow` and subscribes to its events. **All service init happens in `OnWindowLoad`**: acquires GL context, creates `Input`, `Renderer`, `AssetManager`, `SceneManager`, then calls virtual `Initialize()`. `Editor.Initialize()` pushes `ImGuiLayer` as overlay, then `EditorLayer` and `GizmosLayer` as layers. Layers get `OnInitialize()` called after that.
+`Application` constructor creates a `SilkWindow` and registers `IWindow` in `ServiceContainer`. `Application.Run()` wires to the `IWindow` events and calls `Run()`. **All service init happens in `OnWindowLoad`**: acquires GL context via `SilkWindow.NativeWindow`, creates `SilkInputContext`, then `Input`, `Renderer`, `AssetManager`, `SceneManager`, then calls virtual `Initialize()`. `Editor.Initialize()` pushes `ImGuiLayer` as overlay, then `EditorLayer` and `GizmosLayer` as layers. Layers get `OnInitialize()` called after that.
 
 ## Architecture & key types
 - **Layer stack**: `Application` owns a `LayerStack`. Layers iterate in order for `OnUpdate` then `OnImguiRender`. `ImGuiLayer` wraps layer rendering in `Begin`/`End`.

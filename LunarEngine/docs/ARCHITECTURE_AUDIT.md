@@ -24,13 +24,13 @@
 
 | Target | Current |
 |--------|---------|
-| `IWindow`, `IInputContext` in `Platform/` | No `Platform/` directory |
-| `SilkWindow` / `SilkInputContext` wrappers | `Application` directly calls `Window.Create()` and `_window.CreateInput()` |
-| `Application` receives `IWindow` via DI | `Application` creates window internally |
+| `IWindow`, `IInputContext` in `Platform/` | `Platform/` created with `IWindow`, `IInputContext`, `SilkWindow`, `SilkInputContext` |
+| `SilkWindow` / `SilkInputContext` wrappers | Wrappers created; `SilkInputContext` created in `OnWindowLoad` because `CreateInput()` requires initialized window |
+| `Application` receives `IWindow` via DI | `Application` constructor creates `SilkWindow`, registers `IWindow` in `ServiceContainer` |
 
-**Files**: `Core/Application.cs:97–124`.
+**Files**: `Platform/IWindow.cs`, `Platform/IInputContext.cs`, `Platform/SilkWindow.cs`, `Platform/SilkInputContext.cs`, `Core/Application.cs`.
 
-**Conflict**: High.
+**Conflict**: Resolved for Phase 3. `ImGuiController` still uses raw Silk.NET `IView`/`IInputContext` (will be addressed in Phase 4 with `IRenderDevice`).
 
 ---
 
@@ -262,6 +262,23 @@ Core module extraction completed. Build + run verified.
 5. **Made `EventBus<T>` instance-based** — Converted from `static class` to `sealed class` with instance-level `Subscribe`/`Unsubscribe`/`Publish`/`Clear` methods. (Note: no current code consumes this yet; Arch.EventBus is still used by editor systems and will be replaced in Phase 10.)
 6. **Moved `Logger` to `Core/`** — `Engine/Debugging/Logger.cs` moved to `Core/Logger.cs` under `LunarEngine.Core` namespace. `Logger.Initialize()` is now called in `Application.OnWindowLoad()`. `DebugUtils` remains in `Engine/Debugging/` and continues using `Serilog.Log` directly.
 7. **Temporary SDK downgrade** — `global.json` and `LunarEngine.csproj` rolled from `10.0.0`/`net10.0` to `9.0.0`/`net9.0` because the .NET 10 prerelease SDK is not installed in the current environment. `AGENTS.md` updated to reflect this.
+
+---
+
+## Phase 3 Completion Notes (2026-06-05)
+
+Platform abstraction completed. Build + run verified.
+
+**Changes made**:
+1. **Created `Platform/` directory** with `IWindow`, `IInputContext`, `SilkWindow`, and `SilkInputContext`.
+2. **`IWindow` abstraction** — `Size`, `FramebufferSize`, `Title`, `OnLoad`, `OnUpdate`, `OnResize`, `OnClosing`, `Run()`, `Close()`.
+3. **`IInputContext` abstraction** — `Keyboards` and `Mice` (still returning Silk.NET `IKeyboard`/`IMouse` for now, to be abstracted further in Phase 6).
+4. **`SilkWindow`** — Wraps `Silk.NET.Windowing.IWindow`, wires events through to `IWindow` events. Exposes `NativeWindow` internally for consumers still needing the raw Silk.NET window (e.g. `ImGuiController` until Phase 4).
+5. **`SilkInputContext`** — Wraps `Silk.NET.Input.IInputContext`. Created in `OnWindowLoad()` because `CreateInput()` requires the window to be initialized. Exposes `NativeContext` internally for `ImGuiController`.
+6. **Refactored `Application`** — Constructor creates `SilkWindow` and registers `IWindow` in `ServiceContainer`. Removed direct `Silk.NET.Windowing` dependency. `OnWindowLoad()` creates `SilkInputContext`, registers `IInputContext`, and gets `GL` via `SilkWindow.NativeWindow`.
+7. **Updated `ImGuiLayer`** — Now accepts `LunarEngine.Platform.IWindow` and `IInputContext`. Casts to `SilkWindow`/`SilkInputContext` in `OnInitialize()` to pass underlying types to `ImGuiController`.
+8. **Updated `Input`** — `InputContext` property now uses `LunarEngine.Platform.IInputContext`.
+9. **Removed `IsRunning` from `IWindow`** — `Silk.NET.Windowing.IWindow` does not expose this property; it was unused in the codebase. Will revisit if needed in later phases.
 
 ---
 

@@ -4,12 +4,11 @@ using LunarEngine.Engine.Graphics;
 using LunarEngine.Events;
 using LunarEngine.InputEngine;
 using LunarEngine.Physics;
+using LunarEngine.Platform;
 using LunarEngine.Scenes;
 using LunarEngine.UI;
-using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
-using Silk.NET.Windowing;
 
 namespace LunarEngine.GameEngine;
 
@@ -47,6 +46,11 @@ public class Application : IDisposable
     protected Application()
     {
         Services = new ServiceContainer();
+
+        var silkWindow = new SilkWindow("Lunar Editor", 1280, 720);
+        Window = silkWindow;
+
+        Services.Register<IWindow>(Window);
     }
 
     public virtual void Initialize() { }
@@ -54,10 +58,10 @@ public class Application : IDisposable
     public void Run()
     {
         _isRunning = true;
-        CreateWindow();
-        Window.FramebufferResize += OnViewportResize;
-        Window.Update += OnUpdate;
-        Window.Closing += OnClose;
+        Window.OnLoad += OnWindowLoad;
+        Window.OnResize += OnViewportResize;
+        Window.OnUpdate += OnUpdate;
+        Window.OnClosing += OnClose;
         Window.Run();
     }
 
@@ -100,21 +104,15 @@ public class Application : IDisposable
 
     public void Dispose() { }
 
-    private void CreateWindow(string title = "Lunar Editor", int width = 1280, int height = 720)
-    {
-        var options = WindowOptions.Default;
-        options.Title = title;
-        options.Size = new Vector2D<int>(width, height);
-        Window = Silk.NET.Windowing.Window.Create(options);
-        Window.Load += OnWindowLoad;
-    }
-
     private void OnWindowLoad()
     {
         Logger.Initialize();
 
-        GL = Silk.NET.OpenGL.GL.GetApi(Window);
-        InputContext = Window.CreateInput();
+        var silkWindow = (SilkWindow)Window;
+        GL = Silk.NET.OpenGL.GL.GetApi(silkWindow.NativeWindow);
+
+        InputContext = new SilkInputContext(silkWindow);
+        Services.Register<IInputContext>(InputContext);
 
         _input = new Input();
         _input.InputContext = InputContext;
@@ -146,9 +144,6 @@ public class Application : IDisposable
 
         _sceneManager = new SceneManager();
         Services.Register(_sceneManager);
-
-        Services.Register(Window);
-        Services.Register(InputContext);
 
         Initialize();
 

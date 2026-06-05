@@ -36,13 +36,13 @@
 - [x] Make `EventBus<T>` instance-based instead of static
 - [x] Move `TimeStep` and `Logger` to `Core/`
 
-## Phase 3: Platform abstraction (pending)
-- [ ] Create `IWindow` and `IInputContext` interfaces in `Platform/`
-- [ ] Create `SilkWindow` and `SilkInputContext` wrappers
-- [ ] Refactor `Application` to depend on `IWindow`/`IInputContext`
-- [ ] Wire `Application` constructor to register platform services
+## Phase 3: Platform abstraction (completed)
+- [x] Create `IWindow` and `IInputContext` interfaces in `Platform/`
+- [x] Create `SilkWindow` and `SilkInputContext` wrappers
+- [x] Refactor `Application` to depend on `IWindow`/`IInputContext`
+- [x] Wire `Application` constructor to register platform services
 
-## Phase 4: Renderer abstraction
+## Phase 4: Renderer abstraction (pending)
 - [ ] Create `IRenderDevice`, `IRenderer`, `IBuffer`, `ITexture2D`, `IShader`, `IFrameBuffer`, `IVertexArray` interfaces
 - [ ] Create OpenGL implementations in `Renderer/OpenGL/`
 - [ ] Port `Sprite`, `Quad`, and `Renderer` internals behind interfaces

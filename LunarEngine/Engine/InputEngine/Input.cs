@@ -1,5 +1,6 @@
 using System.Numerics;
 using LunarEngine.GameEngine;
+using Platform = LunarEngine.Platform;
 using Serilog;
 using Silk.NET.Input;
 
@@ -22,7 +23,7 @@ public class Input : IDisposable
     public event Action<float> OnMouseScrolled;
     public event Action<Vector2> OnKeyboardAxisInput;
     // private Vector2 _keyboardAxis;
-    public IInputContext InputContext { get; set; }
+    public Platform.IInputContext InputContext { get; set; }
     public Vector2 PreviousMousePosition => _previousMousePosition;
 
 

@@ -2,9 +2,8 @@ using System.Numerics;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
 using LunarEngine.GameEngine;
-using Silk.NET.Input;
+using LunarEngine.Platform;
 using Silk.NET.OpenGL;
-using Silk.NET.Windowing;
 
 namespace LunarEngine.UI;
 
@@ -33,10 +32,10 @@ public class ImGuiLayer : BaseLayer
 
     public override void OnInitialize()
     {
-        var window = _window;
         var api = _api;
-        var inputContext = _inputContext;
-        ImGUIController = new ImGuiController(api, window, inputContext);
+        var silkWindow = (SilkWindow)_window;
+        var silkInput = (SilkInputContext)_inputContext;
+        ImGUIController = new ImGuiController(api, silkWindow.NativeWindow, silkInput.NativeContext);
         var io = ImGui.GetIO();
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
