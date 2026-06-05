@@ -19,7 +19,6 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
                 return asset;
             }
             asset = BasicShader();
-            AddAsset("default", asset);
             return asset;
         }
     }
@@ -40,8 +39,8 @@ public class ShaderLibrary : BaseAssetLibrary<ShaderAsset>
     #region TEST
 
     public ShaderAsset BasicShader() => new(
-        @"Resources\shader.vert", 
-        @"Resources\shader.frag",
+        AssetProvider!.ResolvePath(new AssetKey("shader", "shader.vert")),
+        AssetProvider!.ResolvePath(new AssetKey("shader", "shader.frag")),
         "default");
 
     #endregion

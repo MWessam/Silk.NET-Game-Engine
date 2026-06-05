@@ -13,6 +13,7 @@ public abstract class BaseAssetLibrary<TAsset> where TAsset : IAsset
 {
     private Dictionary<string, TAsset> _assets = new();
     public abstract TAsset DefaultAsset { get; }
+    public IAssetProvider? AssetProvider { get; set; }
 
     protected BaseAssetLibrary() {}
 
@@ -83,6 +84,12 @@ public abstract class BaseAssetLibrary<TAsset> where TAsset : IAsset
         public Builder<TLibrary> WithAsset(string key, TAsset asset)
         {
             _assets.Add((key, asset));
+            return this;
+        }
+
+        public Builder<TLibrary> WithProvider(IAssetProvider provider)
+        {
+            _library.AssetProvider = provider;
             return this;
         }
 

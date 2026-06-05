@@ -332,6 +332,21 @@ Input state resource abstraction completed. Build + run verified.
 
 ---
 
+## Phase 7 Completion Notes (2026-06-05)
+
+Asset provider abstraction completed. Build + run verified.
+
+**Changes made**:
+1. **Created `IAssetProvider` and `AssetKey`** in `Assets/` under `LunarEngine.Assets` namespace. `AssetKey` is a `readonly struct` with `Category` and `Name`. `IAssetProvider` exposes `ResolvePath(AssetKey)`, `OpenStream(AssetKey)`, and `Exists(AssetKey)`.
+2. **Created `FileSystemAssetProvider`** — Resolves `AssetKey` to paths under a configurable root directory (`Resources/`). Uses `key.Name` as the filename directly (category is ignored for filesystem resolution, but can be used by other providers).
+3. **Added `IAssetProvider` support to `BaseAssetLibrary`** — Added `AssetProvider` property and `WithProvider(IAssetProvider)` builder method so libraries can resolve paths during default asset creation.
+4. **Updated `ShaderLibrary`** — `BasicShader()` now uses `AssetProvider.ResolvePath(new AssetKey("shader", "shader.vert"))` and `AssetProvider.ResolvePath(new AssetKey("shader", "shader.frag"))` instead of hardcoded `Resources\shader.vert`/`Resources\shader.frag`. Fixed `DefaultAsset` getter to not self-add the asset (preventing duplicate-add errors when `Builder.Build()` also adds it).
+5. **Updated `TextureLibrary`** — `BirbTexture()` now uses `AssetProvider.ResolvePath(new AssetKey("texture", "birb.jpg"))` instead of hardcoded `Resources\birb.jpg`. Fixed `DefaultAsset` getter to not self-add the asset.
+6. **Updated `AssetManager`** — Constructor now takes `(IAssetProvider provider, IRenderDevice device)` and passes the provider to the library builders. `Initialize()` method removed. `Dispose()` calls `_handleCache?.ClearCache()` which properly disposes all GPU handles (already fixed in Phase 1, verified working).
+7. **Updated `Application`** — Creates `FileSystemAssetProvider("Resources")`, registers it in `ServiceContainer`, and passes it to `AssetManager` constructor.
+
+---
+
 ## Summary
 
 The current codebase is a functional prototype that directly uses Silk.NET, Arch ECS, and raw OpenGL with minimal abstraction. The target architecture defines a fully modular, dependency-injected, interface-driven engine. **Conflicts are pervasive across every module**: Core, Platform, ECS, Renderer, Assets, Input, Scenes, Physics, and Editor all deviate substantially from the target design. The 12-phase implementation plan in `ARCHITECTURE.md` is well-justified given the breadth of changes required.

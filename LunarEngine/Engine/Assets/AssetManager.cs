@@ -1,22 +1,23 @@
 using LunarEngine.Engine.AssetHandleCache;
 using LunarEngine.Engine.Graphics;
-using LunarEngine.GameEngine;
-using LunarEngine.GameObjects;
 
 namespace LunarEngine.Assets;
+
 public class AssetManager : IDisposable
 {
     public ShaderLibrary ShaderLibrary;
     public TextureLibrary TextureLibrary;
     private AssetHandleCache? _handleCache;
 
-    public void Initialize(IRenderDevice device)
+    public AssetManager(IAssetProvider provider, IRenderDevice device)
     {
         ShaderLibrary = ShaderLibrary
             .CreateLibraryBuilder<ShaderLibrary>()
+            .WithProvider(provider)
             .Build();
         TextureLibrary = TextureLibrary
             .CreateLibraryBuilder<TextureLibrary>()
+            .WithProvider(provider)
             .Build();
         _handleCache = new AssetHandleCache(device);
     }
@@ -30,5 +31,6 @@ public class AssetManager : IDisposable
     public void Dispose()
     {
         _handleCache?.ClearCache();
+        _handleCache = null;
     }
 }

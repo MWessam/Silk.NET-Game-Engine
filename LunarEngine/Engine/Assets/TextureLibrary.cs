@@ -11,7 +11,7 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
     {
         
     }
-    public override TextureAsset DefaultAsset         
+    public override TextureAsset DefaultAsset
     {
         get
         {
@@ -19,8 +19,7 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
             {
                 return asset;
             }
-            asset = BirbTexture(); 
-            AddAsset("birb", asset);
+            asset = BirbTexture();
             return asset;
         }
     }
@@ -40,7 +39,7 @@ public class TextureLibrary : BaseAssetLibrary<TextureAsset>
     #region TEST
     public TextureAsset BirbTexture() =>
         new(
-            @"Resources\birb.jpg",
+            AssetProvider!.ResolvePath(new AssetKey("texture", "birb.jpg")),
             "birb"
         );
     #endregion

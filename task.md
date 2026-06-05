@@ -64,12 +64,18 @@
 - [x] Update systems to read `InputState` from `ServiceContainer`
 - [x] Remove hardcoded WASD from input class
 
-## Phase 7: Asset provider (pending)
-- [ ] Create `IAssetProvider` and `AssetKey` in `Assets/`
-- [ ] Create `FileSystemAssetProvider`
-- [ ] Remove hardcoded paths from `ShaderLibrary` and `TextureLibrary`
-- [ ] Make `AssetManager` use `IRenderDevice`
-- [ ] Implement `AssetManager.Dispose()` properly
+## Phase 7: Asset provider (completed)
+- [x] Create `IAssetProvider` and `AssetKey` in `Assets/`
+- [x] Create `FileSystemAssetProvider`
+- [x] Remove hardcoded paths from `ShaderLibrary` and `TextureLibrary`
+- [x] Make `AssetManager` use `IAssetProvider` and `IRenderDevice`
+- [x] Implement `AssetManager.Dispose()` properly
+
+## Phase 8: Scene manager (pending)
+- [ ] Convert `SceneManager` to use `List<IScene>`
+- [ ] Rename `ActiveScenes` to `ActiveScene`
+- [ ] Implement proper `RemoveScene` with cleanup
+- [ ] Create `IScene` interface and refactor `ECSScene`
 
 ## Phase 8: Scene manager
 - [ ] Convert `SceneManager` to use `List<IScene>`

@@ -128,8 +128,10 @@ public class Application : IDisposable
         _renderDevice = new GLRenderDevice(GL);
         Services.Register<IRenderDevice>(_renderDevice);
 
-        _assetManager = new AssetManager();
-        _assetManager.Initialize(_renderDevice);
+        var assetProvider = new FileSystemAssetProvider("Resources");
+        Services.Register<IAssetProvider>(assetProvider);
+
+        _assetManager = new AssetManager(assetProvider, _renderDevice);
         Services.Register(_assetManager);
 
         _gizmos = new Gizmos(_renderDevice, _assetManager);
