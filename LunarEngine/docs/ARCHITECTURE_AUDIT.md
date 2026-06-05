@@ -347,6 +347,41 @@ Asset provider abstraction completed. Build + run verified.
 
 ---
 
+## Phase 9 Completion Notes (2026-06-05)
+
+Physics consolidation completed. Build + run verified.
+
+**Changes made**:
+1. **Created `PhysicsWorld`** in `Engine/Physics/PhysicsWorld.cs` — non-static instance class owning `FixedTimeStep`, `Gravity`, and fixed-step time accumulation via `Step(World, deltaTime)`.
+2. **Moved all physics simulation logic** from `PhysicsSystem` into `PhysicsWorld`: rigidbody integration (velocity Verlet), AABB position updates, collision detection, and collision resolution.
+3. **Added spatial hash broadphase** — `PhysicsWorld` builds a uniform grid (`Dictionary<(int, int), List<Entity>>`) each fixed step. Dynamic colliders only check against entities in overlapping cells, replacing the previous O(n²) all-pairs check.
+4. **Refactored `PhysicsSystem`** — changed `Stage` from `SystemStage.Update` to `SystemStage.FixedUpdate`. `Tick()` now delegates to `PhysicsWorld.Step()` after running initialization queries. Removed redundant `Update()` override.
+5. **Fixed editor fixed-update invocation** — `EditorLayer.OnUpdate` now calls `_scene.Tick(timeStep)` so FixedUpdate systems actually execute. Previously `PhysicsSystem.Tick()` was dead code because the editor never called `Tick()` and `PhysicsSystem` was registered in the wrong stage.
+6. **Removed `PhysicsSystem.GRAVITY` static field** — gravity is now configurable per `PhysicsWorld` instance.
+
+**Bugs fixed as part of this phase**:
+- **Physics simulation was non-functional**: `PhysicsSystem.Stage` was `SystemStage.Update`, but `ECSScene.Update()` only called `RunStage(SystemStage.Update)`, and `SystemScheduler.RunFixedUpdate()` filters by `SystemStage.FixedUpdate`. Thus `PhysicsSystem.Tick()` (containing all physics logic) was never executed. Only initialization queries ran.
+
+---
+
+## Phase 9 Pre-phase Audit (2026-06-05)
+
+**New drift discovered**:
+1. **`PhysicsSystem.Stage` is incorrectly set to `SystemStage.Update`** instead of `SystemStage.FixedUpdate`. Since `ECSScene.Tick()` calls `SystemScheduler.RunFixedUpdate()`, and `RunFixedUpdate` filters by `SystemStage.FixedUpdate`, the `PhysicsSystem.Tick()` method (which contains all physics simulation logic: integration, AABB update, collision detection) is **never executed**. Only `Update()` (initialization) runs. This means the physics simulation has been non-functional.
+2. **`EditorLayer.OnUpdate` does not call `_scene.Tick()`** (or `_scene.FixedUpdate()`), so even if the stage were correct, FixedUpdate systems would not be invoked from the editor loop.
+3. **No `PhysicsWorld` instance exists** — all physics logic is inline in `PhysicsSystem`.
+
+**Plan for Phase 9**:
+- Create `PhysicsWorld` in `Engine/Physics/PhysicsWorld.cs`
+- Move integration, AABB update, collision detection, and resolution into `PhysicsWorld`
+- Add spatial hash broadphase to replace O(n²) collision
+- Move fixed-step time accumulation into `PhysicsWorld.Step()`
+- Change `PhysicsSystem.Stage` to `FixedUpdate`
+- Have `PhysicsSystem.Tick()` delegate to `PhysicsWorld.Step()`
+- Update `EditorLayer.OnUpdate` to call `_scene.Tick(timeStep)` so FixedUpdate runs
+
+---
+
 ## Summary
 
 The current codebase is a functional prototype that directly uses Silk.NET, Arch ECS, and raw OpenGL with minimal abstraction. The target architecture defines a fully modular, dependency-injected, interface-driven engine. **Conflicts are pervasive across every module**: Core, Platform, ECS, Renderer, Assets, Input, Scenes, Physics, and Editor all deviate substantially from the target design. The 12-phase implementation plan in `ARCHITECTURE.md` is well-justified given the breadth of changes required.

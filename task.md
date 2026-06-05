@@ -77,11 +77,11 @@
 - [x] Implement proper `RemoveScene` with cleanup
 - [x] Create `IScene` interface and refactor `ECSScene`
 
-## Phase 9: Physics consolidation
-- [ ] Create `PhysicsWorld` class (no longer static)
-- [ ] Move fixed-step accumulation into `SystemScheduler.FixedUpdate`
-- [ ] Add simple spatial hash broadphase
-- [ ] Remove `PhysicsLayer` and `PhysicsEngine` static class
+## Phase 9: Physics consolidation (completed)
+- [x] Create `PhysicsWorld` class (no longer static)
+- [x] Move fixed-step accumulation into `SystemScheduler.FixedUpdate` stage via `PhysicsWorld`
+- [x] Add simple spatial hash broadphase
+- [x] Remove `PhysicsLayer` and `PhysicsEngine` static class (already done in Phase 1)
 
 ## Phase 10: Editor/runtime separation
 - [ ] Editor creates its own `IWorld`

@@ -12,37 +12,32 @@ namespace LunarEngine.Physics;
 
 public partial class PhysicsSystem : ScriptableSystem
 {
-    public override SystemStage Stage => SystemStage.Update;
+    public override SystemStage Stage => SystemStage.FixedUpdate;
     public override int Order => 0;
 
-    public static readonly Vector2 GRAVITY = new Vector2(0.0f, -9.89665f);
+    private readonly PhysicsWorld _physicsWorld;
+
     public PhysicsSystem(World world) : base(world)
     {
+        _physicsWorld = new PhysicsWorld();
     }
 
     public override void Awake()
     {
         InitializePhysicsQuery(World);
+        InitializeAABBQuery(World);
+        InitializeRigidbodyAABBQuery(World);
     }
-
-    public override void Update(in double dt)
-    {
-        InitializePhysicsQuery(World);
-        CommandBuffer.Playback(World);
-    }
-
-    // PhysicsInterpolation removed with PhysicsEngine dead code
 
     public override void Tick(double dt)
     {
         InitializePhysicsQuery(World);
         InitializeAABBQuery(World);
         InitializeRigidbodyAABBQuery(World);
-        PhysicsTickQuery(World, in dt);
-        UpdateAABBPositionQuery(World);
-        CheckCollisionsQuery(World);
+        _physicsWorld.Step(World, dt);
         CommandBuffer.Playback(World);
     }
+
     [Query]
     [All<RigidBody2D, Position>]
     public void InitializePhysics(ref RigidBody2D rb, ref Position position)
@@ -53,6 +48,7 @@ public partial class PhysicsSystem : ScriptableSystem
         rb.CurrentPosition = position.Value.ToVector2();
         rb.IsInitialized = true;
     }
+
     [Query]
     [All<BoxCollider2D, IsInstantiating>]
     public void InitializeAABB(Entity entity, ref BoxCollider2D box)
@@ -64,6 +60,7 @@ public partial class PhysicsSystem : ScriptableSystem
             box.Height = scale.ActualValue.Y;
         }
     }
+
     [Query]
     [All<BoxCollider2D, RigidBody2D, IsInstantiating>]
     public void InitializeRigidbodyAABB(Entity entity, ref BoxCollider2D box, ref RigidBody2D rb)
@@ -75,124 +72,5 @@ public partial class PhysicsSystem : ScriptableSystem
             box.Height = scale.ActualValue.Y;
         }
         box.Position = rb.CurrentPosition;
-    }
-    [Query]
-    [All<BoxCollider2D, Position>]
-    public void UpdateAABBPosition(Entity entity, ref BoxCollider2D box, ref Position position)
-    {
-        if (World.TryGet(entity, out Scale scale))
-        {
-            box.Width = scale.ActualValue.X;
-            box.Height = scale.ActualValue.Y;
-        }
-        box.Position = position.Value.ToVector2();
-    }
-    [Query]
-    [All<RigidBody2D, Position>]
-    private void PhysicsTick([Data] in double deltaT, Entity entity, ref RigidBody2D rb, ref Position position)
-    {
-        if (rb.BodyType == EBodyType.Static) return;
-        rb.CurrentPosition = position.Value.ToVector2();
-        // // Update angular motion
-        // float angularAcceleration = rb.NetTorque / rb.MomentOfInertia;
-        // rb.AngularVelocityRadSec += angularAcceleration * (float)deltaT;
-        // rb.CurrentRotation += rb.AngularVelocityRadSec * (float)deltaT;
-        //
-        // Vector2 forwardDirection = new Vector2(MathF.Cos(rb.CurrentRotation), MathF.Sin(rb.CurrentRotation));
-        // rb.ExternalForce += forwardDirection;
-        
-        float deltaTFloat = (float)deltaT;
-        rb.PreviousPosition = rb.CurrentPosition;
-        rb.TransientForce += GRAVITY * rb.Mass * rb.GravityScale;
-        var netForce = rb.TransientForce + rb.ExternalForce;
-        rb.Acceleration = netForce / rb.Mass;
-        rb.Velocity += rb.Acceleration * (deltaTFloat / 2);
-        rb.CurrentPosition += rb.Velocity * deltaTFloat;
-        rb.Velocity += rb.Acceleration * (deltaTFloat / 2);
-        rb.TransientForce = Vector2.Zero;
-        position.Value = rb.CurrentPosition.ToVector3(position.Value.Z);
-        position.IsDirty = true;
-    }
-    [Query]
-    [All<BoxCollider2D, RigidBody2D, Position>]
-    private void CheckCollisions(Entity entity, ref BoxCollider2D box1, ref RigidBody2D rb1, ref Position position)
-    {
-        QueryDescription staticCollidersQuery = new QueryDescription().WithAll<BoxCollider2D, Position>();
-        BoxCollider2D box1Copy = box1;
-        RigidBody2D rb1Copy = rb1;
-        bool hasCollided = false;
-        
-        World.Query(in staticCollidersQuery, (Entity entity2, ref BoxCollider2D box2) =>
-        {
-            if (entity2 == entity)
-            {
-                return;
-            }
-            if (CheckAABBCollision(box1Copy, box2))
-            {
-                ResolveCollision(ref rb1Copy, ref box1Copy, ref box2);
-                hasCollided = true;
-            }
-        });
-        if (hasCollided)
-        {
-            rb1.CurrentPosition = box1Copy.Position;
-            rb1.PreviousPosition = box1Copy.Position;
-            position.Value = box1Copy.Position.ToVector3();
-            rb1.Velocity = rb1Copy.Velocity;
-        }
-    }
-    
-    private void ResolveCollision(ref RigidBody2D rb1Copy, ref BoxCollider2D box1, ref BoxCollider2D box2)
-    {
-        // Calculate the overlap in both axes
-        float overlapX = MathF.Min(box1.MaxX - box2.MinX, box2.MaxX - box1.MinX);
-        float overlapY = MathF.Min(box1.MaxY - box2.MinY, box2.MaxY - box1.MinY);
-
-        // Resolve the collision by adjusting positions
-        if (overlapX < overlapY)
-        {
-            // Push the boxes along the X axis
-            if (box1.MinX < box2.MinX)
-                box1.Position.X -= overlapX / 2;  // Move box1 to the left
-            else
-                box1.Position.X += overlapX / 2;  // Move box1 to the right
-
-            // // Move box2 in the opposite direction
-            // box2.Position.X -= overlapX / 2;
-        }
-        else
-        {
-            // Push the boxes along the Y axis
-            if (box1.MinY < box2.MinY)
-                box1.Position.Y -= overlapY / 2;  // Move box1 down
-            else
-                box1.Position.Y += overlapY / 2;  // Move box1 up
-
-            // // Move box2 in the opposite direction
-            // box2.Position.Y -= overlapY / 2;
-        }
-
-        // Optionally, you can adjust the velocities to reflect the impact (if using physics simulation)
-        // This part would depend on how you model object movement and restitution (elasticity, friction, etc.)
-        // For simplicity, here we don't adjust the velocities, but you could add bounce/friction:
-    
-        // Reflect velocities or adjust based on restitution factor (bounciness, friction, etc.)
-        // Example: apply simple elastic collision response (can be extended)
-        float restitution = 0.8f; // Example restitution (bounciness)
-        rb1Copy.Velocity = rb1Copy.Velocity * restitution;
-        // velocity2 = velocity2 * restitution;
-    }
-    
-    // Check if two AABBs collide
-    public bool CheckAABBCollision(BoxCollider2D box1, BoxCollider2D box2)
-    {
-        if (box1.MaxX < box2.MinX || box1.MinX > box2.MaxX)
-            return false;  // No collision: one box is completely to the left or right of the other.
-
-        if (box1.MaxY < box2.MinY || box1.MinY > box2.MaxY)
-            return false;  // No collision: one box is completely above or below the other.
-
-        return true;  // Collision detected
     }
 }

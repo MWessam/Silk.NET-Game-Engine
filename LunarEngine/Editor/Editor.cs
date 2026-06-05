@@ -96,6 +96,7 @@ public class EditorLayer : BaseLayer
         _camera.Update();
         _cameraInputHandler.Update(_inputManager.State);
         _scene.Update(timeStep);
+        _scene.Tick(timeStep);
     }
 
     public override void OnImguiRender(TimeStep timeStep)
