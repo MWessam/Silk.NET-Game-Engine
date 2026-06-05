@@ -98,17 +98,17 @@
 
 ---
 
-## 7. Input
+## 7. Input (Resolved in Phase 6)
 
 | Target | Current |
 |--------|---------|
-| `InputManager` + read-only `InputState` snapshot | `Input` class created directly in `Application.OnWindowLoad()` |
-| Configurable axis mappings | WASD hardcoded in `Input` constructor (`Engine/InputEngine/Input.cs:29–38`) |
-| Read from `ServiceContainer` | `EditorCameraInputHandler` receives concrete `Input` object |
+| `InputManager` + read-only `InputState` snapshot | `InputManager` created in `Application.OnWindowLoad()` |
+| Configurable axis mappings | WASD configured as "Movement" axis mapping in `Application` |
+| Read from `ServiceContainer` | `EditorCameraInputHandler` receives `InputManager` via DI |
 
-**Files**: `Engine/InputEngine/Input.cs`, `Core/Application.cs:111–124`, `Editor/Editor.cs`.
+**Files**: `Input/InputManager.cs`, `Input/InputState.cs`, `Core/Application.cs`, `Editor/Editor.cs`.
 
-**Conflict**: High.
+**Conflict**: Resolved.
 
 ---
 
@@ -313,6 +313,22 @@ Renderer abstraction completed. Build + run verified.
 - `ImGuiController` and `ImGuiTexture`/`ImGuiShader` in `Engine/UI/` — deeply tied to raw GL; will be abstracted when `IRenderDevice` is extended or replaced in Phase 6/9.
 - `Application.GL` field — still acquired for `GLRenderDevice` creation; only internal to `Application`.
 - OpenGL implementation details (`BufferObject`, `VertexArrayObject`, `ShaderHandle`, `TextureHandle`, `FrameBuffer`) still use `GL` internally, which is correct as they are OpenGL-specific implementations.
+
+---
+
+## Phase 6 Completion Notes (2026-06-05)
+
+Input state resource abstraction completed. Build + run verified.
+
+**Changes made**:
+1. **Created `Input/` directory** with `InputState.cs` and `InputManager.cs` under `LunarEngine.Input` namespace.
+2. **`InputState`** — `readonly struct` with `IsKeyDown`, `IsKeyPressed`, `IsKeyReleased`, `MousePosition`, `MouseDelta`, `ScrollDelta`, and `GetAxis(string name)`.
+3. **`AxisMapping`** — Configurable axis mapping class with `PositiveX`, `NegativeX`, `PositiveY`, `NegativeY` keys. `InputManager.AddAxis(name, mapping)` registers axes.
+4. **`InputManager`** — Receives `LunarEngine.Platform.IInputContext` in constructor, registers keyboard/mouse callbacks, exposes `State` snapshot, and events (`KeyDown`, `KeyUp`, `MouseDown`, `MouseUp`, `MouseMoved`, `MouseScrolled`). `Update()` is called once per frame in `Application.OnUpdate()` to refresh the snapshot. `SetCursorLock(bool)` replaces the old `LockAndHideCursor`.
+5. **Removed old `Input` class** — `Engine/InputEngine/Input.cs` deleted. `Engine/ECS/Components/Input.cs` (unused ECS component) also deleted.
+6. **Updated `Application`** — Creates `InputManager`, registers "Movement" axis with WASD mappings, registers it in `ServiceContainer`, and calls `Update()` each frame.
+7. **Updated `Editor` and `EditorCameraInputHandler`** — Now consumes `InputManager` instead of `Input`. `EditorCameraInputHandler` subscribes to `InputManager` events (`MouseDown`, `MouseUp`, `KeyDown`, `MouseMoved`, `MouseScrolled`). Keyboard axis movement is now read from `InputState.GetAxis("Movement")` in a new `Update(InputState)` method called from `EditorLayer.OnUpdate()`.
+8. **No hardcoded WASD** — WASD mappings moved to the composition root (`Application.OnWindowLoad`) as a configurable axis mapping rather than being baked into the input class constructor.
 
 ---
 

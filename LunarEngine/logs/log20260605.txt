@@ -8,3 +8,5 @@
 2026-06-05 16:07:53.421 +03:00 [ERR] Couldn't add TAsset of name birb. It already exists!
 2026-06-05 16:32:00.107 +03:00 [ERR] Couldn't add TAsset of name default. It already exists!
 2026-06-05 16:32:00.180 +03:00 [ERR] Couldn't add TAsset of name birb. It already exists!
+2026-06-05 16:42:30.859 +03:00 [ERR] Couldn't add TAsset of name default. It already exists!
+2026-06-05 16:42:30.934 +03:00 [ERR] Couldn't add TAsset of name birb. It already exists!

@@ -2,11 +2,12 @@ using LunarEngine.Assets;
 using LunarEngine.Core;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.Events;
-using LunarEngine.InputEngine;
+using LunarEngine.Input;
 using LunarEngine.Physics;
 using LunarEngine.Platform;
 using LunarEngine.Scenes;
 using LunarEngine.UI;
+using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
@@ -28,17 +29,17 @@ public class Application : IDisposable
     // Services
     protected ServiceContainer Services { get; }
     protected IWindow Window = null!;
-    protected IInputContext InputContext = null!;
+    protected LunarEngine.Platform.IInputContext InputContext = null!;
     protected GL GL;
     private Renderer _renderer = null!;
-    private Input _input = null!;
+    private InputManager _inputManager = null!;
     private AssetManager _assetManager = null!;
     private SceneManager _sceneManager = null!;
     private Gizmos _gizmos = null!;
     private GLRenderDevice _renderDevice = null!;
 
     public Renderer Renderer => _renderer;
-    public Input Input => _input;
+    public InputManager InputManager => _inputManager;
     public AssetManager AssetManager => _assetManager;
     public SceneManager SceneManager => _sceneManager;
 
@@ -113,22 +114,16 @@ public class Application : IDisposable
         GL = Silk.NET.OpenGL.GL.GetApi(silkWindow.NativeWindow);
 
         InputContext = new SilkInputContext(silkWindow);
-        Services.Register<IInputContext>(InputContext);
+        Services.Register<LunarEngine.Platform.IInputContext>(InputContext);
 
-        _input = new Input();
-        _input.InputContext = InputContext;
-        foreach (var keyboard in InputContext.Keyboards)
+        _inputManager = new InputManager(InputContext);
+        _inputManager.AddAxis("Movement", new AxisMapping
         {
-            keyboard.KeyDown += _input.OnKeyDown;
-            keyboard.KeyUp += _input.OnKeyUp;
-        }
-        foreach (var mouse in InputContext.Mice)
-        {
-            mouse.MouseDown += _input.OnMouseDown;
-            mouse.MouseUp += _input.OnMouseUp;
-            mouse.MouseMove += _input.OnMouseMove;
-            mouse.Scroll += _input.OnMouseScroll;
-        }
+            PositiveX = Key.D,
+            NegativeX = Key.A,
+            PositiveY = Key.W,
+            NegativeY = Key.S
+        });
 
         _renderDevice = new GLRenderDevice(GL);
         Services.Register<IRenderDevice>(_renderDevice);
@@ -144,7 +139,7 @@ public class Application : IDisposable
         _renderer.Initialize();
         Services.Register<IRenderer>(_renderer);
 
-        Services.Register(_input);
+        Services.Register(_inputManager);
 
         _sceneManager = new SceneManager();
         Services.Register(_sceneManager);
@@ -161,6 +156,7 @@ public class Application : IDisposable
     {
         ExecuteMainThreadQueue();
         Time.DeltaTime = new TimeStep(dt);
+        _inputManager.Update();
 
         foreach (var layer in _layerStack)
         {

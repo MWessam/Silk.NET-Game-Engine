@@ -7,7 +7,7 @@ using LunarEngine.Engine.Gizmos;
 using LunarEngine.Engine.Graphics;
 using LunarEngine.GameEngine;
 using LunarEngine.GameObjects;
-using LunarEngine.InputEngine;
+using LunarEngine.Input;
 using LunarEngine.Scenes;
 using LunarEngine.UI;
 using Silk.NET.Input;
@@ -27,7 +27,7 @@ public class Editor : Application
         PushOverlay(imguiLayer);
         RegisterImGuiLayer(imguiLayer);
 
-        PushLayer(new EditorLayer(SceneManager, Renderer, Input, AssetManager));
+        PushLayer(new EditorLayer(SceneManager, Renderer, InputManager, AssetManager));
         PushLayer(new GizmosLayer(SceneManager, Renderer));
     }
 }
@@ -43,16 +43,16 @@ public class EditorLayer : BaseLayer
     
     private readonly SceneManager _sceneManager;
     private readonly IRenderer _renderer;
-    private readonly Input _input;
+    private readonly InputManager _inputManager;
     private readonly AssetManager _assetManager;
 
-    public EditorLayer(SceneManager sceneManager, IRenderer renderer, Input input,
+    public EditorLayer(SceneManager sceneManager, IRenderer renderer, InputManager inputManager,
                        AssetManager assetManager)
         : base("Editor")
     {
         _sceneManager = sceneManager;
         _renderer = renderer;
-        _input = input;
+        _inputManager = inputManager;
         _assetManager = assetManager;
     }
 
@@ -69,7 +69,7 @@ public class EditorLayer : BaseLayer
         _inspectorSystem.Awake();
         _sceneSystem.Awake();
         
-        _cameraInputHandler = new(_camera, _input);
+        _cameraInputHandler = new(_camera, _inputManager);
         
         List<IComponentInspector> componentInspectors = 
             [
@@ -91,6 +91,7 @@ public class EditorLayer : BaseLayer
     public override void OnUpdate(TimeStep timeStep)
     {
         _camera.Update();
+        _cameraInputHandler.Update(_inputManager.State);
         _scene.Update(timeStep);
     }
 
@@ -104,12 +105,12 @@ public class EditorLayer : BaseLayer
 
 public partial class EditorCameraInputHandler
 {
-    private Input _inputManager;
+    private InputManager _inputManager;
     private bool _canPan;
     private bool _canRotate;
     private EditorCamera _camera;
     private (Position, Rotation, Transform) _focusedEntityComponents;
-    public EditorCameraInputHandler(EditorCamera camera, Input inputManager)
+    public EditorCameraInputHandler(EditorCamera camera, InputManager inputManager)
     {
         Hook();
         _camera = camera;
@@ -146,48 +147,62 @@ public partial class EditorCameraInputHandler
     }
     public void OnSceneFocused()
     {
-        _inputManager.AddMouseDownListener(MouseButton.Right, OnRightMouseDown);
-        _inputManager.AddMouseDownListener(MouseButton.Middle, OnMiddleMouseHeld);
-        _inputManager.AddMouseUpListener(MouseButton.Right, OnRightMouseUp);
-        _inputManager.AddMouseUpListener(MouseButton.Middle, OnMiddleMouseUp);
-        _inputManager.AddKeyDownListener(Key.F, OnFKeyPressed);
-        _inputManager.OnMouseMoved += OnMouseMoved;
-        _inputManager.OnMouseScrolled += OnMouseScrolled;
-        _inputManager.OnKeyboardAxisInput += OnKeyboardAxisMoved;
+        _inputManager.MouseDown += OnMouseDown;
+        _inputManager.MouseUp += OnMouseUp;
+        _inputManager.KeyDown += OnKeyDown;
+        _inputManager.MouseMoved += OnMouseMoved;
+        _inputManager.MouseScrolled += OnMouseScrolled;
     }
 
-    private void OnFKeyPressed(Key obj)
+    private void OnKeyDown(Key key)
     {
-        _camera.LookAt(_focusedEntityComponents.Item1.Value, _focusedEntityComponents.Item3, _focusedEntityComponents.Item2.Value);
+        if (key == Key.F)
+        {
+            _camera.LookAt(_focusedEntityComponents.Item1.Value, _focusedEntityComponents.Item3, _focusedEntityComponents.Item2.Value);
+        }
     }
 
     public void OnSceneLoseFocus()
     {
-        OnMiddleMouseUp(MouseButton.Middle);
-        OnRightMouseUp(MouseButton.Right);
-        _inputManager.RemoveMouseDownListener(MouseButton.Right, OnRightMouseDown);
-        _inputManager.RemoveMouseDownListener(MouseButton.Middle, OnMiddleMouseHeld);
-        _inputManager.RemoveMouseUpListener(MouseButton.Right, OnRightMouseUp);
-        _inputManager.RemoveMouseUpListener(MouseButton.Middle, OnMiddleMouseUp);
-        _inputManager.RemoveKeyDownListener(Key.F, OnFKeyPressed);
-        _inputManager.OnMouseMoved -= OnMouseMoved;
-        _inputManager.OnMouseScrolled -= OnMouseScrolled;
+        OnMouseUp(MouseButton.Middle);
+        OnMouseUp(MouseButton.Right);
+        _inputManager.MouseDown -= OnMouseDown;
+        _inputManager.MouseUp -= OnMouseUp;
+        _inputManager.KeyDown -= OnKeyDown;
+        _inputManager.MouseMoved -= OnMouseMoved;
+        _inputManager.MouseScrolled -= OnMouseScrolled;
     }
 
-    private void OnMouseScrolled(float obj)
+    private void OnMouseScrolled(float delta)
     {
         if (!_canRotate) return;
-        _camera.MouseZoom(obj);
+        _camera.MouseZoom(delta);
     }
 
-    private void OnMiddleMouseUp(MouseButton obj)
+    private void OnMouseDown(MouseButton button)
     {
-        _canPan = false;
+        if (button == MouseButton.Right)
+        {
+            _canRotate = true;
+            _inputManager.SetCursorLock(true);
+        }
+        else if (button == MouseButton.Middle)
+        {
+            _canPan = true;
+        }
     }
 
-    private void OnMiddleMouseHeld(MouseButton obj)
+    private void OnMouseUp(MouseButton button)
     {
-        _canPan = true;
+        if (button == MouseButton.Right)
+        {
+            _canRotate = false;
+            _inputManager.SetCursorLock(false);
+        }
+        else if (button == MouseButton.Middle)
+        {
+            _canPan = false;
+        }
     }
 
     private void OnMouseMoved(Vector2 delta)
@@ -203,23 +218,11 @@ public partial class EditorCameraInputHandler
         }
     }
 
-    private void OnRightMouseUp(MouseButton obj)
-    {
-        _canRotate = false;
-        _inputManager.LockAndHideCursor(false);
-    }
-
-    private void OnRightMouseDown(MouseButton obj)
-    {
-        _canRotate = true;
-        _inputManager.LockAndHideCursor(true);
-    }
-
-    private void OnKeyboardAxisMoved(Vector2 inputAxis)
+    public void Update(InputState state)
     {
         if (_canRotate)
         {
-            _camera.KeyboardMove(inputAxis);
+            _camera.KeyboardMove(state.GetAxis("Movement"));
         }
     }
 }

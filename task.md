@@ -57,16 +57,14 @@
 - [x] Move `ECSScene` to use `SystemScheduler`
 - [x] Fix `Parent` component to use `EntityReference`
 
-## Phase 6: Input state resource (in_progress)
+## Phase 6: Input state resource (completed)
+- [x] Create `InputState` struct and `InputManager` class in `Input/`
+- [x] Remove `Input` singleton class
+- [x] Make `InputManager` register callbacks on `IInputContext`
+- [x] Update systems to read `InputState` from `ServiceContainer`
+- [x] Remove hardcoded WASD from input class
 
-## Phase 6: Input state resource
-- [ ] Create `InputState` struct and `InputManager` class in `Input/`
-- [ ] Remove `Input` singleton class
-- [ ] Make `InputManager` register callbacks on `IInputContext`
-- [ ] Update systems to read `InputState` from `ServiceContainer`
-- [ ] Remove hardcoded WASD from input class
-
-## Phase 7: Asset provider
+## Phase 7: Asset provider (pending)
 - [ ] Create `IAssetProvider` and `AssetKey` in `Assets/`
 - [ ] Create `FileSystemAssetProvider`
 - [ ] Remove hardcoded paths from `ShaderLibrary` and `TextureLibrary`
