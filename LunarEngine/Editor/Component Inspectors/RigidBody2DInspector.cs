@@ -1,9 +1,9 @@
 using ImGuiNET;
-using LunarEngine.Engine.ECS.Components;
-using LunarEngine.Physics;
+using LunarEngine.ECS.Components;
+using LunarEngine.ECS.Components.Physics;
 using LunarEngine.UI;
 
-namespace LunarEngine.ECS.Systems;
+namespace LunarEngine.Editor.Systems;
 
 public class RigidBody2DInspector : IComponentInspector<RigidBody2D>
 {

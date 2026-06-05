@@ -90,10 +90,10 @@
 - [x] Remove Arch `[Event]` bus usage; replace with scoped `EventBus`
 - [x] Inspector events use typed event structs
 
-## Phase 11: Namespace consolidation
-- [ ] Rename all namespaces per the map
-- [ ] Update all `using` statements
-- [ ] Verify full build and runtime
+## Phase 11: Namespace consolidation (completed)
+- [x] Rename all namespaces per the map
+- [x] Update all `using` statements
+- [x] Verify full build and runtime
 
 ## Phase 12: Disposal and lifecycle
 - [ ] Implement `Dispose()` on all GPU resources

@@ -3,12 +3,10 @@ using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using LunarEngine.Components;
 using LunarEngine.ECS;
-using LunarEngine.GameObjects;
-using LunarEngine.Graphics;
+using LunarEngine.ECS.Components;
 
-namespace LunarEngine.GameEngine;
+namespace LunarEngine.ECS.Systems;
 
 public partial class TransformSystem : ScriptableSystem
 {

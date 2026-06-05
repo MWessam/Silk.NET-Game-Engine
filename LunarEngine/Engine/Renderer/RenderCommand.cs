@@ -1,10 +1,10 @@
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using LunarEngine.Engine.Core;
+using LunarEngine.Core;
 using LunarEngine.Utilities;
 
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer;
 
 /// <summary>
 /// Base class for all render commands.

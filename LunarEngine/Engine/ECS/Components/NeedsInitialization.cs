@@ -1,6 +1,4 @@
-using LunarEngine.Engine.ECS.Components;
-
-namespace LunarEngine.Components;
+namespace LunarEngine.ECS.Components;
 
 public struct IsInstantiating : IComponent
 {

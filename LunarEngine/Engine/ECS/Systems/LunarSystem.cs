@@ -4,7 +4,7 @@ using Arch.System;
 using LunarEngine.Core;
 using LunarEngine.ECS;
 
-namespace LunarEngine.GameObjects;
+namespace LunarEngine.ECS.Systems;
 
 public partial class ScriptableSystem : BaseSystem<World, double>, ISystem
 {

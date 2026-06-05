@@ -8,6 +8,8 @@ using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
 using Hexa.NET.ImPlot;
 
+namespace LunarEngine.UI;
+
 public unsafe class ImGuiController
 {
     public ImGuiContextPtr guiContext;

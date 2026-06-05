@@ -1,7 +1,7 @@
 using Silk.NET.OpenGL;
 using StbImageSharp;
 
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer.OpenGL;
 
 public struct TextureHandle : IDisposable, ITexture2D
 {

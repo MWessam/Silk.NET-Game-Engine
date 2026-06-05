@@ -1,7 +1,7 @@
 using LunarEngine.Assets;
-using LunarEngine.Engine.Graphics;
+using LunarEngine.Renderer;
 
-namespace LunarEngine.Engine.AssetHandleCache;
+namespace LunarEngine.Assets;
 
 public class AssetHandleCache
 {

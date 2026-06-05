@@ -1,6 +1,4 @@
-using LunarEngine.Engine.Graphics;
-using LunarEngine.GameObjects;
-using LunarEngine.Graphics;
+using LunarEngine.Renderer.OpenGL;
 using Serilog;
 
 namespace LunarEngine.Assets;

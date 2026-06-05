@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Drawing;
-using LunarEngine.GameEngine;
+using LunarEngine.Application;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer.OpenGL;
 public unsafe struct FrameBuffer : IDisposable, IFrameBuffer
 {
     private GL _api;

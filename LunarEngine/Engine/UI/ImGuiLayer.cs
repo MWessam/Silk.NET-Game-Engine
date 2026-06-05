@@ -1,8 +1,10 @@
 using System.Numerics;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
-using LunarEngine.Engine.Graphics;
-using LunarEngine.GameEngine;
+using LunarEngine.Application;
+using LunarEngine.Core;
+using LunarEngine.Renderer;
+using LunarEngine.Renderer.OpenGL;
 using LunarEngine.Platform;
 
 namespace LunarEngine.UI;

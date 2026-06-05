@@ -1,13 +1,9 @@
 using System.Numerics;
 using LunarEngine.Assets;
-using LunarEngine.Components;
 using LunarEngine.Core;
 using LunarEngine.ECS.Components;
-using LunarEngine.Engine.ECS.Components;
-using LunarEngine.GameEngine;
-using LunarEngine.GameObjects;
-using LunarEngine.Graphics;
-using LunarEngine.Physics;
+using LunarEngine.ECS.Components.Physics;
+using LunarEngine.Renderer;
 using World = Arch.Core.World;
 
 namespace LunarEngine.Scenes;

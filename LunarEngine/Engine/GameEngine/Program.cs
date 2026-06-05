@@ -1,6 +1,7 @@
 ﻿using LunarEngine.ECS.Systems;
+using LunarEngine.Application;
 
-namespace LunarEngine.GameEngine;
+namespace LunarEngine;
 // Graphics Engine:
 // Camera, Window
 public class Program

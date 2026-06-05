@@ -1,8 +1,7 @@
 using System.Numerics;
-using LunarEngine.Components;
-using LunarEngine.Engine.ECS.Components;
+using LunarEngine.ECS.Components;
 
-namespace LunarEngine.ECS.Systems;
+namespace LunarEngine.Editor.Systems;
 
 public interface IComponentInspector
 {

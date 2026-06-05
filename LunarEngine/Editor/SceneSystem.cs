@@ -1,16 +1,16 @@
 using System.Drawing;
 using System.Numerics;
 using Hexa.NET.ImGui;
-using LunarEngine.Engine.Graphics;
+using LunarEngine.Renderer;
 using LunarEngine.Events;
-using LunarEngine.GameEngine;
-using LunarEngine.GameObjects;
-using LunarEngine.Graphics;
+using LunarEngine.Application;
+using LunarEngine.Editor;
+using LunarEngine.ECS.Components;
 using LunarEngine.Scenes;
 using LunarEngine.UI;
 using Silk.NET.Maths;
 
-namespace LunarEngine.ECS.Systems;
+namespace LunarEngine.Editor.Systems;
 
 public class SceneSystem
 {

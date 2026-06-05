@@ -2,11 +2,11 @@ using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using LunarEngine.Events;
-using LunarEngine.GameEngine;
+using LunarEngine.Application;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer;
 
 public class Renderer : IDisposable, IRenderer
 {

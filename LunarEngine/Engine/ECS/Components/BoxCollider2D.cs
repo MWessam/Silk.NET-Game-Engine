@@ -1,6 +1,7 @@
 using System.Numerics;
+using LunarEngine.ECS.Components;
 
-namespace LunarEngine.Engine.ECS.Components;
+namespace LunarEngine.ECS.Components.Physics;
 
 public struct BoxCollider2D : IComponent
 {

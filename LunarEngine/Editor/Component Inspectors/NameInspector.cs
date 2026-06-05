@@ -1,7 +1,7 @@
 using ImGuiNET;
 using LunarEngine.ECS.Components;
 
-namespace LunarEngine.ECS.Systems;
+namespace LunarEngine.Editor.Systems;
 
 public class NameInspector : IComponentInspector<Name>
 {

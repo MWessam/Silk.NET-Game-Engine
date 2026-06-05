@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer;
 
 public interface IShader : IDisposable
 {

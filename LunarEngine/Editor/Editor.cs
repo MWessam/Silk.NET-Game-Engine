@@ -1,23 +1,23 @@
 using Hexa.NET.ImGui;
 using System.Numerics;
 using LunarEngine.Assets;
-using LunarEngine.Components;
-using LunarEngine.Core;
 using LunarEngine.ECS;
-using LunarEngine.Engine.Gizmos;
-using LunarEngine.Engine.Graphics;
+using LunarEngine.ECS.Components;
+using LunarEngine.Core;
+using LunarEngine.Renderer;
 using LunarEngine.Events;
-using LunarEngine.GameEngine;
-using LunarEngine.GameObjects;
+using EngineApp = LunarEngine.Application.Application;
+using LunarEngine.Application;
 using LunarEngine.Input;
 using LunarEngine.Scenes;
 using LunarEngine.UI;
+using LunarEngine.Editor.Systems;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 
-namespace LunarEngine.ECS.Systems;
+namespace LunarEngine.Editor;
 
-public class Editor : Application
+public class Editor : EngineApp
 {
     public override void Initialize()
     {

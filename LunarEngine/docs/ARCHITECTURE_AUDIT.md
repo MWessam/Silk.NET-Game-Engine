@@ -425,6 +425,35 @@ Editor/runtime separation completed. Build + run verified.
 
 ---
 
+## Phase 11 Completion Notes (2026-06-05)
+
+Namespace consolidation completed. Build + run verified.
+
+**Changes made**:
+1. **Renamed all namespaces per the consolidation map**:
+   - `LunarEngine.GameEngine` → `LunarEngine.Application` / `LunarEngine.Core` / `LunarEngine.ECS`
+   - `LunarEngine.GameObjects` → `LunarEngine.ECS.Components` / `LunarEngine.ECS.Systems`
+   - `LunarEngine.Components` → `LunarEngine.ECS.Components`
+   - `LunarEngine.Engine.ECS.Components` → `LunarEngine.ECS.Components` / `LunarEngine.ECS.Components.Physics`
+   - `LunarEngine.Engine.ECS.Systems` → `LunarEngine.ECS.Systems`
+   - `LunarEngine.Physics` (components) → `LunarEngine.ECS.Components.Physics`
+   - `LunarEngine.Physics` (systems) → `LunarEngine.ECS.Systems`
+   - `LunarEngine.Engine.Graphics` → `LunarEngine.Renderer` / `LunarEngine.Renderer.OpenGL`
+   - `LunarEngine.Engine.Gizmos` → `LunarEngine.Editor`
+   - `LunarEngine.Engine.AssetHandleCache` → `LunarEngine.Assets`
+   - `LunarEngine.Engine.Core` → `LunarEngine.Core`
+   - `LunarEngine.Graphics.Debugging` → `LunarEngine.Core`
+   - `Editor/*` → `LunarEngine.Editor` / `LunarEngine.Editor.Systems`
+   - `Engine/UI/ImGuiController.cs` → added `namespace LunarEngine.UI;`
+2. **Updated all `using` statements** across ~60 files to match the new namespaces.
+3. **Handled namespace/type name collisions** where a namespace and a class share the same name (e.g., `LunarEngine.Renderer` namespace vs `Renderer` class, `LunarEngine.Application` namespace vs `Application` class, `LunarEngine.Editor` namespace vs `Editor` class). Used `using` aliases (`RenderEngine`, `EngineApp`) and fully qualified names to resolve ambiguities.
+
+**Remaining design gaps**:
+- `GizmosLayer` file still lives in `Engine/Gizmos/` directory instead of `Editor/` (cosmetic, does not affect compilation).
+- `RotationInspector` and `BoxCollider2DInspector` are nested in `PositionInspector.cs` and `RigidBody2DInspector.cs` respectively rather than in separate files.
+
+---
+
 ## Summary
 
 The current codebase is a functional prototype that directly uses Silk.NET, Arch ECS, and raw OpenGL with minimal abstraction. The target architecture defines a fully modular, dependency-injected, interface-driven engine. **Conflicts are pervasive across every module**: Core, Platform, ECS, Renderer, Assets, Input, Scenes, Physics, and Editor all deviate substantially from the target design. The 12-phase implementation plan in `ARCHITECTURE.md` is well-justified given the breadth of changes required.

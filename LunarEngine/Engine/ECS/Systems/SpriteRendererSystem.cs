@@ -4,13 +4,12 @@ using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using LunarEngine.Assets;
-using LunarEngine.Components;
 using LunarEngine.ECS;
-using LunarEngine.Engine.Graphics;
-using LunarEngine.GameObjects;
+using LunarEngine.ECS.Components;
+using LunarEngine.Renderer;
 using LunarEngine.Utilities;
 
-namespace LunarEngine.GameEngine;
+namespace LunarEngine.ECS.Systems;
 
 public partial class SpriteRendererSystem : ScriptableSystem, IRenderSystem
 {

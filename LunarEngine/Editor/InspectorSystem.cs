@@ -2,18 +2,15 @@ using System.Numerics;
 using System.Reflection;
 using Arch.Buffer;
 using Hexa.NET.ImGui;
-using LunarEngine.Components;
 using LunarEngine.ECS;
 using LunarEngine.ECS.Components;
-using LunarEngine.Engine.ECS.Components;
 using LunarEngine.Events;
-using LunarEngine.GameEngine;
-using LunarEngine.GameObjects;
+using LunarEngine.Application;
 using LunarEngine.UI;
 using Serilog;
 using ImGuiDir = Hexa.NET.ImGui.ImGuiDir;
 
-namespace LunarEngine.ECS.Systems;
+namespace LunarEngine.Editor.Systems;
 
 public class InspectorSystem
 {

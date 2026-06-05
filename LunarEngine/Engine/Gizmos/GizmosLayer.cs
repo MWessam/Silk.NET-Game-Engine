@@ -1,9 +1,10 @@
-using LunarEngine.Engine.ECS.Systems;
-using LunarEngine.Engine.Graphics;
-using LunarEngine.GameEngine;
+using LunarEngine.Application;
+using LunarEngine.Core;
+using LunarEngine.ECS.Systems;
+using LunarEngine.Renderer;
 using LunarEngine.Scenes;
 
-namespace LunarEngine.Engine.Gizmos;
+namespace LunarEngine.Editor;
 
 public class GizmosLayer : BaseLayer
 {

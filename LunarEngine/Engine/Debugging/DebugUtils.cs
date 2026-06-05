@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Serilog;
 
-namespace LunarEngine.Graphics.Debugging;
+namespace LunarEngine.Core;
 
 public static class DebugUtils
 {

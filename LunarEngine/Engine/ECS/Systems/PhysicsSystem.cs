@@ -2,13 +2,13 @@ using System.Numerics;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using LunarEngine.Components;
 using LunarEngine.ECS;
-using LunarEngine.Engine.ECS.Components;
-using LunarEngine.GameObjects;
+using LunarEngine.ECS.Components;
+using LunarEngine.ECS.Components.Physics;
+using LunarEngine.Physics;
 using LunarEngine.Utilities;
 
-namespace LunarEngine.Physics;
+namespace LunarEngine.ECS.Systems;
 
 public partial class PhysicsSystem : ScriptableSystem
 {

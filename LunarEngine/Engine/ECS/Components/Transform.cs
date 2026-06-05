@@ -1,7 +1,6 @@
 using System.Numerics;
 using LunarEngine.ECS;
-using LunarEngine.Engine.ECS.Components;
-namespace LunarEngine.Components;
+namespace LunarEngine.ECS.Components;
 public struct Position : IComponent
 {
     internal Vector3 _value;

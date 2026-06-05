@@ -44,11 +44,13 @@ Empty placeholder dirs indicating planned but unimplemented features:
 - ECS system lifecycle on `ECSScene`: `Awake()` → `Start()` → `Update(dt)` / `FixedUpdate(dt)` → `AfterUpdate()` (plays back `CommandBuffer`). `RenderScenes()` is separate, called explicitly by editor systems.
 - New scenes extend `ECSScene` and add entities via `World.Create<T1, T2, ...>(...)` in the constructor. `ECSScene` receives its dependencies through `ServiceContainer`.
 - Active scene: `SceneManager.ActiveScene` (returns `IScene?`).
-- Namespaces are inconsistent across the codebase:
-  - Components: `LunarEngine.Components`, `LunarEngine.GameObjects`, `LunarEngine.Engine.ECS.Components`, `LunarEngine.ECS.Components`
-  - Systems: `LunarEngine.GameEngine`, `LunarEngine.ECS.Systems`, `LunarEngine.Physics`, `LunarEngine.Engine.ECS.Systems`
-  - Renderer: `LunarEngine.Engine.Graphics`
-  - Core: `LunarEngine.GameEngine`
+- Namespaces are consolidated per the target architecture (completed in Phase 11):
+  - Components: `LunarEngine.ECS.Components` / `LunarEngine.ECS.Components.Physics`
+  - Systems: `LunarEngine.ECS.Systems`
+  - Renderer: `LunarEngine.Renderer` / `LunarEngine.Renderer.OpenGL`
+  - Core: `LunarEngine.Core`
+  - Application: `LunarEngine.Application`
+  - Editor: `LunarEngine.Editor` / `LunarEngine.Editor.Systems`
 
 ## Toolchain quirks
 - `AllowUnsafeBlocks` enabled (required by Silk.NET interop — pointer usage in rendering).

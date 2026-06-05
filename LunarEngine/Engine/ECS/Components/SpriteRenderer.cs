@@ -1,12 +1,11 @@
 using System.Numerics;
 using LunarEngine.Assets;
-using LunarEngine.Engine.ECS.Components;
-using LunarEngine.Engine.Graphics;
-using LunarEngine.Graphics;
+using LunarEngine.Renderer;
+using LunarEngine.Renderer.OpenGL;
 using Serilog;
 using StbImageSharp;
 
-namespace LunarEngine.GameObjects;
+namespace LunarEngine.ECS.Components;
 public struct SpriteRenderer : IComponent
 {
     public Sprite? Sprite;

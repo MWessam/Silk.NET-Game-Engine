@@ -1,10 +1,9 @@
 using System.Numerics;
-using LunarEngine.Components;
-using LunarEngine.ECS.Systems;
+using LunarEngine.ECS.Components;
 using LunarEngine.UI;
 using LunarEngine.Utilities;
 
-namespace LunarEngine.ECS.Systems;
+namespace LunarEngine.Editor.Systems;
 
 public class PositionInspector : IComponentInspector<Position>
 {

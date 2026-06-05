@@ -3,12 +3,11 @@ using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using LunarEngine.Components;
 using LunarEngine.ECS;
-using LunarEngine.Engine.Graphics;
-using LunarEngine.GameObjects;
+using LunarEngine.ECS.Components;
+using LunarEngine.Renderer;
 
-namespace LunarEngine.Engine.ECS.Systems;
+namespace LunarEngine.ECS.Systems;
 
 public partial class GizmosSystem : ScriptableSystem
 {

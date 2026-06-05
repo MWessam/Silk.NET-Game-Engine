@@ -2,14 +2,12 @@ using System.Numerics;
 using Arch.Core;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using LunarEngine.Components;
 using LunarEngine.ECS;
+using LunarEngine.ECS.Components;
 using LunarEngine.ECS.Systems;
-using LunarEngine.GameObjects;
-using LunarEngine.Graphics;
 using Silk.NET.Maths;
 
-namespace LunarEngine.GameEngine;
+namespace LunarEngine.ECS.Systems;
 
 public partial class CameraSystem : ScriptableSystem
 {

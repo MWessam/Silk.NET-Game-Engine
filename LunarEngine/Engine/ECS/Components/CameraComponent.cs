@@ -1,13 +1,11 @@
 using System.Numerics;
-using LunarEngine.Components;
-using LunarEngine.Engine.ECS.Components;
-using LunarEngine.GameEngine;
-using LunarEngine.Graphics;
+using LunarEngine.ECS.Systems;
+using LunarEngine.Renderer;
 using LunarEngine.Utilities;
 using Serilog;
 using Silk.NET.Maths;
 
-namespace LunarEngine.GameObjects;
+namespace LunarEngine.ECS.Components;
 public struct CameraComponent : IComponent
 {
     public Camera Camera;

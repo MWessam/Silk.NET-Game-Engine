@@ -1,4 +1,6 @@
-namespace LunarEngine.GameEngine;
+using LunarEngine.Core;
+
+namespace LunarEngine.Application;
 
 public abstract class BaseLayer
 {

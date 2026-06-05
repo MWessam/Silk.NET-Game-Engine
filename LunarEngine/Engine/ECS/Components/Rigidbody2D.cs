@@ -1,10 +1,9 @@
 using System.Numerics;
 using Arch.Core;
-using LunarEngine.Engine.ECS.Components;
-using LunarEngine.GameObjects;
+using LunarEngine.ECS.Components;
 using Serilog;
 
-namespace LunarEngine.Physics;
+namespace LunarEngine.ECS.Components.Physics;
 public enum EBodyType
 {
     Dynamic = 0,

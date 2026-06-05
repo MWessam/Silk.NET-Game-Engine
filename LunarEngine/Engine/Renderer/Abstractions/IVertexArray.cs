@@ -1,4 +1,4 @@
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer;
 
 public interface IVertexArray : IDisposable
 {

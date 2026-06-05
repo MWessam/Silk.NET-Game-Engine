@@ -4,11 +4,8 @@ using LunarEngine.Assets;
 using LunarEngine.Core;
 using LunarEngine.ECS;
 using LunarEngine.ECS.Systems;
-using LunarEngine.Engine.Graphics;
-using LunarEngine.GameEngine;
-using LunarEngine.GameObjects;
-using LunarEngine.Graphics;
-using LunarEngine.Physics;
+using LunarEngine.ECS.Components;
+using LunarEngine.Renderer;
 using Silk.NET.Maths;
 using World = Arch.Core.World;
 

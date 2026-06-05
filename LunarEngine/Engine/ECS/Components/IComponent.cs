@@ -1,4 +1,4 @@
-namespace LunarEngine.Engine.ECS.Components;
+namespace LunarEngine.ECS.Components;
 
 public interface IComponent
 {

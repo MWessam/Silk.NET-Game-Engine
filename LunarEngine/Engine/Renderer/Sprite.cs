@@ -1,10 +1,10 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using LunarEngine.Assets;
-using LunarEngine.GameObjects;
+
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer;
 
 public class Sprite : IDisposable
 {

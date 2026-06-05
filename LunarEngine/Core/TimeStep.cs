@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace LunarEngine.GameEngine;
+namespace LunarEngine.Core;
 
 public struct TimeStep
 {

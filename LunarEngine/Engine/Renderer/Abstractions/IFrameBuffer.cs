@@ -1,6 +1,6 @@
 using Silk.NET.Maths;
 
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer;
 
 public interface IFrameBuffer : IDisposable
 {

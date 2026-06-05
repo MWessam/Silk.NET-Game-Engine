@@ -1,6 +1,6 @@
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer.OpenGL;
 
 public struct VertexArrayObject<TVertexType, TIndexType> : IDisposable, IBindable, IVertexArray
     where TVertexType : unmanaged

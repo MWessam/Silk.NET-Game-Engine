@@ -1,6 +1,6 @@
 using Arch.Buffer;
 using Arch.Core;
-using LunarEngine.Engine.ECS.Components;
+using LunarEngine.ECS.Components;
 
 namespace LunarEngine.ECS;
 

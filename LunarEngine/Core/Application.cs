@@ -1,6 +1,8 @@
 using LunarEngine.Assets;
 using LunarEngine.Core;
-using LunarEngine.Engine.Graphics;
+using RenderEngine = LunarEngine.Renderer.Renderer;
+using LunarEngine.Renderer;
+using LunarEngine.Renderer.OpenGL;
 using LunarEngine.Events;
 using LunarEngine.Input;
 using LunarEngine.Physics;
@@ -11,7 +13,7 @@ using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.GameEngine;
+namespace LunarEngine.Application;
 
 public static class Time
 {
@@ -31,14 +33,14 @@ public class Application : IDisposable
     protected IWindow Window = null!;
     protected LunarEngine.Platform.IInputContext InputContext = null!;
     protected GL GL;
-    private Renderer _renderer = null!;
+    private RenderEngine _renderer = null!;
     private InputManager _inputManager = null!;
     private AssetManager _assetManager = null!;
     private SceneManager _sceneManager = null!;
     private Gizmos _gizmos = null!;
     private GLRenderDevice _renderDevice = null!;
 
-    public Renderer Renderer => _renderer;
+    public RenderEngine Renderer => _renderer;
     public InputManager InputManager => _inputManager;
     public AssetManager AssetManager => _assetManager;
     public SceneManager SceneManager => _sceneManager;
@@ -137,7 +139,7 @@ public class Application : IDisposable
         _gizmos = new Gizmos(_renderDevice, _assetManager);
         Services.Register(_gizmos);
 
-        _renderer = new Renderer(_renderDevice, _gizmos);
+        _renderer = new RenderEngine(_renderDevice, _gizmos);
         _renderer.Initialize();
         Services.Register<IRenderer>(_renderer);
 

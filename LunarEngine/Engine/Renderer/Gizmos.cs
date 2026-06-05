@@ -2,7 +2,7 @@ using System.Numerics;
 using LunarEngine.Assets;
 using Silk.NET.OpenGL;
 
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer;
 
 public class Gizmos : IDisposable
 {

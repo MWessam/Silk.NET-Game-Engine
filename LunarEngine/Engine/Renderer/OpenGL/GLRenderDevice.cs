@@ -2,7 +2,7 @@ using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using StbImageSharp;
 
-namespace LunarEngine.Engine.Graphics;
+namespace LunarEngine.Renderer.OpenGL;
 
 public class GLRenderDevice : IRenderDevice
 {

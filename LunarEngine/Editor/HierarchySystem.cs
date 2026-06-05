@@ -1,13 +1,11 @@
 using Arch.Buffer;
 using Hexa.NET.ImGui;
-using LunarEngine.Components;
 using LunarEngine.ECS;
 using LunarEngine.ECS.Components;
 using LunarEngine.Events;
-using LunarEngine.GameObjects;
 using LunarEngine.UI;
 
-namespace LunarEngine.ECS.Systems;
+namespace LunarEngine.Editor.Systems;
 
 public class HierarchySystem
 {

@@ -1,5 +1,4 @@
-using LunarEngine.Engine.Graphics;
-using LunarEngine.GameObjects;
+using LunarEngine.Renderer.OpenGL;
 using StbImageSharp;
 
 namespace LunarEngine.Assets;

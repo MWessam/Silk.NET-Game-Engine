@@ -30,7 +30,7 @@ public sealed class SystemScheduler
     {
         foreach (var system in GetOrderedSystems(SystemStage.Awake))
         {
-            if (system is LunarEngine.GameObjects.ScriptableSystem scriptable)
+            if (system is LunarEngine.ECS.Systems.ScriptableSystem scriptable)
                 scriptable.Awake();
             else
                 system.Update(0);
@@ -41,7 +41,7 @@ public sealed class SystemScheduler
     {
         foreach (var system in GetOrderedSystems(SystemStage.Start))
         {
-            if (system is LunarEngine.GameObjects.ScriptableSystem scriptable)
+            if (system is LunarEngine.ECS.Systems.ScriptableSystem scriptable)
                 scriptable.Start();
             else
                 system.Update(0);
@@ -52,7 +52,7 @@ public sealed class SystemScheduler
     {
         foreach (var system in GetOrderedSystems(SystemStage.FixedUpdate))
         {
-            if (system is LunarEngine.GameObjects.ScriptableSystem scriptable)
+            if (system is LunarEngine.ECS.Systems.ScriptableSystem scriptable)
                 scriptable.Tick(deltaTime);
             else
                 system.Update(deltaTime);

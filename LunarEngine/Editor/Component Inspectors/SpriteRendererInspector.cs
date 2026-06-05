@@ -1,9 +1,9 @@
 using ImGuiNET;
 using LunarEngine.Assets;
-using LunarEngine.GameObjects;
+using LunarEngine.ECS.Components;
 using LunarEngine.UI;
 
-namespace LunarEngine.ECS.Systems;
+namespace LunarEngine.Editor.Systems;
 
 public class SpriteRendererInspector : IComponentInspector<SpriteRenderer>
 {

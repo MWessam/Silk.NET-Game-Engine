@@ -1,6 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using LunarEngine.Components;
+using LunarEngine.ECS.Components;
 
 namespace LunarEngine.Utilities;
 

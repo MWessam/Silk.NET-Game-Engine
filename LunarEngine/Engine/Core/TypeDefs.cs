@@ -1,7 +1,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace LunarEngine.Engine.Core;
+namespace LunarEngine.Core;
 
 [StructLayout(LayoutKind.Sequential)]
 public struct QuadVertex_V2F_T2F

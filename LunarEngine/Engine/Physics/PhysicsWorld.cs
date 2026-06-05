@@ -1,7 +1,7 @@
 using System.Numerics;
 using Arch.Core;
-using LunarEngine.Components;
-using LunarEngine.Engine.ECS.Components;
+using LunarEngine.ECS.Components;
+using LunarEngine.ECS.Components.Physics;
 using LunarEngine.Utilities;
 
 namespace LunarEngine.Physics;
